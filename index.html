@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.4</title>
+    <title>Thooval Workspace v1.5</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -26,11 +26,11 @@
             --accent-hover: #bceb35;
             --accent-text: #1a2005;
             
-            /* Print Guides */
+            /* Official Print Guides */
             --guide-margin: #d946ef; /* Magenta */
             --guide-bleed: #ef4444;  /* Red */
             --guide-edge: #000000;   /* Black */
-            --guide-cyan: #00ffff;   /* Draggable Guides */
+            --guide-cyan: #00ffff;   /* Cyan */
             
             --danger: #ef4444;
         }
@@ -43,7 +43,7 @@
         ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
 
         /* --- TOP BAR & TABS --- */
-        .top-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 44px; z-index: 200; position: relative; padding: 0 16px; }
+        .top-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 44px; z-index: 200; position: relative; padding: 0 16px; flex-shrink: 0; }
         .top-left { display: flex; align-items: center; gap: 16px; }
         .branding { font-weight: 600; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .branding i { color: var(--accent); }
@@ -64,7 +64,7 @@
         .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .btn-primary:hover { background: var(--accent-hover); }
 
-        .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; }
+        .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; flex-shrink: 0; }
         .tab { background: var(--bg-surface); color: var(--text-muted); padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent; border-bottom: none; max-width: 200px; font-size: 11px; }
         .tab:hover { background: var(--bg-surface-hover); }
         .tab.active { background: var(--bg-panel); color: var(--text-main); border-color: var(--border); border-top: 2px solid var(--accent); }
@@ -76,15 +76,15 @@
         .tab.is-dirty .dirty-dot { display: block; }
 
         /* --- WORKSPACE --- */
-        .workspace-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
         
-        .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; overflow-y: auto; }
+        .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; overflow-y: auto; flex-shrink: 0; }
         .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .divider { width: 24px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
         
-        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
+        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
         .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-main); margin-bottom: 12px; display: flex; justify-content: space-between; }
         .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
@@ -105,11 +105,11 @@
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
         /* Rulers & Canvas Area */
-        .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); }
-        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; }
-        .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; }
-        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; cursor: col-resize; }
-        .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; }
+        .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; }
+        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; flex-shrink: 0; }
+        .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; min-height: 0; }
+        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; cursor: col-resize; flex-shrink: 0; }
+        .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; min-width: 0; min-height: 0; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; pointer-events: none; }
@@ -138,7 +138,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.4</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.5</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -261,6 +261,7 @@
             </div>
             <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages</label></div>
             <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
+            
             <div class="prop-row">
                 <div class="prop-col" style="flex: 2;">
                     <label style="margin-bottom: 8px; display: block;">Margins (Inside/Outside)</label>
@@ -419,6 +420,11 @@
                 return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) };
             }
 
+            function getMasterPos(side, pConf) {
+                if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP };
+                return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
+            }
+
             function sortLayers() {
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
@@ -440,19 +446,25 @@
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask) canvas.remove(obj); });
-                const pagesToDraw = p.isMasterMode ? 1 : p.totalPages;
                 
-                // Construct mask path (Solid Hex color to prevent canvas parse bugs)
+                // If in master mode and facing pages is true, we simulate a 2-page spread
+                const isMasterSpread = p.isMasterMode && conf.facingPages;
+                const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
+                
                 let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
                 
                 for (let i = 0; i < pagesToDraw; i++) {
-                    const pos = getPagePosition(i, conf);
+                    let pos;
+                    if (p.isMasterMode) {
+                        pos = isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf);
+                    } else {
+                        pos = getPagePosition(i, conf);
+                    }
+
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx;
                     const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
-                    
                     maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; // Punch hole
                     
-                    // Paper (No shadow, solid 1px black stroke for crispness)
                     const paper = new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1, strokeUniform: true, selectable: false, evented: false, isPaper: true });
                     canvas.add(paper);
                     
@@ -460,13 +472,16 @@
                         canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1, strokeUniform: true, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
                     }
                     if (showMargins) {
-                        const m = conf.marginsPx; let isLeftPage = conf.facingPages && i > 0 && (i - 1) % 2 === 0;
+                        const m = conf.marginsPx; 
+                        let isLeftPage = false;
+                        if (p.isMasterMode) { isLeftPage = isMasterSpread && i === 0; } 
+                        else { isLeftPage = conf.facingPages && i > 0 && (i - 1) % 2 === 0; }
+                        
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
                         canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--guide-margin)', strokeWidth: 1, strokeUniform: true, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
                     }
                 }
                 
-                // Mask obj (objectCaching disabled prevents blur/disappearance at extreme zooms)
                 const pasteboardMask = new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false });
                 canvas.add(pasteboardMask);
                 
@@ -501,7 +516,7 @@
                         const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
                         let guide = new fabric.Line(
                             draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], 
-                            { stroke: 'var(--guide-cyan)', strokeWidth: 1, strokeUniform: true, isGuide: true, selectable: true, hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' }
+                            { stroke: 'var(--guide-cyan)', strokeWidth: 1, strokeUniform: true, isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' }
                         );
                         if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
                     }
@@ -536,25 +551,25 @@
                     p.totalPages += val;
                     const sources = canvas.getObjects().filter(o => o.isMasterSource);
                     for(let i = p.totalPages - val; i < p.totalPages; i++) {
-                        const targetPos = getPagePosition(i, p.config); const masterPos = getPagePosition(0, p.config);
-                        sources.forEach(s => { s.clone(function(c) { c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
+                        const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
+                        sources.forEach(s => { 
+                            const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx);
+                            if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return;
+                            s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); 
+                        });
                     }
                     drawDocumentEnvironment(); markDirty();
                 } 
                 else if (pagesActionType === 'delete') {
                     if (p.totalPages <= 1) { alert("Cannot delete the last page."); return; }
                     p.totalPages--;
-                    // Real deletion of objects requires spatial filtering. For now, simply reduce count and clear pasteboard objects below the threshold
                     const cutoff = getPagePosition(p.totalPages, p.config).y - 100;
                     canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); });
                     drawDocumentEnvironment(); markDirty();
                 }
                 else if (pagesActionType === 'goto') {
-                    let pg = Math.min(p.totalPages, Math.max(1, val));
-                    const pos = getPagePosition(pg - 1, p.config);
-                    canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2);
-                    canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2);
-                    canvas.requestRenderAll(); drawRulers();
+                    let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config);
+                    canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers();
                 }
                 $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
             });
@@ -565,13 +580,20 @@
                 p.isMasterMode = !p.isMasterMode; canvas.discardActiveObject(); setTool('select');
                 if (p.isMasterMode) {
                     $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master'); $('#master-banner').fadeIn();
-                    const pos = getPagePosition(0, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = 40; 
-                    canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true }); });
+                    const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
+                    canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 } else {
                     $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template'); $('#master-banner').fadeOut();
                     canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
-                    const sources = canvas.getObjects().filter(o => o.isMasterSource); const masterPos = getPagePosition(0, p.config);
-                    for (let pg = 0; pg < p.totalPages; pg++) { const targetPos = getPagePosition(pg, p.config); sources.forEach(s => { s.clone(function(c) { c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); }); }
+                    const sources = canvas.getObjects().filter(o => o.isMasterSource); 
+                    for (let pg = 0; pg < p.totalPages; pg++) {
+                        const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
+                        sources.forEach(sourceObj => { 
+                            const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx);
+                            if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return;
+                            sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); 
+                        });
+                    }
                 }
                 drawDocumentEnvironment(); markDirty();
             });
@@ -617,16 +639,16 @@
             canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
             canvas.on('mouse:up', function(opt) { 
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; if (activeTool === 'select') { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan') { canvas.defaultCursor = 'grab'; } 
-                // Check if deleting a guide (dragged off screen)
                 if(opt.target && opt.target.isGuide) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); } }
             });
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers(); });
             
             $(window).keydown(function(e) { 
                 if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
-                if(e.ctrlKey && e.key.toLowerCase()==='r') { showRulers = !showRulers; drawRulers(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
                 if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
                 if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
                 if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); }
@@ -659,32 +681,32 @@
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
                 
                 canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; drawDocumentEnvironment(); 
+                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
+                
+                // Bulletproof Export: Hide clipping mask entirely so browsers don't crop wrong
+                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
                 
                 let pagesToExport = [];
                 if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); }
-                else { 
-                    // Calculate current visible page
-                    const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP)));
-                    pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); // Rough estimate for current view
-                }
+                else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
 
                 if (format === 'pdf') {
                     const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
                     for (let i = 0; i < pagesToExport.length; i++) {
                         const pg = pagesToExport[i]; if (i > 0) pdf.addPage();
-                        const pos = getPagePosition(pg, p.config); canvas.viewportTransform[4] = -pos.x; canvas.viewportTransform[5] = -pos.y; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 50)); 
-                        pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx);
+                        const pos = getPagePosition(pg, p.config); 
+                        // Pan camera exactly to 0,0 for perfect crop
+                        canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); 
+                        pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx);
                     }
                     pdf.save(`${p.name}_Export.pdf`);
                 } else {
-                    // Image Export (PNG/JPEG)
                     for (let i = 0; i < pagesToExport.length; i++) {
-                        const pg = pagesToExport[i];
-                        const pos = getPagePosition(pg, p.config); canvas.viewportTransform[4] = -pos.x; canvas.viewportTransform[5] = -pos.y; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 50)); 
-                        const dataUrl = canvas.toDataURL({ format: format, quality: 0.9, multiplier: scaleMult, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx });
+                        const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); 
+                        canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); 
+                        const dataUrl = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx });
                         const a = document.createElement('a'); a.href = dataUrl; a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                        await new Promise(r => setTimeout(r, 300)); // slight delay between downloads
+                        await new Promise(r => setTimeout(r, 300));
                     }
                 }
                 showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt);
@@ -693,17 +715,15 @@
             // UI Properties sync
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
             function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return;
+                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 if (obj.fill && typeof obj.fill === 'string') { $('#obj-fill').val(obj.fill); $('#obj-fill-hex').val(obj.fill); }
                 if (obj.type === 'i-text' || obj.type === 'text') { $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); } else { $('#text-properties').hide(); }
             }
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
             $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); }); $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
-            
-            // Delete key logic (and throwing guides away)
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
-            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); } }
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); } }
             
             renderTabs();
         });
