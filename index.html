@@ -16,8 +16,7 @@
             --bg-base: #0e0e11; --bg-panel: #18181b; --bg-surface: #27272a; --bg-surface-hover: #3f3f46;
             --border: #27272a; --border-light: #3f3f46; --text-main: #f4f4f5; --text-muted: #a1a1aa;
             --accent: #cbfb45; --accent-hover: #bceb35; --accent-text: #1a2005;
-            --guide-margin: #FF00FF; /* STRICT MAGENTA */
-            --guide-bleed: #ff0000; --guide-edge: #000000; --guide-cyan: #00ffff;
+            --guide-margin: #FF00FF; --guide-bleed: #ff0000; --guide-edge: #000000; --guide-cyan: #00ffff;
             --danger: #ef4444; --link-color: #3b82f6;
         }
 
@@ -68,10 +67,10 @@
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; } .doc-btn:hover { background: var(--bg-surface-hover); } .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         .action-btn { background: var(--bg-surface-hover); color: var(--text-main); padding: 6px 12px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; font-weight: 500; }
         .action-btn:hover { background: #4f4f58; } .action-btn.active-link { background: rgba(59, 130, 246, 0.2); border-color: var(--link-color); color: var(--link-color); }
+        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; } .btn-primary:hover { background: var(--accent-hover); }
 
         .complex-color-block { position: relative; width: 60px; height: 60px; margin-right: 12px; flex-shrink: 0;} .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); } .fill-block:hover, .stroke-block:hover { border-color: var(--accent); } .fill-block { top: 0; left: 0; z-index: 10; background: #ffffff; } .stroke-block { top: 18px; left: 18px; z-index: 5; background: #cccccc; border-width: 3px; } .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); } .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
         .small-icon-btn { width: 22px; height: 22px; color: var(--text-muted); font-size: 11px; display: flex; justify-content: center; align-items: center; background: var(--bg-base); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: 0.2s; } .small-icon-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
-        .formatting-wrapper { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; } .affect-container-icon, .affect-text-icon { position: absolute; width: 28px; height: 28px; background: transparent; border: 1px solid transparent; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 16px; font-family: 'Times New Roman', serif !important; } .affect-container-icon:hover, .affect-text-icon:hover { color: var(--text-main); background: var(--bg-surface); } .affect-container-icon { z-index: 5; border-color: var(--border); color: #fff; font-size: 10px !important; line-height: 10px; width: 24px; height: 24px; top: 0; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5); } .affect-text-icon { z-index: 10; top: 8px; left: 8px; font-size: 24px !important; color: transparent; -webkit-text-stroke: 1px #888; text-shadow: 0 0 transparent; } .affect-text-icon.visible { color: #fff; -webkit-text-stroke: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5); } .affect-container-icon.visible { border-color: var(--accent); color: var(--accent); }
 
         /* Rulers & Canvas */
         .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; min-height: 0; }
@@ -92,7 +91,7 @@
 
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
-        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); } .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 12px; } .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; } .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; } .btn-cancel:hover { background: var(--bg-surface); } .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; } .btn-primary:hover { background: var(--accent-hover); }
+        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); } .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 12px; } .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; } .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; } .btn-cancel:hover { background: var(--bg-surface); }
     </style>
 </head>
 <body>
@@ -139,9 +138,12 @@
         <div class="top-right"><span style="color: var(--text-muted); font-size: 11px; margin-right: 8px;">Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span></span></div>
     </header>
 
-    <div class="tabs-bar" id="tabs-container"><button class="tab-new" id="btn-new-tab" title="New Document"><i class="fa-solid fa-plus"></i></button></div>
+    <div class="tabs-bar" id="tabs-container">
+        <button class="tab-new" id="btn-new-tab" title="New Document"><i class="fa-solid fa-plus"></i></button>
+    </div>
 
     <div class="workspace-container">
+        
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
@@ -165,7 +167,6 @@
                 <canvas class="ruler-v" id="ruler-v"></canvas>
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
-                    
                     <div id="inner-welcome">
                         <i class="fa-solid fa-feather-pointed logo-huge"></i>
                         <h1 style="color: var(--text-main);">Welcome to Thooval</h1>
@@ -192,7 +193,6 @@
                         <div class="prop-col" style="gap: 6px;">
                             <div style="display: flex; gap: 6px;"><button class="small-icon-btn" id="swap-fill-stroke" title="Swap Fill/Stroke (Shift+X)"><i class="fa-solid fa-repeat"></i></button><button class="small-icon-btn" id="default-fill-stroke" title="Default Fill/Stroke (D)"><i class="fa-solid fa-arrows-to-dot"></i></button><button class="small-icon-btn" style="color:var(--danger);" id="apply-none" title="Apply None (/)"><i class="fa-solid fa-slash"></i></button></div>
                             <div style="height: 1px; background: var(--border-light); width: 100%;"></div>
-                            <div class="formatting-wrapper"><div class="affect-container-icon visible" id="affect-container" title="Target Container"><i class="fa-regular fa-square"></i></div><div class="affect-text-icon" id="affect-text" title="Target Text">T</div></div>
                         </div>
                     </div>
                     <div class="prop-row"><input type="color" id="unified-color-picker" style="width:100%; height:32px;"></div>
@@ -277,7 +277,7 @@
                 <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div><div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
                 <div class="prop-col" style="flex: 0.5;"><label>Unit</label><select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select></div>
             </div>
-            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages (Spreads)</label></div>
+            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages</label></div>
             <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
             
             <div class="prop-row">
@@ -292,75 +292,53 @@
             </div>
             
             <div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;">
-                <label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer; visibility: visible;"><input type="checkbox" id="doc-live-preview" checked> Live Preview</label>
+                <label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer;"><input type="checkbox" id="doc-live-preview" checked> Live Preview</label>
                 <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create</button></div>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="live-preview-modal">
-        <div class="modal" style="width: 300px;">
-            <h2>Live Preview Setup</h2>
-            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide();">Save</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="export-modal">
-        <div class="modal" style="width: 350px;">
-            <h2>Export Document</h2>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
-            <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="pages-modal">
-        <div class="modal" style="width: 300px;">
-            <h2 id="pages-modal-title">Manage Pages</h2>
-            <div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="unsaved-modal">
-        <div class="modal" style="width: 350px;">
-            <h2>Unsaved Changes</h2>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p>
-            <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="live-preview-modal"><div class="modal" style="width: 300px;"><h2>Live Preview Setup</h2><div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide();">Save</button></div></div></div>
+    
+    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
+    
+    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
+    
+    <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
 
 
     <script>
         $(document).ready(function() {
             
-            // --- CORE STATE ---
+            // 1. STATE & CONSTANTS
             let projects = {}; let activeId = null; let tabIdToClose = null; 
-            const DPI = 96; function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; } function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
+            const DPI = 96; 
+            function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; } 
+            function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
             const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular', 'isGuide', 'id', 'nextFrameId', 'prevFrameId', 'paragraphStyle'];
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let pagesActionType = null; let isEditingDoc = false;
 
+            // 2. CANVAS INIT
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
+            // 3. CORE HELPERS
+            function generateId() { return Math.random().toString(36).substr(2, 9); }
             function generateUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8); return v.toString(16); }); }
-
-            // --- STYLES HELPER ---
-            function populateStylesDropdown() {
-                if(!activeId) return; const p = projects[activeId];
-                if (!p.styles) p.styles = { '[None]': null };
-                const select = $('#text-style-select'); select.empty();
-                for (const styleName in p.styles) { select.append(new Option(styleName, styleName)); }
-            }
-
-            // --- TAB MANAGEMENT ---
+            function getPagePosition(index, pConf) { if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) }; if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; const isLeft = (index - 1) % 2 === 0; const row = Math.floor((index - 1) / 2) + 1; return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) }; }
+            function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
+            function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
+            
+            function maintainHairlines() { if(!activeId) return; const z = canvas.getZoom(); canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); }); }
+            function sortLayers() { const objects = canvas.getObjects(); objects.sort((a, b) => { const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; if(o.isOverflowIndicator) return 10; return -3; }; return getZ(a) - getZ(b); }); objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); }); }
+            function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
+            
+            // 4. RENDERING & UI DRAWING
             function renderTabs() {
                 $('.tab').remove(); let tabHtml = '';
                 for (const id in projects) {
@@ -387,96 +365,53 @@
                 renderTabs(); setTool('select');
             }
 
+            function drawDocumentEnvironment() {
+                if (!activeId) return; const p = projects[activeId]; const conf = p.config;
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask) canvas.remove(obj); });
+                const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
+                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
+                const initZoom = canvas.getZoom(); 
+                
+                for (let i = 0; i < pagesToDraw; i++) {
+                    let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
+                    const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
+                    maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
+                    
+                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
+                    if (showBleed && conf.bleedPx > 0) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
+                    if (showMargins) {
+                        const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
+                        let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
+                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#FF00FF', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
+                    }
+                }
+                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false }));
+                sortLayers(); canvas.requestRenderAll(); renderOverflowIndicators();
+            }
+
+            function drawRulers() {
+                if (!showRulers || !activeId) { $('#ruler-h, #ruler-v').hide(); return; } $('#ruler-h, #ruler-v').show();
+                const cV = document.getElementById('ruler-v'); const cH = document.getElementById('ruler-h'); cV.width = 20; cV.height = wrapper.height(); cH.width = wrapper.width(); cH.height = 20;
+                const ctxV = cV.getContext('2d'); const ctxH = cH.getContext('2d'); ctxV.clearRect(0,0,cV.width,cV.height); ctxH.clearRect(0,0,cH.width,cH.height);
+                const zoom = canvas.getZoom(); const vpt = canvas.viewportTransform;
+                ctxV.fillStyle = '#a1a1aa'; ctxH.fillStyle = '#a1a1aa'; ctxV.font = '9px Inter'; ctxH.font = '9px Inter';
+                const step = 100 * zoom; const offsetX = vpt[4] % step; const offsetY = vpt[5] % step;
+                const startValX = -Math.floor(vpt[4] / step) * 100; const startValY = -Math.floor(vpt[5] / step) * 100;
+                for(let i=0; i<cH.width; i+=step) { ctxH.fillRect(i + offsetX, 15, 1, 5); ctxH.fillText(startValX + Math.round(i/zoom), i + offsetX + 2, 12); }
+                for(let i=0; i<cV.height; i+=step) { ctxV.fillRect(15, i + offsetY, 5, 1); ctxV.save(); ctxV.translate(12, i + offsetY + 2); ctxV.rotate(-Math.PI/2); ctxV.fillText(startValY + Math.round(i/zoom), 0, 0); ctxV.restore(); }
+            }
+
+            // 5. EVENT HANDLERS: TABS & CLOSING
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
-            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); $('#live-preview-checkbox-wrapper').css('visibility', 'visible'); });
-            $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; }); $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; }); $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
+            $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; }); 
+            $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; }); 
+            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
 
-            function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
-            canvas.on('object:modified', () => { markDirty(); renderOverflowIndicators(); }); canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
-            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
-
-
-            // --- PARAGRAPH STYLES BINDINGS ---
-            $('#text-style-select').change(function() {
-                const styleName = $(this).val(); const obj = canvas.getActiveObject();
-                if(styleName !== '[None]' && projects[activeId].styles[styleName] && obj) {
-                    const s = projects[activeId].styles[styleName];
-                    obj.set({ fontFamily: s.fontFamily, fontSize: s.fontSize, lineHeight: s.lineHeight, textAlign: s.textAlign, fill: s.fill, charSpacing: s.charSpacing, paragraphStyle: styleName });
-                    canvas.renderAll(); updateUI({selected: [obj]}); markDirty();
-                } else if (obj) { obj.paragraphStyle = '[None]'; markDirty(); }
-            });
-            $('#create-style-btn').click(function() {
-                const obj = canvas.getActiveObject(); if(!obj || (obj.type !== 'textbox' && obj.type !== 'i-text')) return;
-                const name = prompt("Name for new Paragraph Style (e.g. Chapter Title):");
-                if(name) {
-                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 };
-                    obj.paragraphStyle = name; populateStylesDropdown(); $('#text-style-select').val(name); markDirty();
-                }
-            });
-            $('#update-style-btn').click(function() {
-                const obj = canvas.getActiveObject(); const name = $('#text-style-select').val();
-                if(!obj || name === '[None]') return;
-                projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 };
-                canvas.getObjects().forEach(o => { if((o.type === 'textbox' || o.type === 'i-text') && o.paragraphStyle === name) { o.set(projects[activeId].styles[name]); } });
-                canvas.renderAll(); markDirty(); alert("Style '" + name + "' updated globally!");
-            });
-
-
-            // --- DRAW TEXT FRAME TOOL ---
-            let isDrawingText = false; let textDrawRect = null; let startTx = 0, startTy = 0;
-            canvas.on('mouse:down', function(o) {
-                if (activeTool === 'text') {
-                    isDrawingText = true; canvas.selection = false;
-                    const pointer = canvas.getPointer(o.e); startTx = pointer.x; startTy = pointer.y;
-                    textDrawRect = new fabric.Rect({ left: startTx, top: startTy, width: 0, height: 0, stroke: 'var(--accent)', strokeWidth: 1/canvas.getZoom(), strokeDashArray: [5,5], fill: 'transparent', selectable: false, evented: false });
-                    canvas.add(textDrawRect);
-                }
-            });
-            canvas.on('mouse:move', function(o) {
-                if (isDrawingText && textDrawRect) { const pointer = canvas.getPointer(o.e); let w = Math.abs(pointer.x - startTx); let h = Math.abs(pointer.y - startTy); textDrawRect.set({ left: Math.min(pointer.x, startTx), top: Math.min(pointer.y, startTy), width: w, height: h }); canvas.requestRenderAll(); }
-            });
-            canvas.on('mouse:up', function(o) {
-                if (isDrawingText) {
-                    isDrawingText = false; canvas.selection = true;
-                    if (textDrawRect) {
-                        let w = textDrawRect.width; let h = textDrawRect.height; let finalX = textDrawRect.left; let finalY = textDrawRect.top; canvas.remove(textDrawRect); textDrawRect = null;
-                        if (w > 50 && h > 30) { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: w, height: h, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, lineHeight: 1.16, splitByGrapheme: false, paragraphStyle: '[None]' }); processNewObject(text); setTool('select'); text.enterEditing(); } 
-                        else { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: 200, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, paragraphStyle: '[None]' }); processNewObject(text); setTool('select'); text.enterEditing(); }
-                    }
-                }
-            });
-
-            // --- TEXT THREADING / OVERFLOW LOGIC ---
-            function renderOverflowIndicators() {
-                canvas.getObjects().forEach(o => { if(o.isOverflowIndicator) canvas.remove(o); });
-                canvas.getObjects().filter(o => o.type === 'textbox').forEach(tb => {
-                    const totalHeight = tb.getScaledHeight(); const textHeight = tb.calcTextHeight ? tb.calcTextHeight() : (tb.height); 
-                    if (textHeight > totalHeight + 5) {
-                        const brX = tb.left + tb.getScaledWidth() - 10; const brY = tb.top + tb.getScaledHeight() - 10;
-                        const ind = new fabric.Group([
-                            new fabric.Rect({ width: 14, height: 14, fill: 'var(--bg-panel)', stroke: 'var(--danger)', strokeWidth: 1, originX: 'center', originY: 'center' }),
-                            new fabric.Text('+', { fill: 'var(--danger)', fontSize: 12, originX: 'center', originY: 'center', fontWeight: 'bold' })
-                        ], { left: brX, top: brY, selectable: false, evented: false, isOverflowIndicator: true, isRegular: true });
-                        canvas.add(ind);
-                    }
-                });
-            }
-            canvas.on('text:changed', function(e) { renderOverflowIndicators(); markDirty(); }); canvas.on('text:editing:exited', renderOverflowIndicators);
-
-            let linkingMode = false; let linkingFromBox = null;
-            $('#link-frame-btn').click(function() { const act = canvas.getActiveObject(); if (!act || act.type !== 'textbox') { alert("Please select a text frame first to link it."); return; } linkingMode = true; linkingFromBox = act; $(this).addClass('active-link').html('<i class="fa-solid fa-crosshairs"></i> Click target frame...'); canvas.defaultCursor = 'crosshair'; });
-            canvas.on('mouse:down', function(e) {
-                if (linkingMode && e.target && e.target.type === 'textbox' && e.target !== linkingFromBox) {
-                    linkingFromBox.nextFrameId = e.target.id; e.target.prevFrameId = linkingFromBox.id;
-                    alert("Frames Linked!");
-                    linkingMode = false; linkingFromBox = null; canvas.defaultCursor = 'default'; $('#link-frame-btn').removeClass('active-link').html('<i class="fa-solid fa-link"></i> Link Text Frame'); markDirty();
-                } else if (linkingMode && (!e.target || e.target === linkingFromBox)) { linkingMode = false; linkingFromBox = null; canvas.defaultCursor = 'default'; $('#link-frame-btn').removeClass('active-link').html('<i class="fa-solid fa-link"></i> Link Text Frame'); }
-            });
-
-
-            // --- DOCUMENT SETUP ---
+            // 6. EVENT HANDLERS: CREATE / EDIT PROJECT MODAL
+            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#live-preview-checkbox-wrapper').css('visibility', 'visible'); $('#new-doc-modal').css('display', 'flex'); });
+            
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); updatePreview(); });
             $('.margin-input').on('input', function() { if (marginsLinked) $('.margin-input').val($(this).val()); });
             $('#doc-preset').change(function() { const p = $(this).val(); if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); } if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); } updatePreview(); });
@@ -491,132 +426,38 @@
                 $('#doc-bleed').val(+(fromPx(conf.bleedPx, conf.unit).toFixed(2))); $('#doc-facing').prop('checked', conf.facingPages);
                 $('#live-preview-checkbox-wrapper').css('visibility', 'hidden'); $('#new-doc-modal').css('display', 'flex');
             });
-            $('#menu-live-preview-setup').click(() => $('#live-preview-modal').css('display', 'flex'));
-            $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
+            $('#cancel-doc-btn').click(() => { $('#new-doc-modal').hide(); if(isEditingDoc && activeId) drawDocumentEnvironment(); }); // Reset on cancel
+            
+            // THE FIX: SINGLE CREATE BUTTON EVENT
             $('#create-doc-btn').click(function() {
-                const u = $('#doc-unit').val(); const confData = {
+                const u = $('#doc-unit').val(); 
+                const confData = {
                     unit: u, widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u),
                     marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) },
                     bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked')
                 };
-                if (isEditingDoc && activeId) { projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); } 
-                else { const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], styles: { '[None]': null } }; switchProject(newId); fitWholePage(); }
+                if (isEditingDoc && activeId) { 
+                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); 
+                } 
+                else { 
+                    const newId = generateId(); 
+                    projects[newId] = { 
+                        name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, 
+                        config: confData, canvasData: null, vpt: [1,0,0,1,0,0], styles: { '[None]': null } 
+                    }; 
+                    switchProject(newId); fitWholePage(); 
+                }
                 $('#new-doc-modal').hide();
             });
-            function updatePreview() { if (!activeId || !$('#doc-live-preview').is(':checked')) return; const u = $('#doc-unit').val(); const p = projects[activeId]; p.config.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); p.config.heightPx = toPx(parseFloat($('#doc-h').val()||0), u); p.config.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) }; p.config.bleedPx = toPx(parseFloat($('#doc-bleed').val()||0), u); p.config.facingPages = $('#doc-facing').is(':checked'); drawDocumentEnvironment(); }
+
+            function updatePreview() { if (!activeId || isEditingDoc || !$('#doc-live-preview').is(':checked')) return; const u = $('#doc-unit').val(); const p = projects[activeId]; p.config.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); p.config.heightPx = toPx(parseFloat($('#doc-h').val()||0), u); p.config.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) }; p.config.bleedPx = toPx(parseFloat($('#doc-bleed').val()||0), u); p.config.facingPages = $('#doc-facing').is(':checked'); drawDocumentEnvironment(); }
             $('.margin-input, #doc-w, #doc-h, #doc-facing, #doc-bleed').on('input change', function() { if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); updatePreview(); });
 
-            // --- SPATIAL MATH & PERFECT MASKS ---
-            function getPagePosition(index, pConf) { if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) }; if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; const isLeft = (index - 1) % 2 === 0; const row = Math.floor((index - 1) / 2) + 1; return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) }; }
-            function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
-            function maintainHairlines() { if(!activeId) return; const z = canvas.getZoom(); canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); }); }
-            function sortLayers() { const objects = canvas.getObjects(); objects.sort((a, b) => { const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; if(o.isOverflowIndicator) return 10; return -3; }; return getZ(a) - getZ(b); }); objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); }); }
-            
-            function drawDocumentEnvironment() {
-                if (!activeId) return; const p = projects[activeId]; const conf = p.config;
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask) canvas.remove(obj); });
-                const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
-                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
-                const initZoom = canvas.getZoom(); 
-                for (let i = 0; i < pagesToDraw; i++) {
-                    let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
-                    const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
-                    maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
-                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
-                    if (showBleed && conf.bleedPx > 0) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
-                    if (showMargins) {
-                        const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
-                        let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#FF00FF', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
-                    }
-                }
-                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false }));
-                sortLayers(); canvas.requestRenderAll(); renderOverflowIndicators();
-            }
+            // 7. EVENT HANDLERS: TOOLS & CANVAS INTERACTION
+            canvas.on('object:modified', () => { markDirty(); renderOverflowIndicators(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
+            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
 
-            // --- DRAGGABLE RULERS ---
-            function drawRulers() {
-                if (!showRulers || !activeId) { $('#ruler-h, #ruler-v').hide(); return; } $('#ruler-h, #ruler-v').show();
-                const cV = document.getElementById('ruler-v'); const cH = document.getElementById('ruler-h'); cV.width = 20; cV.height = wrapper.height(); cH.width = wrapper.width(); cH.height = 20;
-                const ctxV = cV.getContext('2d'); const ctxH = cH.getContext('2d'); ctxV.clearRect(0,0,cV.width,cV.height); ctxH.clearRect(0,0,cH.width,cH.height);
-                const zoom = canvas.getZoom(); const vpt = canvas.viewportTransform;
-                ctxV.fillStyle = '#a1a1aa'; ctxH.fillStyle = '#a1a1aa'; ctxV.font = '9px Inter'; ctxH.font = '9px Inter';
-                const step = 100 * zoom; const offsetX = vpt[4] % step; const offsetY = vpt[5] % step;
-                const startValX = -Math.floor(vpt[4] / step) * 100; const startValY = -Math.floor(vpt[5] / step) * 100;
-                for(let i=0; i<cH.width; i+=step) { ctxH.fillRect(i + offsetX, 15, 1, 5); ctxH.fillText(startValX + Math.round(i/zoom), i + offsetX + 2, 12); }
-                for(let i=0; i<cV.height; i+=step) { ctxV.fillRect(15, i + offsetY, 5, 1); ctxV.save(); ctxV.translate(12, i + offsetY + 2); ctxV.rotate(-Math.PI/2); ctxV.fillText(startValY + Math.round(i/zoom), 0, 0); ctxV.restore(); }
-            }
-            canvas.on('after:render', drawRulers);
-            let draggingGuideType = null; $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
-            $(window).mouseup((e) => {
-                if (draggingGuideType && activeId) {
-                    const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-                    if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
-                        const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
-                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: 'var(--guide-cyan)', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' }); if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
-                    }
-                }
-                draggingGuideType = null;
-            });
-
-            // --- VIEW TOGGLES ---
-            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); }); $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); }); $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); }); $('#menu-toggle-guides').click(() => { showGuides = !showGuides; canvas.getObjects().forEach(o => { if(o.isGuide) o.set('opacity', showGuides ? 1 : 0); }); canvas.requestRenderAll(); });
-
-            // --- PAGES MANAGER ---
-            $('.menu-page-action').click(function() {
-                if(!activeId || projects[activeId].isMasterMode) return; pagesActionType = $(this).data('action');
-                if (pagesActionType === 'insert') { $('#pages-modal-title').text('Insert Pages'); $('#pages-input-label').text('Number of Pages to Insert'); $('#pages-input-val').val(1); }
-                if (pagesActionType === 'delete') { $('#pages-modal-title').text('Delete Page'); $('#pages-input-label').text('Page Number to Delete'); $('#pages-input-val').val(projects[activeId].totalPages); }
-                if (pagesActionType === 'goto') { $('#pages-modal-title').text('Go to Page'); $('#pages-input-label').text('Page Number'); $('#pages-input-val').val(1); }
-                $('#pages-modal').css('display', 'flex');
-            });
-            $('#confirm-pages-btn').click(function() {
-                const val = parseInt($('#pages-input-val').val()); const p = projects[activeId];
-                if (pagesActionType === 'insert') {
-                    p.totalPages += val; const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    for(let i = p.totalPages - val; i < p.totalPages; i++) {
-                        const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
-                        sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
-                    }
-                    drawDocumentEnvironment(); markDirty();
-                } 
-                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); }
-                else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
-                $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
-            });
-
-            // --- MASTER TEMPLATES ---
-            $('#toggle-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); setTool('select');
-                $('#master-banner').css('display', 'flex'); $('#panel-pages').hide(); const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
-                drawDocumentEnvironment(); markDirty();
-            });
-            $('#exit-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); setTool('select'); $('#master-banner').hide(); $('#panel-pages').show();
-                canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
-                const sources = canvas.getObjects().filter(o => o.isMasterSource); 
-                for (let pg = 0; pg < p.totalPages; pg++) {
-                    const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
-                    sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
-                }
-                drawDocumentEnvironment(); fitWholePage(); markDirty();
-            });
-
-            // --- TEXT BOX & OBJECT CREATION ---
-            function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); }
-
-            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
-            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
-            
-            function handleImageInsert(file) {
-                if (!file || !activeId) return; const reader = new FileReader();
-                reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
-            }
-            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
-
-            // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state'); if(tool==='text') $('#add-text').addClass('active-state');
@@ -625,6 +466,32 @@
                 canvas.discardActiveObject(); canvas.requestRenderAll();
             }
             $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom')); $('#add-text').click(() => setTool('text'));
+
+            let isDrawingText = false; let textDrawRect = null; let startTx = 0, startTy = 0;
+            canvas.on('mouse:down', function(o) {
+                if (activeTool === 'text') {
+                    isDrawingText = true; canvas.selection = false;
+                    const pointer = canvas.getPointer(o.e); startTx = pointer.x; startTy = pointer.y;
+                    textDrawRect = new fabric.Rect({ left: startTx, top: startTy, width: 0, height: 0, stroke: 'var(--accent)', strokeWidth: 1/canvas.getZoom(), strokeDashArray: [5,5], fill: 'transparent', selectable: false, evented: false });
+                    canvas.add(textDrawRect);
+                }
+            });
+            canvas.on('mouse:move', function(o) { if (isDrawingText && textDrawRect) { const pointer = canvas.getPointer(o.e); let w = Math.abs(pointer.x - startTx); let h = Math.abs(pointer.y - startTy); textDrawRect.set({ left: Math.min(pointer.x, startTx), top: Math.min(pointer.y, startTy), width: w, height: h }); canvas.requestRenderAll(); } });
+            canvas.on('mouse:up', function(o) {
+                if (isDrawingText) {
+                    isDrawingText = false; canvas.selection = true;
+                    if (textDrawRect) {
+                        let w = textDrawRect.width; let h = textDrawRect.height; let finalX = textDrawRect.left; let finalY = textDrawRect.top; canvas.remove(textDrawRect); textDrawRect = null;
+                        if (w > 50 && h > 30) { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: w, height: h, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, lineHeight: 1.16, splitByGrapheme: false, paragraphStyle: '[None]' }); processNewObject(text); setTool('select'); text.enterEditing(); } 
+                        else { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: 200, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, paragraphStyle: '[None]' }); processNewObject(text); setTool('select'); text.enterEditing(); }
+                    }
+                }
+            });
+
+            function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); }
+            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
+            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
+            $('#image-upload, #place-image-input').on('change', function(e) { if (!e.target.files[0] || !activeId) return; const reader = new FileReader(); reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(e.target.files[0]); $(this).val(''); });
 
             function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); drawRulers(); renderOverflowIndicators(); }
             function fitWholePage() {
@@ -648,20 +515,89 @@
                 renderOverflowIndicators();
             });
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers(); renderOverflowIndicators(); });
-            
-            $(window).keydown(function(e) { 
-                if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
-                if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
-                if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
-                if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
-                if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
-                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom'); if (e.key.toLowerCase() === 't') setTool('text');
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); } if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } if (e.key === ';') { $('#menu-toggle-guides').click(); }
-            });
-            $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
 
-            // --- EXPORT ---
+            let draggingGuideType = null; $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
+            $(window).mouseup((e) => {
+                if (draggingGuideType && activeId) {
+                    const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+                    if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
+                        const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
+                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: 'var(--guide-cyan)', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' }); if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
+                    }
+                }
+                draggingGuideType = null;
+            });
+
+            // 8. EVENT HANDLERS: OVERFLOW & THREADING
+            function renderOverflowIndicators() {
+                canvas.getObjects().forEach(o => { if(o.isOverflowIndicator) canvas.remove(o); });
+                canvas.getObjects().filter(o => o.type === 'textbox').forEach(tb => {
+                    const totalHeight = tb.getScaledHeight(); const textHeight = tb.calcTextHeight ? tb.calcTextHeight() : (tb.height); 
+                    if (textHeight > totalHeight + 5) {
+                        const brX = tb.left + tb.getScaledWidth() - 10; const brY = tb.top + tb.getScaledHeight() - 10;
+                        const ind = new fabric.Group([
+                            new fabric.Rect({ width: 14, height: 14, fill: 'var(--bg-panel)', stroke: 'var(--danger)', strokeWidth: 1, originX: 'center', originY: 'center' }),
+                            new fabric.Text('+', { fill: 'var(--danger)', fontSize: 12, originX: 'center', originY: 'center', fontWeight: 'bold' })
+                        ], { left: brX, top: brY, selectable: false, evented: false, isOverflowIndicator: true, isRegular: true });
+                        canvas.add(ind);
+                    }
+                });
+            }
+            canvas.on('text:changed', function() { renderOverflowIndicators(); markDirty(); }); canvas.on('text:editing:exited', renderOverflowIndicators);
+            
+            let linkingMode = false; let linkingFromBox = null;
+            $('#link-frame-btn').click(function() { const act = canvas.getActiveObject(); if (!act || act.type !== 'textbox') { alert("Please select a text frame first to link it."); return; } linkingMode = true; linkingFromBox = act; $(this).addClass('active-link').html('<i class="fa-solid fa-crosshairs"></i> Click target frame...'); canvas.defaultCursor = 'crosshair'; });
+            canvas.on('mouse:down', function(e) {
+                if (linkingMode && e.target && e.target.type === 'textbox' && e.target !== linkingFromBox) {
+                    linkingFromBox.nextFrameId = e.target.id; e.target.prevFrameId = linkingFromBox.id;
+                    alert("Frames Linked!"); linkingMode = false; linkingFromBox = null; canvas.defaultCursor = 'default'; $('#link-frame-btn').removeClass('active-link').html('<i class="fa-solid fa-link"></i> Link Text Frame'); markDirty();
+                } else if (linkingMode && (!e.target || e.target === linkingFromBox)) { linkingMode = false; linkingFromBox = null; canvas.defaultCursor = 'default'; $('#link-frame-btn').removeClass('active-link').html('<i class="fa-solid fa-link"></i> Link Text Frame'); }
+            });
+
+            // 9. EVENT HANDLERS: PAGES & MASTER TEMPLATES
+            $('.menu-page-action').click(function() {
+                if(!activeId || projects[activeId].isMasterMode) return; pagesActionType = $(this).data('action');
+                if (pagesActionType === 'insert') { $('#pages-modal-title').text('Insert Pages'); $('#pages-input-label').text('Number of Pages to Insert'); $('#pages-input-val').val(1); }
+                if (pagesActionType === 'delete') { $('#pages-modal-title').text('Delete Page'); $('#pages-input-label').text('Page Number to Delete'); $('#pages-input-val').val(projects[activeId].totalPages); }
+                if (pagesActionType === 'goto') { $('#pages-modal-title').text('Go to Page'); $('#pages-input-label').text('Page Number'); $('#pages-input-val').val(1); }
+                $('#pages-modal').css('display', 'flex');
+            });
+            $('#confirm-pages-btn').click(function() {
+                const val = parseInt($('#pages-input-val').val()); const p = projects[activeId];
+                if (pagesActionType === 'insert') {
+                    p.totalPages += val; const sources = canvas.getObjects().filter(o => o.isMasterSource);
+                    for(let i = p.totalPages - val; i < p.totalPages; i++) {
+                        const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
+                        sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
+                    }
+                    drawDocumentEnvironment(); markDirty();
+                } 
+                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); }
+                else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
+                $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
+            });
+
+            $('#toggle-master-btn').click(function() {
+                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); setTool('select');
+                $('#master-banner').css('display', 'flex'); $('#panel-pages').hide(); const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                drawDocumentEnvironment(); markDirty();
+            });
+            $('#exit-master-btn').click(function() {
+                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); setTool('select'); $('#master-banner').hide(); $('#panel-pages').show();
+                canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
+                const sources = canvas.getObjects().filter(o => o.isMasterSource); 
+                for (let pg = 0; pg < p.totalPages; pg++) {
+                    const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
+                    sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
+                }
+                drawDocumentEnvironment(); fitWholePage(); markDirty();
+            });
+
+            // 10. EVENT HANDLERS: SAVE & EXPORT
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, styles: data.styles || { '[None]': null }, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
+
             $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
             $('#confirm-export-btn').click(async function() {
@@ -683,11 +619,18 @@
                 showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines(); renderOverflowIndicators();
             });
 
-            // --- UI PROPERTIES PANEL ---
+            // 11. EVENT HANDLERS: PROPERTIES PANEL
             let focusedColorType = 'fill'; 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
+
+            $('#text-style-select').change(function() {
+                const styleName = $(this).val(); const obj = canvas.getActiveObject();
+                if(styleName !== '[None]' && projects[activeId].styles[styleName] && obj) { const s = projects[activeId].styles[styleName]; obj.set({ fontFamily: s.fontFamily, fontSize: s.fontSize, lineHeight: s.lineHeight, textAlign: s.textAlign, fill: s.fill, charSpacing: s.charSpacing, paragraphStyle: styleName }); canvas.renderAll(); updateUI({selected: [obj]}); markDirty(); } else if (obj) { obj.paragraphStyle = '[None]'; markDirty(); }
+            });
+            $('#create-style-btn').click(function() { const obj = canvas.getActiveObject(); if(!obj || (obj.type !== 'textbox' && obj.type !== 'i-text')) return; const name = prompt("Name for new Paragraph Style (e.g. Chapter Title):"); if(name) { projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 }; obj.paragraphStyle = name; populateStylesDropdown(); $('#text-style-select').val(name); markDirty(); } });
+            $('#update-style-btn').click(function() { const obj = canvas.getActiveObject(); const name = $('#text-style-select').val(); if(!obj || name === '[None]') return; projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 }; canvas.getObjects().forEach(o => { if((o.type === 'textbox' || o.type === 'i-text') && o.paragraphStyle === name) { o.set(projects[activeId].styles[name]); } }); canvas.renderAll(); markDirty(); alert("Style '" + name + "' updated globally!"); });
 
             function updateUI(event) {
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
@@ -698,20 +641,13 @@
                     let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
                     $('.btn-group button').removeClass('active');
                     if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
-                    
                     const textHeight = obj.calcTextHeight ? obj.calcTextHeight() : obj.height; if (textHeight > obj.getScaledHeight() + 5) $('#overflow-warning').show(); else $('#overflow-warning').hide();
                     $('#text-style-select').val(obj.paragraphStyle || '[None]');
                 } else { $('#text-properties').hide(); }
             }
 
             function updateTransformUI(e) { const obj = e.target; $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top)); $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight())); $('#obj-rotation').val(Math.round(obj.angle % 360)); }
-            function updateColorsUI(obj) {
-                const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
-                $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
-                if (fillVal === 'transparent') $('#fill-focus').addClass('none'); if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
-                const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal; if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
-            }
-
+            function updateColorsUI(obj) { const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent'; $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none'); if (fillVal === 'transparent') $('#fill-focus').addClass('none'); if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent'); const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal; if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol); }
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); if (prop !== 'paragraphStyle' && (obj.type === 'textbox' || obj.type === 'i-text')) obj.paragraphStyle = '[None]'; canvas.renderAll(); markDirty(); renderOverflowIndicators(); updateUI({selected:[obj]}); } }
             
             $('#fill-focus, #stroke-focus').click(function() { focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke'; $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused'); updateColorsUI(canvas.getActiveObject()); });
@@ -720,7 +656,6 @@
             $('#apply-none').click(() => { const obj = canvas.getActiveObject(); if (!obj) return; if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); } canvas.renderAll(); updateColorsUI(obj); markDirty(); });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); }); $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); }); $('#obj-w, #obj-h').on('input', function() { const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1; if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim); canvas.renderAll(); markDirty(); renderOverflowIndicators();});
-
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); }); $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); }); $('#obj-char-spacing').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10)); }); $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); }); $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); }); $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); }); $('#align-justify').click(function() { updateObj('textAlign', 'justify'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             
@@ -728,6 +663,18 @@
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); renderOverflowIndicators(); } }
             
+            // 12. HOTKEYS
+            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); }); $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); }); $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); }); $('#menu-toggle-guides').click(() => { showGuides = !showGuides; canvas.getObjects().forEach(o => { if(o.isGuide) o.set('opacity', showGuides ? 1 : 0); }); canvas.requestRenderAll(); });
+            $(window).keydown(function(e) { 
+                if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
+                if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); } if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); } if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); } if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
+                if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
+                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom'); if (e.key.toLowerCase() === 't') setTool('text');
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); } if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            });
+            $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
+
+            // INIT
             renderTabs();
         });
     </script>
