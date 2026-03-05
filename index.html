@@ -3,54 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web DTP Layout Tool - Advanced Prototype</title>
+    <title>Thooval Layout Engine - Multi-Page Prototype</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { display: flex; flex-direction: column; height: 100vh; background: #2c2c2c; color: #fff; }
         
-        .top-bar { background: #1e1e1e; padding: 12px 20px; border-bottom: 1px solid #444; font-weight: bold; }
+        .top-bar { background: #1e1e1e; padding: 12px 20px; border-bottom: 1px solid #444; font-weight: bold; display: flex; justify-content: space-between; }
         
         .workspace { display: flex; flex: 1; overflow: hidden; }
         
-        .toolbar-left { width: 160px; background: #252525; padding: 15px; border-right: 1px solid #444; }
-        .toolbar-left button, .toolbar-left label.upload-btn { display: block; width: 100%; margin-bottom: 12px; padding: 10px; cursor: pointer; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 4px; text-align: center; font-size: 13px; }
-        .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; }
+        /* Icon Toolbar */
+        .toolbar-left { width: 70px; background: #252525; padding: 15px 10px; border-right: 1px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .toolbar-left button, .toolbar-left label.upload-btn { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; cursor: pointer; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 8px; font-size: 18px; transition: all 0.2s; }
+        .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; color: #fff; border-color: #777; }
         #image-upload { display: none; }
+        .delete-btn { margin-top: auto; background: #4a1c1c !important; border-color: #702a2a !important; color: #ff9999 !important; }
+        .delete-btn:hover { background: #702a2a !important; color: #fff !important; }
         
-        .panel-right { width: 280px; background: #252525; padding: 15px; border-left: 1px solid #444; overflow-y: auto; }
-        .panel-right h3 { font-size: 12px; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; padding-bottom: 5px; margin: 15px 0 10px 0; }
-        .panel-right h3:first-child { margin-top: 0; }
+        /* Right Panel */
+        .panel-right { width: 280px; background: #252525; padding: 15px; border-left: 1px solid #444; overflow-y: auto; display: flex; flex-direction: column; }
+        .panel-section { border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 15px; }
+        .panel-right h3 { font-size: 12px; text-transform: uppercase; color: #888; margin-bottom: 10px; }
         
-        .prop-group { margin-bottom: 15px; }
+        /* Properties */
+        .prop-group { margin-bottom: 10px; }
         .prop-group label { display: block; font-size: 12px; color: #ccc; margin-bottom: 4px; }
-        .prop-group input[type="color"], .prop-group input[type="range"], .prop-group select, .prop-group input[type="number"] { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 5px; border-radius: 3px; }
+        .prop-group input[type="color"], .prop-group input[type="range"], .prop-group select, .prop-group input[type="number"] { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; font-size: 13px; }
         
+        /* Pages Manager */
+        .page-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .page-item { padding: 8px 12px; background: #1a1a1a; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; justify-content: space-between; }
+        .page-item:hover { background: #333; }
+        .page-item.active { background: #0056b3; border-color: #007bff; }
+        .add-page-btn { width: 100%; padding: 8px; background: #3a3a3a; border: 1px dashed #777; color: #ccc; border-radius: 4px; cursor: pointer; }
+        .add-page-btn:hover { background: #444; color: #fff; }
+
         .btn-group { display: flex; gap: 5px; }
-        .btn-group button { flex: 1; padding: 5px; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 3px; cursor: pointer; font-size: 12px;}
+        .btn-group button { flex: 1; padding: 6px; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 3px; cursor: pointer; font-size: 12px;}
         .btn-group button:hover { background: #505050; }
 
-        .canvas-container-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a1a; overflow: auto; padding: 40px; }
-        .canvas-container { box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        .canvas-container-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: #151515; overflow: auto; padding: 40px; }
+        .canvas-container { box-shadow: 0 4px 25px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
-    <header class="top-bar">WebLayout Pro</header>
+    <header class="top-bar">
+        <div>Layout Engine</div>
+        <div id="page-indicator" style="color: #aaa; font-size: 14px;">Page 1</div>
+    </header>
 
     <div class="workspace">
         <aside class="toolbar-left">
-            <button id="add-rect">Add Rectangle</button>
-            <button id="add-circle">Add Circle</button>
-            <button id="add-text">Add Text</button>
-            <label class="upload-btn">
-                Upload Image
+            <button id="add-rect" title="Add Rectangle"><i class="fa-solid fa-square"></i></button>
+            <button id="add-circle" title="Add Circle"><i class="fa-solid fa-circle"></i></button>
+            <button id="add-text" title="Add Typography Frame"><i class="fa-solid fa-font"></i></button>
+            <label class="upload-btn" title="Place Image">
+                <i class="fa-solid fa-image"></i>
                 <input type="file" id="image-upload" accept="image/*">
             </label>
-            <button id="delete-obj" style="background: #6b2424; margin-top: 20px;">Delete Selected</button>
+            <button id="delete-obj" class="delete-btn" title="Delete Selected Object"><i class="fa-solid fa-trash"></i></button>
         </aside>
 
         <main class="canvas-container-wrapper">
@@ -58,40 +78,39 @@
         </main>
 
         <aside class="panel-right">
-            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic;">Select an object to edit.</div>
+            
+            <div class="panel-section">
+                <h3>Document Pages</h3>
+                <div class="page-list" id="page-list-container">
+                    </div>
+                <button class="add-page-btn" id="add-page-btn"><i class="fa-solid fa-plus"></i> Add New Page</button>
+            </div>
+
+            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic; text-align: center; margin-top: 20px;">Select an object to edit properties.</div>
             
             <div id="properties-form" style="display: none;">
-                
-                <h3>Appearance</h3>
-                <div class="prop-group">
-                    <label>Fill Color:</label>
-                    <input type="color" id="obj-fill">
-                </div>
-                <div class="prop-group">
-                    <label>Opacity:</label>
-                    <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
-                </div>
-
-                <h3>Border / Stroke</h3>
-                <div class="prop-group">
-                    <label>Stroke Color:</label>
-                    <input type="color" id="obj-stroke-color" value="#000000">
-                </div>
-                <div class="prop-group">
-                    <label>Stroke Width:</label>
-                    <input type="number" id="obj-stroke-width" min="0" max="20" value="0">
+                <div class="panel-section">
+                    <h3>Appearance</h3>
+                    <div class="prop-group">
+                        <label>Fill Color:</label>
+                        <input type="color" id="obj-fill">
+                    </div>
+                    <div class="prop-group">
+                        <label>Opacity:</label>
+                        <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
+                    </div>
                 </div>
 
-                <div id="text-properties" style="display: none;">
+                <div id="text-properties" class="panel-section" style="display: none;">
                     <h3>Typography</h3>
                     <div class="prop-group">
                         <label>Font Family:</label>
                         <select id="obj-font-family">
-                            <option value="sans-serif">Sans-Serif</option>
-                            <option value="serif">Serif</option>
+                            <option value="sans-serif">System Default</option>
+                            <option value="'Manjari', sans-serif">Manjari</option>
+                            <option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option>
+                            <option value="Georgia, serif">Georgia</option>
                             <option value="monospace">Monospace</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Impact">Impact</option>
                         </select>
                     </div>
                     <div class="prop-group">
@@ -101,19 +120,20 @@
                     <div class="prop-group">
                         <label>Alignment:</label>
                         <div class="btn-group">
-                            <button id="align-left">Left</button>
-                            <button id="align-center">Center</button>
-                            <button id="align-right">Right</button>
+                            <button id="align-left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                            <button id="align-center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                            <button id="align-right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
                         </div>
                     </div>
                 </div>
 
-                <h3>Arrange</h3>
-                <div class="prop-group btn-group">
-                    <button id="bring-forward">Bring Forward</button>
-                    <button id="send-backward">Send Backward</button>
+                <div class="panel-section">
+                    <h3>Arrange Layer</h3>
+                    <div class="prop-group btn-group">
+                        <button id="bring-forward" title="Bring Forward"><i class="fa-solid fa-arrow-up"></i></button>
+                        <button id="send-backward" title="Send Backward"><i class="fa-solid fa-arrow-down"></i></button>
+                    </div>
                 </div>
-
             </div>
         </aside>
     </div>
@@ -121,52 +141,127 @@
     <script>
         $(document).ready(function() {
             
+            // --- DOCUMENT STATE MANAGEMENT ---
+            // This is the core of a multi-page tool. We store the JSON representation of each page.
+            let pagesData = [
+                { id: 1, json: null } // Page 1 starts empty
+            ];
+            let currentPageIndex = 0;
+
             const canvas = new fabric.Canvas('layout-canvas', {
                 width: 600, height: 800, backgroundColor: '#ffffff',
-                preserveObjectStacking: true // Keeps selected objects in their Z-index layer
+                preserveObjectStacking: true
             });
 
-            // --- 1. ADDING OBJECTS ---
-            $('#add-rect').click(function() {
-                const rect = new fabric.Rect({
-                    left: 250, top: 350, fill: '#ff5722', width: 100, height: 100,
-                    strokeWidth: 0, stroke: '#000000'
+            // --- PAGE SWITCHING LOGIC ---
+            function renderPageList() {
+                $('#page-list-container').empty();
+                pagesData.forEach((page, index) => {
+                    const isActive = index === currentPageIndex ? 'active' : '';
+                    $('#page-list-container').append(`
+                        <div class="page-item ${isActive}" data-index="${index}">
+                            <span>Page ${page.id}</span>
+                            ${pagesData.length > 1 ? '<i class="fa-solid fa-xmark delete-page" title="Delete Page"></i>' : ''}
+                        </div>
+                    `);
                 });
+                $('#page-indicator').text(`Page ${pagesData[currentPageIndex].id}`);
+            }
+
+            function switchPage(newIndex) {
+                if (newIndex === currentPageIndex) return;
+                
+                // 1. Save current canvas state to the array
+                pagesData[currentPageIndex].json = canvas.toJSON();
+                
+                // 2. Clear canvas
+                canvas.clear();
+                canvas.backgroundColor = '#ffffff';
+                
+                // 3. Update active index
+                currentPageIndex = newIndex;
+                
+                // 4. Load new page state if it exists
+                if (pagesData[currentPageIndex].json) {
+                    canvas.loadFromJSON(pagesData[currentPageIndex].json, canvas.renderAll.bind(canvas));
+                }
+                
+                renderPageList();
+                canvas.discardActiveObject();
+                $('#no-selection').show(); $('#properties-form').hide();
+            }
+
+            // Page Event Listeners
+            $('#add-page-btn').click(function() {
+                // Save current before creating new
+                pagesData[currentPageIndex].json = canvas.toJSON();
+                
+                const newPageId = pagesData.length > 0 ? Math.max(...pagesData.map(p => p.id)) + 1 : 1;
+                pagesData.push({ id: newPageId, json: null });
+                
+                switchPage(pagesData.length - 1);
+            });
+
+            $('#page-list-container').on('click', '.page-item', function(e) {
+                if ($(e.target).hasClass('delete-page')) return; // Ignore if clicking delete icon
+                const index = $(this).data('index');
+                switchPage(index);
+            });
+
+            $('#page-list-container').on('click', '.delete-page', function(e) {
+                e.stopPropagation();
+                const index = $(this).closest('.page-item').data('index');
+                pagesData.splice(index, 1);
+                
+                // If we deleted the page we were currently viewing, shift the index
+                if (currentPageIndex >= pagesData.length) {
+                    currentPageIndex = pagesData.length - 1;
+                }
+                
+                // Force a reload of the current canvas state
+                canvas.clear();
+                canvas.backgroundColor = '#ffffff';
+                if (pagesData[currentPageIndex].json) {
+                    canvas.loadFromJSON(pagesData[currentPageIndex].json, canvas.renderAll.bind(canvas));
+                }
+                renderPageList();
+            });
+
+            // Initialize UI
+            renderPageList();
+
+            // --- ADDING OBJECTS ---
+            $('#add-rect').click(function() {
+                const rect = new fabric.Rect({ left: 200, top: 200, fill: '#6c757d', width: 100, height: 100 });
                 canvas.add(rect); canvas.setActiveObject(rect);
             });
 
             $('#add-circle').click(function() {
-                const circle = new fabric.Circle({
-                    left: 250, top: 350, fill: '#4caf50', radius: 50,
-                    strokeWidth: 0, stroke: '#000000'
-                });
+                const circle = new fabric.Circle({ left: 250, top: 250, fill: '#0d6efd', radius: 50 });
                 canvas.add(circle); canvas.setActiveObject(circle);
             });
 
             $('#add-text').click(function() {
-                const text = new fabric.IText('Type your content here...', {
+                const text = new fabric.IText('Hridayathil ninnu...', {
                     left: 100, top: 100, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24
                 });
                 canvas.add(text); canvas.setActiveObject(text);
             });
 
-            // Image Upload Handler
             $('#image-upload').on('change', function(e) {
                 const file = e.target.files[0];
                 const reader = new FileReader();
                 reader.onload = function(f) {
-                    const data = f.target.result;
-                    fabric.Image.fromURL(data, function(img) {
-                        // Scale down if image is too large
+                    fabric.Image.fromURL(f.target.result, function(img) {
                         if (img.width > canvas.width) img.scaleToWidth(canvas.width - 50);
                         canvas.add(img); canvas.setActiveObject(img);
                     });
                 };
                 reader.readAsDataURL(file);
-                $(this).val(''); // Reset input
+                $(this).val(''); 
             });
 
-            // --- 2. MANAGING SELECTION & UI SYNC ---
+            // --- PROPERTIES UI SYNC ---
             canvas.on('selection:created', updateUI);
             canvas.on('selection:updated', updateUI);
             canvas.on('selection:cleared', function() {
@@ -179,23 +274,25 @@
 
                 $('#no-selection').hide(); $('#properties-form').show();
                 
-                // Sync general properties
                 if (obj.fill && typeof obj.fill === 'string') $('#obj-fill').val(obj.fill);
                 $('#obj-opacity').val(obj.opacity !== undefined ? obj.opacity : 1);
-                $('#obj-stroke-color').val(obj.stroke || '#000000');
-                $('#obj-stroke-width').val(obj.strokeWidth || 0);
 
-                // Show/hide text properties based on object type
                 if (obj.type === 'i-text' || obj.type === 'text') {
                     $('#text-properties').show();
-                    $('#obj-font-family').val(obj.fontFamily);
+                    
+                    // Handle font family matching slightly differently for custom fonts with quotes
+                    let currentFont = obj.fontFamily;
+                    if (currentFont.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif");
+                    else if (currentFont.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif");
+                    else $('#obj-font-family').val(currentFont);
+                    
                     $('#obj-font-size').val(obj.fontSize);
                 } else {
                     $('#text-properties').hide();
                 }
             }
 
-            // --- 3. UPDATING OBJECTS FROM UI ---
+            // --- UPDATING OBJECTS ---
             function updateObj(prop, val) {
                 const obj = canvas.getActiveObject();
                 if (obj) { obj.set(prop, val); canvas.renderAll(); }
@@ -203,34 +300,19 @@
 
             $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); });
             $('#obj-opacity').on('input', function() { updateObj('opacity', parseFloat($(this).val())); });
-            $('#obj-stroke-color').on('input', function() { updateObj('stroke', $(this).val()); });
-            $('#obj-stroke-width').on('input', function() { updateObj('strokeWidth', parseInt($(this).val(), 10)); });
-            
-            // Text Updates
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#align-left').click(function() { updateObj('textAlign', 'left'); });
             $('#align-center').click(function() { updateObj('textAlign', 'center'); });
             $('#align-right').click(function() { updateObj('textAlign', 'right'); });
 
-            // Layering (Z-Index)
-            $('#bring-forward').click(function() {
-                const obj = canvas.getActiveObject();
-                if (obj) { canvas.bringForward(obj); canvas.renderAll(); }
-            });
-            $('#send-backward').click(function() {
-                const obj = canvas.getActiveObject();
-                if (obj) { canvas.sendBackwards(obj); canvas.renderAll(); }
-            });
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } });
+            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); canvas.renderAll(); } });
 
-            // Delete Object
+            // Delete logic
             $('#delete-obj').click(deleteActive);
             $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
-            
-            function deleteActive() {
-                const obj = canvas.getActiveObject();
-                if (obj) { canvas.remove(obj); canvas.discardActiveObject(); }
-            }
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj) { canvas.remove(obj); canvas.discardActiveObject(); } }
         });
     </script>
 </body>
