@@ -162,7 +162,6 @@
         @media (max-width: 768px) {
             .panel-right { position: absolute; right: 0; height: 100%; box-shadow: -5px 0 15px rgba(0,0,0,0.5); transform: translateX(100%); transition: 0.3s; }
             .panel-right.mobile-open { transform: translateX(0); }
-            /* Add a toggle button for mobile panels in reality, but kept hidden here to respect space */
         }
     </style>
 </head>
@@ -184,6 +183,17 @@
                         <li id="menu-place-image"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Place Image...</span> <input type="file" id="place-image-input" accept="image/*"><span class="shortcut">Ctrl+I</span></label></li>
                         <li class="divider-li"></li>
                         <li id="menu-export"><span>Export to PDF/Images...</span> <span class="shortcut">Ctrl+E</span></li>
+                    </ul>
+                </li>
+                <li class="menu-item">Edit
+                    <ul class="dropdown">
+                        <li id="menu-undo" class="disabled-ui"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
+                        <li id="menu-redo" class="disabled-ui"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
+                        <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-font-tool"><span>Malayalam Font Tools...</span></li>
                     </ul>
                 </li>
                 <li class="menu-item">Pages
@@ -408,6 +418,36 @@
 
     <div class="modal-overlay" id="unsaved-modal">
         <div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div>
+    </div>
+    
+    <div class="modal-overlay" id="typography-modal">
+        <div class="modal" style="width: 400px;">
+            <h2>Malayalam Font Converter (Unicode ↔ FML)</h2>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Source Text</label>
+                <textarea id="typo-source-text" rows="4" style="background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
+            </div>
+            <div class="prop-row" style="margin-bottom: 16px;">
+                <div class="prop-col">
+                    <label>Conversion Type</label>
+                    <select id="typo-convert-type">
+                        <option value="uni2fml">Unicode to FML</option>
+                        <option value="fml2uni">FML to Unicode</option>
+                    </select>
+                </div>
+                <div class="prop-col" style="justify-content: flex-end;">
+                    <button class="btn-primary" id="btn-run-conversion" style="width: 100%; justify-content: center;"><i class="fa-solid fa-language"></i> Convert</button>
+                </div>
+            </div>
+            <div class="prop-col">
+                <label>Output</label>
+                <textarea id="typo-output-text" rows="4" readonly style="background: var(--bg-surface); color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#typography-modal').hide()">Close</button>
+                <button class="btn-primary" id="btn-apply-text-canvas">Apply to Selected Text</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -668,7 +708,6 @@
                 drawDocumentEnvironment(); fitWholePage(); markDirty();
             });
 
-
             // --- TEXT BOX & OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); }
@@ -721,10 +760,20 @@
             
             $(window).keydown(function(e) { 
                 if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
+                
+                // Toggle / Tools commands
                 if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
+                
+                // Add Grouping Shortcut
+                if (e.ctrlKey && e.key.toLowerCase() === 'g') {
+                    e.preventDefault();
+                    if (e.shiftKey) { $('#menu-ungroup').click(); } 
+                    else { $('#menu-group').click(); }
+                }
+
                 if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
                 if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
                 if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); } if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } if (e.key === ';') { $('#menu-toggle-guides').click(); }
@@ -845,6 +894,81 @@
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); } });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); } }
+
+            // --- GROUPING & UNGROUPING LOGIC ---
+            $('#menu-group').click(function() {
+                if (!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'activeSelection') {
+                    alert("Please select multiple objects to group.");
+                    return;
+                }
+                activeObj.toGroup();
+                canvas.requestRenderAll();
+                markDirty();
+            });
+
+            $('#menu-ungroup').click(function() {
+                if (!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'group') {
+                    alert("Please select a grouped object to ungroup.");
+                    return;
+                }
+                activeObj.toActiveSelection();
+                canvas.requestRenderAll();
+                markDirty();
+            });
+
+            // --- TYPOGRAPHY CONVERTER LOGIC ---
+            $('#menu-font-tool').click(() => {
+                if(!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') {
+                    $('#typo-source-text').val(activeObj.text);
+                } else {
+                    $('#typo-source-text').val('');
+                }
+                $('#typo-output-text').val('');
+                $('#typography-modal').css('display', 'flex');
+            });
+
+            $('#btn-run-conversion').click(() => {
+                const source = $('#typo-source-text').val();
+                const type = $('#typo-convert-type').val();
+                
+                // Placeholder for actual FML/Unicode mapping logic
+                let result = ""; 
+                if (type === 'uni2fml') {
+                    result = "[FML Converted Output]: " + source; 
+                } else {
+                    result = "[Unicode Converted Output]: " + source; 
+                }
+                $('#typo-output-text').val(result);
+            });
+
+            $('#btn-apply-text-canvas').click(() => {
+                const newText = $('#typo-output-text').val();
+                if (!newText) return;
+                
+                let activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') {
+                    activeObj.set('text', newText);
+                } else {
+                    const text = new fabric.Textbox(newText, { 
+                        left: getScreenCenter().x, 
+                        top: getScreenCenter().y, 
+                        width: 300, 
+                        fontFamily: "'Manjari', sans-serif", 
+                        fill: '#18181b', 
+                        fontSize: 24 
+                    }); 
+                    processNewObject(text);
+                }
+                canvas.requestRenderAll();
+                markDirty();
+                $('#typography-modal').hide();
+            });
             
             renderTabs();
         });
