@@ -3,146 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.1</title>
+    <title>Thooval Workspace v1.2</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* Modern Dark Theme */
             --bg-base: #0e0e11;
             --bg-panel: #18181b;
             --bg-surface: #27272a;
             --bg-surface-hover: #3f3f46;
             --border: #27272a;
+            --border-light: #3f3f46;
             --text-main: #f4f4f5;
             --text-muted: #a1a1aa;
             
-            /* Lemon Mint Green Accent */
             --accent: #cbfb45;
             --accent-hover: #bceb35;
             --accent-transparent: rgba(203, 251, 69, 0.15);
             --accent-text: #1a2005;
             
-            /* DTP Standard Magenta for Margins */
-            --margin-color: #d946ef; 
-            
-            --danger: #ef4444;
-            --danger-transparent: rgba(239, 68, 68, 0.15);
+            /* Print Guides */
+            --guide-margin: #d946ef; /* Magenta */
+            --guide-bleed: #ef4444;  /* Red */
+            --guide-edge: #000000;   /* Black */
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 12px; }
         body { display: flex; flex-direction: column; height: 100vh; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        /* --- TOP BAR --- */
+        /* --- TOP BAR & TABS --- */
         .top-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 44px; z-index: 200; position: relative; padding: 0 16px; }
         .top-left { display: flex; align-items: center; gap: 16px; }
-        .branding { font-weight: 600; font-size: 13px; color: var(--text-main); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+        .branding { font-weight: 600; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .branding i { color: var(--accent); }
-        .version-tag { font-size: 10px; color: var(--text-muted); background: var(--bg-surface); padding: 2px 6px; border-radius: 10px; font-weight: 500; }
+        .version-tag { font-size: 10px; color: var(--text-muted); background: var(--bg-surface); padding: 2px 6px; border-radius: 10px; }
         
         .menu-bar { display: flex; list-style: none; }
-        .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; transition: all 0.2s; }
+        .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; }
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
-        
         .dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; }
         .menu-item:hover .dropdown { display: block; }
-        .dropdown li { list-style: none; padding: 8px 12px; color: var(--text-main); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
         .shortcut { color: var(--text-muted); font-size: 11px; }
         .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
         #open-file-input { display: none; }
 
-        .top-right { display: flex; align-items: center; gap: 12px; }
-        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
-        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-primary:hover { background: var(--accent-hover); }
 
-        /* --- WORKSPACE LAYOUT --- */
-        .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+        /* Project Tabs */
+        .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; }
+        .tab { background: var(--bg-surface); color: var(--text-muted); padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent; border-bottom: none; max-width: 200px; font-size: 11px; }
+        .tab:hover { background: var(--bg-surface-hover); }
+        .tab.active { background: var(--bg-panel); color: var(--text-main); border-color: var(--border); border-top: 2px solid var(--accent); }
+        .tab-close { opacity: 0.5; transition: 0.2s; font-size: 10px; padding: 2px; border-radius: 50%; }
+        .tab-close:hover { opacity: 1; color: var(--danger); background: var(--danger-transparent); }
+        .tab-new { background: transparent; color: var(--text-muted); border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; margin-bottom: 4px; }
+        .tab-new:hover { background: var(--bg-surface); color: var(--text-main); }
+        .dirty-dot { width: 6px; height: 6px; background: var(--text-main); border-radius: 50%; display: none; }
+        .tab.is-dirty .dirty-dot { display: block; }
+
+        /* --- WORKSPACE --- */
+        .workspace-container { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        /* --- LEFT TOOLBAR --- */
         .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; overflow-y: auto; }
-        .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
-        .tool-btn.active { background: var(--accent-transparent); color: var(--accent); }
-        .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); }
+        .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         #image-upload { display: none; }
         .divider { width: 24px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
-        .delete-btn { color: var(--text-muted); margin-top: auto; }
-        .delete-btn:hover { background: var(--danger-transparent); color: var(--danger); }
-
-        /* --- RIGHT PANEL --- */
+        
         .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-main); margin-bottom: 12px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-main); margin-bottom: 12px; display: flex; justify-content: space-between; }
         .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
         
-        label { font-size: 11px; color: var(--text-muted); }
-        input[type="text"], input[type="number"], select { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; outline: none; transition: 0.2s; width: 100%; }
-        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; border-radius: 4px; overflow: hidden; }
+        input[type="text"], input[type="number"], select { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; }
+        input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
-        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .btn-group button:hover { color: var(--text-main); }
-        .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; }
+        .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
 
-        .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; }
+        .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; }
         .doc-btn:hover { background: var(--bg-surface-hover); }
         .doc-btn.master-active { background: var(--accent-transparent); border-color: var(--accent); color: var(--accent); }
         
-        .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 24px; border-radius: 24px; font-weight: 600; font-size: 12px; z-index: 200; pointer-events: none; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
-
-        /* --- CANVAS AREA --- */
-        .canvas-container-wrapper { flex: 1; background: var(--bg-base); position: relative; overflow: hidden; }
+        /* Rulers & Canvas Area */
+        .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); }
+        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; }
+        .editor-body { flex: 1; display: flex; position: relative; }
+        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; }
+        .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
-        .pan-hint { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); border: 1px solid var(--border); padding: 6px 16px; border-radius: 20px; color: var(--text-muted); font-size: 11px; z-index: 50; pointer-events: none; opacity: 0.7; }
-        .pan-hint b { color: var(--text-main); }
         
-        /* --- MODAL --- */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 500; justify-content: center; align-items: center; }
-        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; color: var(--text-main); }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
-        .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: 500; }
-        .btn-cancel:hover { background: var(--bg-surface); }
+        .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; pointer-events: none; }
+        .pan-hint { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); border: 1px solid var(--border); padding: 6px 16px; border-radius: 20px; color: var(--text-muted); font-size: 11px; z-index: 50; pointer-events: none; opacity: 0.7; }
+        
+        /* --- EMPTY STATE --- */
+        #empty-state-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 500; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .welcome-box { text-align: center; max-width: 400px; }
+        .welcome-box i.logo-huge { font-size: 64px; color: var(--accent); margin-bottom: 24px; }
+        .welcome-box h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
+        .welcome-box p { color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .action-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 24px; border-radius: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .action-card:hover { border-color: var(--accent); background: var(--bg-surface); transform: translateY(-2px); }
+        .action-card i { font-size: 24px; color: var(--text-main); }
 
-        .empty-state { padding: 40px 20px; text-align: center; color: var(--text-muted); font-style: normal; }
-        .empty-state i { font-size: 24px; margin-bottom: 12px; opacity: 0.5; }
+        /* --- MODALS --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
+        .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+        .btn-cancel:hover { background: var(--bg-surface); }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.1</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.2</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
                         <li id="menu-new"><span>New Document</span> <span class="shortcut">Ctrl+N</span></li>
-                        <li id="menu-open">
-                            <label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;">
-                                <span>Open...</span> <input type="file" id="open-file-input" accept=".thooval,.json">
-                                <span class="shortcut">Ctrl+O</span>
-                            </label>
-                        </li>
-                        <li id="menu-save"><span>Save Local</span> <span class="shortcut">Ctrl+S</span></li>
+                        <li id="menu-open"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Open...</span> <input type="file" id="open-file-input" accept=".thooval,.json"><span class="shortcut">Ctrl+O</span></label></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-save"><span>Save Document</span> <span class="shortcut">Ctrl+S</span></li>
                     </ul>
                 </li>
                 <li class="menu-item">View
@@ -150,79 +155,42 @@
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
-                        <li id="menu-fit-width"><span>Fit Width</span> <span class="shortcut">Ctrl+0</span></li>
                         <li class="divider-li"></li>
-                        <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">W</span></li>
-                        <li id="menu-toggle-grid"><span>Toggle Snap Grid</span> <span class="shortcut">G</span></li>
+                        <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
+                        <li id="menu-toggle-margins"><span>Toggle Margins/Bleed</span> <span class="shortcut">W</span></li>
                     </ul>
                 </li>
             </ul>
         </div>
-        
         <div class="top-right">
-            <span style="color: var(--text-muted); font-size: 11px; margin-right: 8px;">Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span></span>
             <button class="btn-primary" id="export-pdf-btn"><i class="fa-solid fa-file-export"></i> Export PDF</button>
         </div>
     </header>
 
-    <div class="modal-overlay" id="new-doc-modal">
-        <div class="modal">
-            <h2>New Layout</h2>
-            
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>Preset</label>
-                <select id="doc-preset">
-                    <option value="A4">A4 (210 x 297 mm)</option>
-                    <option value="A5">A5 (148 x 210 mm)</option>
-                    <option value="Letter">US Letter (8.5 x 11 in)</option>
-                    <option value="Custom">Custom Size</option>
-                </select>
-            </div>
-            
-            <div class="prop-row">
-                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div>
-                <div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
-                <div class="prop-col" style="flex: 0.5;"><label>Unit</label>
-                    <select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select>
+    <div class="tabs-bar" id="tabs-container">
+        <button class="tab-new" id="btn-new-tab" title="New Document"><i class="fa-solid fa-plus"></i></button>
+    </div>
+
+    <div id="empty-state-view">
+        <div class="welcome-box">
+            <i class="fa-solid fa-feather-pointed logo-huge"></i>
+            <h1>Welcome to Thooval</h1>
+            <p>The modern, browser-based publishing and layout engine.</p>
+            <div class="action-grid">
+                <div class="action-card" id="welcome-new-btn">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <span>New Document</span>
                 </div>
-            </div>
-
-            <div class="prop-row" style="margin-top: 16px;">
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 12px; cursor: pointer;">
-                    <input type="checkbox" id="doc-facing" checked> Facing Pages (Spreads)
+                <label class="action-card" style="margin: 0; cursor: pointer;">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <span>Open File...</span>
+                    <input type="file" id="welcome-open-input" accept=".thooval,.json" style="display:none;">
                 </label>
-            </div>
-
-            <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
-
-            <label style="margin-bottom: 8px; display: block;">Margins (Inside / Outside for Spreads)</label>
-            <div class="prop-row" style="position: relative;">
-                <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div>
-                <div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div>
-                <div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div>
-            </div>
-            <div class="prop-row">
-                <div class="prop-col"><label>Left/Inside</label><input type="number" class="margin-input" id="mar-l" value="15"></div>
-                <div class="prop-col"><label>Right/Outside</label><input type="number" class="margin-input" id="mar-r" value="15"></div>
-            </div>
-
-            <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
-
-            <div class="prop-row" style="justify-content: space-between; align-items: center;">
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer;">
-                    <input type="checkbox" id="doc-preview" checked> Live Preview
-                </label>
-                <div class="modal-footer" style="margin-top: 0;">
-                    <button class="btn-cancel" id="cancel-doc-btn">Cancel</button>
-                    <button class="btn-primary" id="create-doc-btn">Create</button>
-                </div>
             </div>
         </div>
     </div>
 
-    <div class="workspace">
-        <div class="master-banner" id="master-banner"><i class="fa-solid fa-crown"></i> Editing Master Template</div>
-        
+    <div class="workspace-container" id="main-workspace" style="display: none;">
         <aside class="toolbar-left">
             <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
             <button class="tool-btn" id="tool-pan" title="Pan (H)"><i class="fa-regular fa-hand"></i></button>
@@ -233,24 +201,33 @@
             <button class="tool-btn" id="add-text" title="Text (T)"><i class="fa-solid fa-t"></i></button>
             <label class="tool-btn" title="Place Image (I)"><i class="fa-regular fa-image"><input type="file" id="image-upload" accept="image/*"></i></label>
             <div class="divider"></div>
-            <button class="tool-btn delete-btn" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="tool-btn" style="margin-top: auto; color: var(--danger);" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
 
-        <main class="canvas-container-wrapper" id="workspace-wrapper">
-            <canvas id="layout-canvas"></canvas>
-            <div class="pan-hint">Hold <b>Space</b> to pan • <b>W</b> to preview • <b>Zoom Tool:</b> L-Click (+), R-Click (-)</div>
-        </main>
+        <div class="editor-core">
+            <div class="master-banner" id="master-banner"><i class="fa-solid fa-crown"></i> Editing Master Template</div>
+            <canvas class="ruler-h" id="ruler-h"></canvas>
+            
+            <div class="editor-body">
+                <canvas class="ruler-v" id="ruler-v"></canvas>
+                <main class="canvas-container-wrapper" id="workspace-wrapper">
+                    <canvas id="layout-canvas"></canvas>
+                    <div class="pan-hint">Hold <b>Space</b> to pan • <b>W</b> to preview • <b>Ctrl+R</b> for rulers</div>
+                </main>
+            </div>
+        </div>
 
         <aside class="panel-right">
             <div class="panel-section">
                 <h3>Pages</h3>
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Total: <span id="page-count-display">1</span></div>
                 <div class="prop-row"><button class="doc-btn" id="add-page-btn"><i class="fa-solid fa-plus"></i> Add Page</button></div>
                 <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Master Template</button>
             </div>
 
-            <div id="no-selection" class="empty-state">
-                <i class="fa-solid fa-arrow-pointer"></i>
-                <div>Select an object to inspect properties.</div>
+            <div id="no-selection" class="empty-state" style="padding: 20px;">
+                <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
+                <div style="font-size: 11px;">Select an object.</div>
             </div>
             
             <div id="properties-form" style="display: none;">
@@ -261,12 +238,7 @@
                         <input type="color" id="obj-fill">
                         <input type="text" id="obj-fill-hex" style="width: 80px;" readonly>
                     </div>
-                    <div class="prop-col" style="margin-top: 12px;">
-                        <label>Opacity</label>
-                        <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
-                    </div>
                 </div>
-
                 <div id="text-properties" class="panel-section" style="display: none;">
                     <h3>Typography</h3>
                     <div class="prop-col" style="margin-bottom: 12px;">
@@ -274,7 +246,6 @@
                             <option value="'Inter', sans-serif">Inter</option>
                             <option value="'Manjari', sans-serif">Manjari</option>
                             <option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option>
-                            <option value="Georgia, serif">Georgia</option>
                         </select>
                     </div>
                     <div class="prop-row">
@@ -282,399 +253,511 @@
                         <div class="prop-col">
                             <label>Align</label>
                             <div class="btn-group">
-                                <button id="align-left" title="Left"><i class="fa-solid fa-align-left"></i></button>
-                                <button id="align-center" title="Center"><i class="fa-solid fa-align-center"></i></button>
-                                <button id="align-right" title="Right"><i class="fa-solid fa-align-right"></i></button>
+                                <button id="align-left"><i class="fa-solid fa-align-left"></i></button>
+                                <button id="align-center"><i class="fa-solid fa-align-center"></i></button>
+                                <button id="align-right"><i class="fa-solid fa-align-right"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="panel-section">
-                    <h3>Layer</h3>
+                    <h3>Arrange</h3>
                     <div class="btn-group">
-                        <button id="bring-forward" title="Bring Forward"><i class="fa-solid fa-layer-group"></i> Up</button>
-                        <button id="send-backward" title="Send Backward"><i class="fa-solid fa-layer-group" style="transform: rotate(180deg);"></i> Down</button>
+                        <button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button>
+                        <button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button>
                     </div>
                 </div>
             </div>
         </aside>
     </div>
 
+    <div class="modal-overlay" id="new-doc-modal">
+        <div class="modal">
+            <h2>New Document Setup</h2>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>File Name</label>
+                <input type="text" id="doc-name" value="Untitled Project" placeholder="Enter project name...">
+            </div>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Preset</label>
+                <select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select>
+            </div>
+            <div class="prop-row">
+                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div>
+                <div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
+                <div class="prop-col" style="flex: 0.5;"><label>Unit</label><select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select></div>
+            </div>
+            <div class="prop-row" style="margin-top: 16px;">
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages</label>
+            </div>
+            <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
+            
+            <div class="prop-row">
+                <div class="prop-col" style="flex: 2;">
+                    <label style="margin-bottom: 8px; display: block;">Margins (Inside/Outside)</label>
+                    <div class="prop-row" style="position: relative;">
+                        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div>
+                        <div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div>
+                        <div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div>
+                        <div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div>
+                    </div>
+                </div>
+                <div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;">
+                    <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label>
+                    <div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" id="cancel-doc-btn">Cancel</button>
+                <button class="btn-primary" id="create-doc-btn">Create Project</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="unsaved-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Unsaved Changes</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p>
+            <div class="modal-footer" style="margin-top: 0;">
+                <button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button>
+                <button class="btn-cancel" id="btn-cancel-close">Cancel</button>
+                <button class="btn-primary" id="btn-save-close">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         $(document).ready(function() {
             
-            // --- DOCUMENT CONFIG ---
-            let docConfig = { widthPx: 794, heightPx: 1123, marginsPx: { t: 56, b: 56, l: 56, r: 56 }, facingPages: true };
-            let originalConfig = JSON.parse(JSON.stringify(docConfig)); // For modal cancellation
-            let originalPages = 1;
+            // --- CORE MULTI-PROJECT STATE ---
+            let projects = {};
+            let activeId = null;
+            let tabIdToClose = null; // Temp holding for unsaved modal
             
-            const DPI = 96;
-            function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; }
-
-            const PAGE_GAP = 60; const MARGIN_LEFT = 120; const MARGIN_TOP = 60;
-            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isMasterSource', 'isMasterClone', 'isRegular'];
+            const DPI = 96; function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; }
+            const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
+            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular'];
             
-            let totalPages = 1; let isMasterMode = false; let showMargins = true; let gridEnabled = false; const gridSize = 10;
-            let activeTool = 'select'; // 'select', 'pan', 'zoom'
+            // Global App State
+            let showGuides = true; let showRulers = false; let activeTool = 'select';
 
+            // Init Canvas Engine
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
-            $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); });
+            
+            $(window).resize(function() { 
+                canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); 
+                if(showRulers) drawRulers();
+            });
 
-            // --- SPATIAL MATH (FACING PAGES LOGIC) ---
-            function getPagePosition(index) {
-                if (!docConfig.facingPages) {
-                    return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (docConfig.heightPx + PAGE_GAP)) };
+
+            // --- TAB MANAGEMENT ---
+            function generateId() { return Math.random().toString(36).substr(2, 9); }
+            
+            function renderTabs() {
+                $('.tab').remove(); // Clear existing
+                let tabHtml = '';
+                for (const id in projects) {
+                    const p = projects[id];
+                    const activeClass = (id === activeId) ? 'active' : '';
+                    const dirtyClass = p.isDirty ? 'is-dirty' : '';
+                    tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}">
+                        <div class="dirty-dot"></div>
+                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span>
+                        <i class="fa-solid fa-xmark tab-close"></i>
+                    </div>`;
+                }
+                $('#btn-new-tab').before(tabHtml);
+                
+                if (Object.keys(projects).length === 0) {
+                    $('#main-workspace').hide(); $('#empty-state-view').css('display', 'flex');
                 } else {
-                    if (index === 0) {
-                        return { x: MARGIN_LEFT + docConfig.widthPx, y: MARGIN_TOP }; // Cover page on right
-                    } else {
-                        const spreadIndex = Math.floor((index - 1) / 2);
-                        const isLeft = (index - 1) % 2 === 0;
-                        const row = spreadIndex + 1;
-                        return { x: MARGIN_LEFT + (isLeft ? 0 : docConfig.widthPx), y: MARGIN_TOP + (row * (docConfig.heightPx + PAGE_GAP)) };
-                    }
+                    $('#main-workspace').css('display', 'flex'); $('#empty-state-view').hide();
                 }
             }
 
-            // --- LAYERING & RENDER ---
+            function switchProject(id) {
+                if (activeId === id) return;
+                // Save current state before switching
+                if (activeId && projects[activeId]) {
+                    projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS);
+                    projects[activeId].vpt = [...canvas.viewportTransform];
+                }
+                
+                activeId = id;
+                const p = projects[id];
+                
+                // Load new state
+                canvas.clear();
+                if (p.canvasData) {
+                    canvas.loadFromJSON(p.canvasData, function() {
+                        canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]);
+                        drawDocumentEnvironment(); // Rebuilds masks/guides correctly
+                        if(showRulers) drawRulers();
+                    });
+                } else {
+                    canvas.viewportTransform = [1,0,0,1,0,0];
+                    drawDocumentEnvironment();
+                }
+                
+                $('#page-count-display').text(p.totalPages);
+                if(p.isMasterMode) { $('#toggle-master-btn').addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master'); $('#master-banner').show(); }
+                else { $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template'); $('#master-banner').hide(); }
+                
+                renderTabs(); setTool('select');
+            }
+
+            function closeProject(id) {
+                if (projects[id].isDirty) {
+                    tabIdToClose = id;
+                    $('#unsaved-filename').text(projects[id].name);
+                    $('#unsaved-modal').css('display', 'flex');
+                    return;
+                }
+                forceCloseProject(id);
+            }
+
+            function forceCloseProject(id) {
+                delete projects[id];
+                if (activeId === id) {
+                    const remainingIds = Object.keys(projects);
+                    if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]);
+                    else { activeId = null; canvas.clear(); renderTabs(); } // Show empty state
+                } else { renderTabs(); }
+            }
+
+            // Tab Event Listeners
+            $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
+            $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); closeProject($(this).parent().data('id')); });
+            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => $('#new-doc-modal').css('display', 'flex'));
+
+            // Unsaved Modal Actions
+            $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
+            $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
+            $('#btn-save-close').click(() => {
+                $('#unsaved-modal').hide();
+                // Trigger download sequence
+                const p = projects[tabIdToClose];
+                if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS);
+                const exportData = { name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData };
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(exportData)], {type: "application/json"})); a.download = `${p.name}.thooval`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                forceCloseProject(tabIdToClose); tabIdToClose = null;
+            });
+
+
+            // --- DIRTY FLAG TRACKING (Unsaved changes) ---
+            function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
+            canvas.on('object:modified', markDirty); canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed) markDirty(); });
+            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed) markDirty(); });
+
+
+            // --- CREATE NEW PROJECT ---
+            let marginsLinked = true;
+            $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
+            $('.margin-input').on('input', function() { if (marginsLinked) $('.margin-input').val($(this).val()); });
+
+            $('#doc-preset').change(function() {
+                const p = $(this).val(); const u = $('#doc-unit').val();
+                if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); }
+                if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); }
+            });
+
+            $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
+
+            $('#create-doc-btn').click(function() {
+                const u = $('#doc-unit').val();
+                const newId = generateId();
+                
+                projects[newId] = {
+                    name: $('#doc-name').val() || 'Untitled Project',
+                    isDirty: false, totalPages: 1, isMasterMode: false,
+                    config: {
+                        widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u),
+                        marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) },
+                        bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked')
+                    },
+                    canvasData: null, vpt: [1,0,0,1,0,0]
+                };
+                
+                $('#new-doc-modal').hide(); switchProject(newId); fitWholePage();
+            });
+
+
+            // --- SPATIAL MATH & CLIPPING PATH MASK ---
+            function getPagePosition(index, pConf) {
+                if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) };
+                if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
+                const isLeft = (index - 1) % 2 === 0; const row = Math.floor((index - 1) / 2) + 1;
+                return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) };
+            }
+
             function sortLayers() {
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
-                    const getZ = (obj) => { if (obj.isPaper) return -2; if (obj.isMargin) return -1; if (obj.isMasterClone) return 0; return 1; };
+                    const getZ = (o) => {
+                        if (o.isPaper) return -4;
+                        if (o.isMasterClone) return -3;
+                        if (o.isRegular || o.isMasterSource) return -2;
+                        if (o.isMask) return -1; // MASK SITS ABOVE ARTWORK...
+                        if (o.isBleed) return 0; // BUT BELOW GUIDES
+                        if (o.isMargin) return 1;
+                        return -2;
+                    };
                     return getZ(a) - getZ(b);
                 });
                 objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
             }
 
             function drawDocumentEnvironment() {
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin) canvas.remove(obj); });
-                const pagesToDraw = isMasterMode ? 1 : totalPages;
+                if (!activeId) return;
+                const p = projects[activeId]; const conf = p.config;
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask) canvas.remove(obj); });
+                
+                const pagesToDraw = p.isMasterMode ? 1 : p.totalPages;
+                
+                // 1. Create Inverse Pasteboard Mask (Hides artwork outside pages)
+                // Draw a giant outer rectangle
+                let maskPathStr = `M -100000 -100000 L 100000 -100000 L 100000 100000 L -100000 100000 Z `;
                 
                 for (let i = 0; i < pagesToDraw; i++) {
-                    const pos = getPagePosition(i);
+                    const pos = getPagePosition(i, conf);
+                    // Subtract holes for each page area (including bleed area to let bleeds show!)
+                    const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx;
+                    const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
+                    // Draw hole backwards (Counter-Clockwise)
+                    maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `;
                     
-                    const paper = new fabric.Rect({ left: pos.x, top: pos.y, width: docConfig.widthPx, height: docConfig.heightPx, fill: '#ffffff', selectable: false, evented: false, isPaper: true, shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.3)', blur: 20, offsetX: 0, offsetY: 10 }) });
+                    // Draw Physical Paper (White fill, Black Edge)
+                    const paper = new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1, selectable: false, evented: false, isPaper: true, shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.5)', blur: 20, offsetX: 0, offsetY: 10 }) });
                     canvas.add(paper);
                     
-                    if (showMargins) {
-                        const m = docConfig.marginsPx;
-                        // For facing pages, swap left/right margins on the left-hand page (Inside/Outside logic)
-                        let isLeftPage = docConfig.facingPages && i > 0 && (i - 1) % 2 === 0;
-                        let actualLeftMargin = isLeftPage ? m.r : m.l; // Assuming m.l is 'Inside' and m.r is 'Outside' in UI
-                        let actualRightMargin = isLeftPage ? m.l : m.r;
-
-                        const marginGuide = new fabric.Rect({ left: pos.x + actualLeftMargin, top: pos.y + m.t, width: docConfig.widthPx - actualLeftMargin - actualRightMargin, height: docConfig.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--margin-color)', strokeWidth: 1, selectable: false, evented: false, isMargin: true, opacity: 0.8 });
+                    if (showGuides) {
+                        // Bleed Line (Red)
+                        if (conf.bleedPx > 0) {
+                            const bleedGuide = new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1, strokeDashArray: [4, 4], selectable: false, evented: false, isBleed: true, opacity: 0.8 });
+                            canvas.add(bleedGuide);
+                        }
+                        
+                        // Margin Guide (Magenta)
+                        const m = conf.marginsPx;
+                        let isLeftPage = conf.facingPages && i > 0 && (i - 1) % 2 === 0;
+                        let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
+                        const marginGuide = new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--guide-margin)', strokeWidth: 1, selectable: false, evented: false, isMargin: true, opacity: 0.8 });
                         canvas.add(marginGuide);
                     }
                 }
+                
+                // Add the mask object to the canvas
+                const pasteboardMask = new fabric.Path(maskPathStr, { fill: 'var(--bg-base)', selectable: false, evented: false, isMask: true, opacity: 1 });
+                canvas.add(pasteboardMask);
+                
                 sortLayers(); canvas.requestRenderAll();
+            }
+
+
+            // --- DYNAMIC RULERS ---
+            function drawRulers() {
+                if (!showRulers) { $('#ruler-h, #ruler-v').hide(); return; }
+                $('#ruler-h, #ruler-v').show();
                 
-                // Update indicator based on camera Y
-                const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + docConfig.heightPx/2) / (docConfig.heightPx + PAGE_GAP)));
-                let visiblePage = docConfig.facingPages ? (estimatedRow === 0 ? 1 : estimatedRow * 2) : estimatedRow + 1;
-                $('#page-indicator').text(Math.min(totalPages, visiblePage));
-            }
-
-            drawDocumentEnvironment();
-
-            // --- MODAL & LIVE PREVIEW ---
-            let marginsLinked = true;
-            $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); updatePreview(); });
-            
-            function updatePreview() {
-                if (!$('#doc-preview').is(':checked')) return;
-                const u = $('#doc-unit').val();
-                docConfig.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); docConfig.heightPx = toPx(parseFloat($('#doc-h').val()||0), u);
-                docConfig.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) };
-                docConfig.facingPages = $('#doc-facing').is(':checked');
-                drawDocumentEnvironment();
-            }
-
-            $('.margin-input, #doc-w, #doc-h, #doc-facing').on('input change', function() { 
-                if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); 
-                if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); 
-                updatePreview(); 
-            });
-
-            $('#doc-preset').change(function() {
-                const p = $(this).val(); const u = $('#doc-unit').val(); let w, h;
-                if (p === 'A4') { w = 210; h = 297; $('#doc-unit').val('mm'); }
-                if (p === 'A5') { w = 148; h = 210; $('#doc-unit').val('mm'); }
-                if (p === 'Letter') { w = 8.5; h = 11; $('#doc-unit').val('in'); }
-                if (w && h) { $('#doc-w').val(w); $('#doc-h').val(h); if (marginsLinked) $('.margin-input').val( $('#doc-unit').val() === 'in' ? 0.5 : 15 ); }
-                updatePreview();
-            });
-
-            $('#doc-preview').change(function() { if ($(this).is(':checked')) updatePreview(); else { docConfig = JSON.parse(JSON.stringify(originalConfig)); drawDocumentEnvironment(); } });
-
-            $('#menu-new').click(function() { 
-                originalConfig = JSON.parse(JSON.stringify(docConfig)); originalPages = totalPages;
-                $('#new-doc-modal').css('display', 'flex'); 
-            });
-            $('#cancel-doc-btn').click(function() { 
-                docConfig = JSON.parse(JSON.stringify(originalConfig)); totalPages = originalPages;
-                drawDocumentEnvironment(); $('#new-doc-modal').hide(); 
-            });
-
-            $('#create-doc-btn').click(function() {
-                updatePreview(); // Ensure final values
-                canvas.getObjects().forEach(obj => { if(!obj.isPaper && !obj.isMargin) canvas.remove(obj); }); // Wipe content
-                totalPages = 1; $('#page-count-display').text(totalPages);
-                isMasterMode = false; $('#master-banner').hide(); $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template');
-                canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0;
-                drawDocumentEnvironment(); $('#new-doc-modal').hide();
-            });
-
-            $('#menu-toggle-margins').click(function(){ showMargins = !showMargins; drawDocumentEnvironment(); });
-            $('#menu-toggle-grid').click(function(){ gridEnabled = !gridEnabled; });
-
-
-            // --- TOOLS & NAVIGATION (PAN/ZOOM) ---
-            function setTool(tool) {
-                activeTool = tool;
-                $('.tool-btn').removeClass('active-state');
-                if(tool==='select') $('#tool-select').addClass('active-state');
-                if(tool==='pan') $('#tool-pan').addClass('active-state');
-                if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-
-                if (tool !== 'select') {
-                    canvas.selection = false;
-                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin) o.set('selectable', false); });
-                    canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in';
-                } else {
-                    canvas.selection = true;
-                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin) o.set('selectable', true); });
-                    canvas.defaultCursor = 'default';
-                }
-                canvas.discardActiveObject(); canvas.requestRenderAll();
-            }
-
-            $('#tool-select').click(() => setTool('select'));
-            $('#tool-pan').click(() => setTool('pan'));
-            $('#tool-zoom').click(() => setTool('zoom'));
-
-            // Zoom Functions
-            function performZoom(point, direction) {
-                let currentZoom = canvas.getZoom();
-                let newZoom = direction === 'in' ? currentZoom * 1.25 : currentZoom / 1.25;
-                if(newZoom > 20) newZoom = 20; if(newZoom < 0.05) newZoom = 0.05;
-                canvas.zoomToPoint(point, newZoom);
-            }
-
-            function fitPageWidth() {
-                const contentWidth = docConfig.facingPages ? docConfig.widthPx * 2 : docConfig.widthPx;
-                const scale = (wrapper.width() - 80) / contentWidth;
-                canvas.setZoom(scale);
-                const pos = getPagePosition(0);
-                canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (docConfig.facingPages ? 0 : docConfig.widthPx/2)) * scale;
-                canvas.viewportTransform[5] = 40; // top padding
-                canvas.requestRenderAll();
-            }
-            
-            function fitWholePage() {
-                const contentWidth = docConfig.facingPages ? docConfig.widthPx * 2 : docConfig.widthPx;
-                const scaleX = (wrapper.width() - 80) / contentWidth;
-                const scaleY = (wrapper.height() - 80) / docConfig.heightPx;
-                const scale = Math.min(scaleX, scaleY);
-                canvas.setZoom(scale);
-                const pos = getPagePosition(0);
-                canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (docConfig.facingPages ? 0 : docConfig.widthPx/2)) * scale;
-                canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + docConfig.heightPx/2) * scale;
-                canvas.requestRenderAll();
-            }
-
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in'));
-            $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out'));
-            $('#menu-fit-width').click(fitPageWidth);
-            $('#menu-fit-page').click(fitWholePage);
-
-            // Prevent right click context menu if zoom tool is active
-            $('#workspace-wrapper').on('contextmenu', function(e) { if (activeTool === 'zoom') e.preventDefault(); });
-
-            let isDragging = false; let lastPosX, lastPosY;
-            canvas.on('mouse:down', function(opt) {
-                const evt = opt.e;
+                const cV = document.getElementById('ruler-v'); const cH = document.getElementById('ruler-h');
+                cV.width = 20; cV.height = wrapper.height(); cH.width = wrapper.width(); cH.height = 20;
+                const ctxV = cV.getContext('2d'); const ctxH = cH.getContext('2d');
+                ctxV.clearRect(0,0,cV.width,cV.height); ctxH.clearRect(0,0,cH.width,cH.height);
                 
-                if (activeTool === 'zoom') {
-                    const direction = (evt.button === 2) ? 'out' : 'in'; // Right click to zoom out
-                    performZoom({x: evt.offsetX, y: evt.offsetY}, direction);
-                    return;
-                }
+                const zoom = canvas.getZoom(); const vpt = canvas.viewportTransform;
+                ctxV.fillStyle = '#a1a1aa'; ctxH.fillStyle = '#a1a1aa';
+                ctxV.font = '9px Inter'; ctxH.font = '9px Inter';
+                
+                // Draw ticks every 100 units (scaled)
+                const step = 100 * zoom; 
+                const offsetX = vpt[4] % step; const offsetY = vpt[5] % step;
+                const startValX = -Math.floor(vpt[4] / step) * 100;
+                const startValY = -Math.floor(vpt[5] / step) * 100;
 
-                if (evt.code === 'Space' || evt.button === 1 || activeTool === 'pan') {
-                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing';
-                    lastPosX = evt.clientX; lastPosY = evt.clientY;
+                for(let i=0; i<cH.width; i+=step) {
+                    ctxH.fillRect(i + offsetX, 15, 1, 5); // Small tick
+                    ctxH.fillText(startValX + Math.round(i/zoom), i + offsetX + 2, 12);
                 }
-            });
-            canvas.on('mouse:move', function(opt) {
-                if (isDragging) {
-                    canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY;
-                    canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY;
-                    const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + docConfig.heightPx/2) / (docConfig.heightPx + PAGE_GAP)));
-                    $('#page-indicator').text(Math.min(totalPages, docConfig.facingPages ? (estimatedRow === 0 ? 1 : estimatedRow * 2) : estimatedRow + 1));
+                for(let i=0; i<cV.height; i+=step) {
+                    ctxV.fillRect(15, i + offsetY, 5, 1);
+                    ctxV.save(); ctxV.translate(12, i + offsetY + 2); ctxV.rotate(-Math.PI/2); ctxV.fillText(startValY + Math.round(i/zoom), 0, 0); ctxV.restore();
                 }
-            });
-            canvas.on('mouse:up', function() { 
-                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
-                if (activeTool === 'select') { canvas.selection = true; canvas.defaultCursor = 'default'; }
-                else if (activeTool === 'pan') { canvas.defaultCursor = 'grab'; }
-            });
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey) {
-                    // Zoom with Ctrl+Scroll
-                    const direction = opt.e.deltaY > 0 ? 'out' : 'in';
-                    performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, direction);
-                } else {
-                    canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; 
-                    canvas.requestRenderAll(); 
-                    const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + docConfig.heightPx/2) / (docConfig.heightPx + PAGE_GAP)));
-                    $('#page-indicator').text(Math.min(totalPages, docConfig.facingPages ? (estimatedRow === 0 ? 1 : estimatedRow * 2) : estimatedRow + 1));
-                }
-                opt.e.preventDefault(); opt.e.stopPropagation(); 
-            });
-
-            // --- HOTKEYS ---
-            $(window).keydown(function(e) { 
-                if (canvas.getActiveObject()?.isEditing || $('#new-doc-modal').is(':visible')) return;
-                if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
-                if (e.key.toLowerCase() === 'v') setTool('select');
-                if (e.key.toLowerCase() === 'h') setTool('pan');
-                if (e.key.toLowerCase() === 'z') setTool('zoom');
-                if (e.key.toLowerCase() === 'w') { showMargins = !showMargins; drawDocumentEnvironment(); e.preventDefault(); }
-                if (e.key.toLowerCase() === 'g') { gridEnabled = !gridEnabled; e.preventDefault(); }
-                if (e.key.toLowerCase() === 'r') $('#add-rect').click();
-                if (e.key.toLowerCase() === 'o') $('#add-circle').click();
-                if (e.key.toLowerCase() === 't') $('#add-text').click();
-            });
-            $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
+            }
+            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); });
+            canvas.on('after:render', drawRulers); // Sync rulers when panning
 
 
-            // --- MASTER PAGES & SPREAD LOGIC ---
+            // --- MASTER PAGES & CONTENT CREATION ---
             $('#toggle-master-btn').click(function() {
-                isMasterMode = !isMasterMode; canvas.discardActiveObject(); setTool('select');
-                if (isMasterMode) {
-                    $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master');
-                    $('#master-banner').fadeIn(); $('#add-page-btn').css('opacity', 0.5);
-                    const pos = getPagePosition(0);
-                    canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + docConfig.widthPx/2); canvas.viewportTransform[5] = 40; 
+                if(!activeId) return; const p = projects[activeId];
+                p.isMasterMode = !p.isMasterMode; canvas.discardActiveObject(); setTool('select');
+                if (p.isMasterMode) {
+                    $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master'); $('#master-banner').fadeIn();
+                    const pos = getPagePosition(0, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = 40; 
                     canvas.getObjects().forEach(obj => {
-                        if (obj.isPaper || obj.isMargin) return;
+                        if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed) return;
                         if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); 
                         if (obj.isMasterClone) canvas.remove(obj); 
                         if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true }); 
                     });
                 } else {
-                    $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template');
-                    $('#master-banner').fadeOut(); $('#add-page-btn').css('opacity', 1);
+                    $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template'); $('#master-banner').fadeOut();
                     canvas.getObjects().forEach(obj => {
                         if (obj.isRegular) obj.set({ opacity: 1, selectable: true });
                         if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false });
                     });
-                    
                     const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    let clonesCreated = 0;
-                    if (sources.length === 0) drawDocumentEnvironment();
-                    
-                    const masterPos = getPagePosition(0);
-                    for (let p = 0; p < totalPages; p++) {
-                        const targetPos = getPagePosition(p);
+                    const masterPos = getPagePosition(0, p.config);
+                    for (let pg = 0; pg < p.totalPages; pg++) {
+                        const targetPos = getPagePosition(pg, p.config);
                         sources.forEach(sourceObj => {
                             sourceObj.clone(function(clone) {
-                                const dx = targetPos.x - masterPos.x; const dy = targetPos.y - masterPos.y;
-                                clone.set({ left: clone.left + dx, top: clone.top + dy, selectable: false, evented: false, isMasterClone: true, opacity: 1 });
-                                canvas.add(clone); clonesCreated++;
-                                if(clonesCreated === sources.length * totalPages) drawDocumentEnvironment();
+                                clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 });
+                                canvas.add(clone);
                             }, CUSTOM_PROPS);
                         });
                     }
                 }
+                drawDocumentEnvironment(); markDirty();
             });
 
             $('#add-page-btn').click(function() {
-                if(isMasterMode) return;
-                totalPages++; $('#page-count-display').text(totalPages);
+                if(!activeId || projects[activeId].isMasterMode) return;
+                const p = projects[activeId]; p.totalPages++; $('#page-count-display').text(p.totalPages);
                 const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                const targetPos = getPagePosition(totalPages - 1);
-                const masterPos = getPagePosition(0);
-                
+                const targetPos = getPagePosition(p.totalPages - 1, p.config); const masterPos = getPagePosition(0, p.config);
                 sources.forEach(sourceObj => {
                     sourceObj.clone(function(clone) {
-                        const dx = targetPos.x - masterPos.x; const dy = targetPos.y - masterPos.y;
-                        clone.set({ left: clone.left + dx, top: clone.top + dy, selectable: false, evented: false, isMasterClone: true, opacity: 1 });
-                        canvas.add(clone);
+                        clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(clone);
                     }, CUSTOM_PROPS);
                 });
-                drawDocumentEnvironment();
+                drawDocumentEnvironment(); markDirty();
             });
 
-            // --- CREATION & EXPORT ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            function highlightTool(id) { $('.tool-btn').not('.active-state').removeClass('active'); $(id).addClass('active'); setTimeout(()=>$(id).removeClass('active'), 200); }
             function processNewObject(obj) {
-                if(activeTool !== 'select') setTool('select');
-                if (isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); }
-                canvas.add(obj); canvas.setActiveObject(obj); sortLayers();
+                if(!activeId) return; if(activeTool !== 'select') setTool('select');
+                if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); }
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty();
             }
 
-            $('#add-rect').click(function() { highlightTool('#add-rect'); const c = getScreenCenter(); processNewObject(new fabric.Rect({ left: c.x, top: c.y, fill: '#3f3f46', width: 100, height: 100 })); });
-            $('#add-circle').click(function() { highlightTool('#add-circle'); const c = getScreenCenter(); processNewObject(new fabric.Circle({ left: c.x, top: c.y, fill: '#cbfb45', radius: 50 })); });
-            $('#add-text').click(function() { highlightTool('#add-text'); const c = getScreenCenter(); processNewObject(new fabric.IText('Double click to edit', { left: c.x, top: c.y, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, fontWeight: 500 })); });
+            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
+            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
+            $('#add-text').click(() => processNewObject(new fabric.IText('Double click to edit', { left: getScreenCenter().x, top: getScreenCenter().y, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, fontWeight: 500 })));
             
-            $('#export-pdf-btn').click(async function() {
-                if (isMasterMode) { alert("Close Master Template before exporting."); return; }
-                const origHtml = $(this).html(); $(this).html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...').prop('disabled', true);
-                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                
-                const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [docConfig.widthPx, docConfig.heightPx] });
-                const oldShowMargins = showMargins; showMargins = false; drawDocumentEnvironment();
+            // --- TOOLS, PAN & ZOOM ---
+            function setTool(tool) {
+                activeTool = tool; $('.tool-btn').removeClass('active-state');
+                if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
+                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
+                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
+                canvas.discardActiveObject(); canvas.requestRenderAll();
+            }
+            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
 
-                for (let i = 0; i < totalPages; i++) {
-                    if (i > 0) pdf.addPage();
-                    const pos = getPagePosition(i);
-                    canvas.viewportTransform[4] = -pos.x; canvas.viewportTransform[5] = -pos.y; canvas.requestRenderAll();
-                    await new Promise(r => setTimeout(r, 50));
-                    pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: pos.x, top: pos.y, width: docConfig.widthPx, height: docConfig.heightPx }), 'PNG', 0, 0, docConfig.widthPx, docConfig.heightPx);
-                }
-                showMargins = oldShowMargins; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt);
-                pdf.save('Thooval_Export.pdf'); $(this).html(origHtml).prop('disabled', false);
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); drawRulers(); }
+            function fitWholePage() {
+                if(!activeId) return; const p = projects[activeId]; const c = p.config;
+                const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
+                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx);
+                canvas.setZoom(scale); const pos = getPagePosition(0, c);
+                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale;
+                canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
+                canvas.requestRenderAll(); drawRulers();
+            }
+            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in'));
+            $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out'));
+            $('#menu-fit-page').click(fitWholePage);
+            $('#menu-toggle-margins').click(() => { showGuides = !showGuides; drawDocumentEnvironment(); });
+            $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
+
+            let isDragging = false; let lastPosX, lastPosY;
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (opt.e.code === 'Space' || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; }
             });
+            canvas.on('mouse:move', function(opt) {
+                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; }
+            });
+            canvas.on('mouse:up', function() { canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; if (activeTool === 'select') { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan') { canvas.defaultCursor = 'grab'; } });
+            canvas.on('mouse:wheel', function(opt) {
+                if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
+                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); }
+                opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers();
+            });
+            $(window).keydown(function(e) { 
+                if(!activeId || canvas.getActiveObject()?.isEditing || $('#new-doc-modal').is(':visible') || $('#unsaved-modal').is(':visible')) return;
+                if(e.ctrlKey && e.key.toLowerCase()==='r') { showRulers = !showRulers; drawRulers(); e.preventDefault(); }
+                if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
+                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'w') { showGuides = !showGuides; drawDocumentEnvironment(); e.preventDefault(); }
+            });
+            $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
 
+
+            // --- LOAD & SAVE & EXPORT ---
+            function handleFileUpload(file) {
+                const reader = new FileReader();
+                reader.onload = function(f) {
+                    try {
+                        const data = JSON.parse(f.target.result);
+                        if (data.canvasData && data.config) {
+                            const newId = generateId();
+                            projects[newId] = { name: data.name || file.name.replace('.thooval',''), isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0] };
+                            switchProject(newId); fitWholePage();
+                        } else alert("Invalid .thooval file.");
+                    } catch (error) { alert("Error reading file."); }
+                }; reader.readAsText(file);
+            }
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) handleFileUpload(e.target.files[0]); $(this).val(''); });
+            
             $('#menu-save').click(function() {
-                if (isMasterMode) { alert("Close Master Template before saving."); return; }
-                const exportData = { config: docConfig, pages: totalPages, canvasJSON: canvas.toJSON(CUSTOM_PROPS) };
-                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(exportData)], { type: "application/json" })); a.download = "layout.thooval";
+                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; }
+                p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs();
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
             });
 
-            $('#open-file-input').on('change', function(e) {
-                const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-                reader.onload = function(f) {
-                    try { const data = JSON.parse(f.target.result); if (data.canvasJSON && data.config) { docConfig = data.config; totalPages = data.pages; $('#page-count-display').text(totalPages); canvas.loadFromJSON(data.canvasJSON, function() { drawDocumentEnvironment(); fitWholePage(); }); } else alert("Invalid file."); } catch (error) { alert("Error reading file."); }
-                }; reader.readAsText(file); $(this).val(''); 
+            $('#export-pdf-btn').click(async function() {
+                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before exporting."); return; }
+                const origHtml = $(this).html(); $(this).html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...').prop('disabled', true);
+                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
+                const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                const oldGuides = showGuides; showGuides = false; drawDocumentEnvironment(); // Hide guides for print
+
+                for (let i = 0; i < p.totalPages; i++) {
+                    if (i > 0) pdf.addPage();
+                    const pos = getPagePosition(i, p.config);
+                    canvas.viewportTransform[4] = -pos.x + p.config.bleedPx; canvas.viewportTransform[5] = -pos.y + p.config.bleedPx; canvas.requestRenderAll();
+                    await new Promise(r => setTimeout(r, 50)); // Export printable area (ignores bleed)
+                    pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx);
+                }
+                showGuides = oldGuides; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt);
+                pdf.save(`${p.name}_Export.pdf`); $(this).html(origHtml).prop('disabled', false);
             });
 
-            // UI Properties Setup (Same as previous versions)
+            // UI Properties sync
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
             function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin) return;
+                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 if (obj.fill && typeof obj.fill === 'string') { $('#obj-fill').val(obj.fill); $('#obj-fill-hex').val(obj.fill); }
-                $('#obj-opacity').val(obj.opacity !== undefined ? obj.opacity : 1);
-                if (obj.type === 'i-text' || obj.type === 'text') {
-                    $('#text-properties').show(); let font = obj.fontFamily;
-                    if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
-                    $('#obj-font-size').val(obj.fontSize); $('.btn-group button').removeClass('active');
-                    if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active');
-                } else { $('#text-properties').hide(); }
+                if (obj.type === 'i-text' || obj.type === 'text') { $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); } else { $('#text-properties').hide(); }
             }
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); } }
-            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); }); $('#obj-opacity').on('input', function() { updateObj('opacity', parseFloat($(this).val())); }); $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); }); $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
-            $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); }); $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); }); $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); } });
+            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
+            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); });
+            $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
-            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin) { canvas.remove(obj); canvas.discardActiveObject(); } }
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); } }
+            
+            // Initial call to show Welcome screen
+            renderTabs();
         });
     </script>
 </body>
