@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.8.7</title>
+    <title>Thooval Workspace v1.8.8</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -329,7 +329,7 @@
                                     <button id="align-center"><i class="fa-solid fa-align-center"></i></button>
                                     <button id="align-right"><i class="fa-solid fa-align-right"></i></button>
                                     <button id="align-justify"><i class="fa-solid fa-align-justify"></i></button>
-                                </div>
+                                }
                             </div>
                         </div>
                         <div class="prop-row" style="margin-bottom: 12px;">
@@ -825,7 +825,6 @@
                 if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 
-                // Automatically apply Palette defaults to newly created objects
                 if (obj.type !== 'image') {
                     obj.set('fill', globalFill);
                     if (globalStroke !== 'transparent' && globalStrokeWidth > 0) {
@@ -998,7 +997,7 @@
                 showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
             });
 
-            // --- GLOBAL PALETTE & PROPERTIES PANEL ---
+            // --- UI PROPERTIES PANEL ---
             let focusedColorType = 'fill'; 
 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
@@ -1010,28 +1009,9 @@
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
-                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
-
                 if (obj.type === 'textbox') { 
-                    $('#text-properties').show(); 
-                    $('#obj-font-size').val(obj.fontSize); 
-                    $('#obj-line-height').val(obj.lineHeight); 
-                    $('#obj-tracking').val(obj.charSpacing || 0);
-                    
-                    $('#obj-padding').val(obj.padding || 0);
-                    $('#obj-text-bg').val(obj.textBackgroundColor || '#ffffff');
-                    
-                    let font = obj.fontFamily; 
-                    if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); 
-                    else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); 
-                    else {
-                        const cleanFont = font.replace(/['"]/g, '').split(',')[0].trim();
-                        $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
-                    }
-                    
-                    const lh = obj.lineHeight;
-                    if ([1, 1.16, 1.5, 2].includes(lh)) { $('#obj-lh-preset').val(lh); } else { $('#obj-lh-preset').val('custom'); }
-                    
+                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
+                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
                     $('.btn-group button').removeClass('active');
                     if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
                 } else { $('#text-properties').hide(); }
@@ -1046,20 +1026,12 @@
 
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
-                
-                // Update Global Variables so new shapes inherit this
-                globalFill = fillVal;
-                globalStroke = strokeVal;
-                globalStrokeWidth = obj.strokeWidth || 0;
-
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
                 
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
-                
-                $('#global-stroke-width').val(globalStrokeWidth);
             }
 
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
@@ -1067,71 +1039,27 @@
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
                 $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
-                const obj = canvas.getActiveObject();
-                if(obj) updateColorsUI(obj); 
+                updateColorsUI(canvas.getActiveObject()); 
             });
 
             $('#unified-color-picker').on('input', function() {
-                const col = $(this).val();
-                if(focusedColorType === 'fill') { 
-                    globalFill = col;
-                    $('#fill-focus').css('background', col).removeClass('none');
-                } else { 
-                    globalStroke = col;
-                    $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none');
-                }
-                
-                const obj = canvas.getActiveObject();
-                if(obj) {
-                    if(focusedColorType === 'fill') { updateObj('fill', col); } 
-                    else { 
-                        updateObj('stroke', col); 
-                        if(!obj.strokeWidth) {
-                            globalStrokeWidth = globalStrokeWidth || 1;
-                            updateObj('strokeWidth', globalStrokeWidth); 
-                            $('#global-stroke-width').val(globalStrokeWidth);
-                        }
-                    }
-                }
-            });
-            
-            $('#global-stroke-width').on('input', function() {
-                const val = parseFloat($(this).val()) || 0;
-                globalStrokeWidth = val;
-                updateObj('strokeWidth', val);
+                const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val();
+                if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
+                updateColorsUI(obj);
             });
 
             $('#swap-fill-stroke').click(() => {
-                let temp = globalFill;
-                globalFill = globalStroke;
-                globalStroke = temp;
-                
-                const obj = canvas.getActiveObject(); 
-                if (obj) {
-                    const oldFill = obj.fill; const oldStroke = obj.stroke;
-                    obj.set('fill', oldStroke); obj.set('stroke', oldFill);
-                    if(!obj.strokeWidth && oldFill !== 'transparent') {
-                        globalStrokeWidth = globalStrokeWidth || 2;
-                        obj.set('strokeWidth', globalStrokeWidth);
-                        $('#global-stroke-width').val(globalStrokeWidth);
-                    }
-                    canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
-                } else {
-                    $('#fill-focus').css('background', globalFill);
-                    $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke);
-                }
+                const obj = canvas.getActiveObject(); if (!obj) return;
+                const oldFill = obj.fill; const oldStroke = obj.stroke;
+                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
+                if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
+                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
             });
 
             $('#apply-none').click(() => {
-                if(focusedColorType === 'fill') { globalFill = 'transparent'; $('#fill-focus').addClass('none'); } 
-                else { globalStroke = 'transparent'; globalStrokeWidth = 0; $('#stroke-focus').addClass('none'); $('#global-stroke-width').val(0); }
-                
-                const obj = canvas.getActiveObject(); 
-                if (obj) {
-                    if(focusedColorType === 'fill') obj.set('fill', 'transparent'); 
-                    else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                    canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
-                }
+                const obj = canvas.getActiveObject(); if (!obj) return;
+                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
+                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
@@ -1144,35 +1072,8 @@
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
-            $('#obj-padding').on('input', function() { updateObj('padding', parseInt($(this).val(), 10) || 0); });
-            $('#obj-text-bg').on('input', function() { updateObj('textBackgroundColor', $(this).val()); });
-            
-            $('#obj-line-height').on('input', function() { 
-                const val = parseFloat($(this).val());
-                $('#obj-lh-preset').val('custom');
-                updateObj('lineHeight', val); 
-            });
-            $('#obj-lh-preset').on('change', function() {
-                if ($(this).val() !== 'custom') {
-                    const val = parseFloat($(this).val());
-                    $('#obj-line-height').val(val);
-                    updateObj('lineHeight', val);
-                }
-            });
-
-            $('#obj-font-family').on('change', function() { 
-                const selectedFont = $(this).val();
-                const fontName = selectedFont.replace(/['"]/g, '').split(',')[0].trim();
-                if (['Inter', 'Manjari', 'Noto Sans Malayalam'].includes(fontName)) {
-                    updateObj('fontFamily', selectedFont);
-                } else {
-                    document.fonts.load(`12px "${fontName}"`).then(() => {
-                        updateObj('fontFamily', selectedFont);
-                        canvas.requestRenderAll();
-                    });
-                }
-            });
-            
+            $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
+            $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
