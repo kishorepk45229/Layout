@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.8</title>
+    <title>Thooval Workspace v1.8.5</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -25,13 +24,6 @@
             --accent: #cbfb45;
             --accent-hover: #bceb35;
             --accent-text: #1a2005;
-            
-            /* Exact Print Guide Colors */
-            --guide-margin: #ff00ff; /* Magenta */
-            --guide-bleed: #ff0000;  /* Red */
-            --guide-edge: #000000;   /* Black */
-            --guide-cyan: #00ffff;   /* Draggable Guides */
-            
             --danger: #ef4444;
         }
 
@@ -225,7 +217,7 @@
                 
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
-                <button class="tool-btn" id="tool-mask-image" title="Place Image in Shape"><i class="fa-solid fa-crop-simple"></i></button>
+                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
             <div style="flex: 1;"></div> <div class="tool-divider"></div>
@@ -274,6 +266,11 @@
             
             <div id="properties-form" style="display: none;">
                 
+                <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
+                    <h3>Image Mask Options</h3>
+                    <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
+                </div>
+
                 <div class="panel-section">
                     <h3>Integrated Palette</h3>
                     <div class="prop-row" style="position: relative; align-items: flex-start;">
@@ -310,7 +307,10 @@
                 <div id="text-properties" style="display: none;">
                     <div class="panel-section">
                         <h3>Character</h3>
-                        <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"><option value="'Inter', sans-serif">Inter</option><option value="'Manjari', sans-serif">Manjari</option><option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option></select></div>
+                        <div class="prop-col" style="margin-bottom: 12px;">
+                            <select id="obj-font-family">
+                                </select>
+                        </div>
                         <div class="prop-row">
                             <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                             <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
@@ -446,6 +446,24 @@
 
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
+            // --- GOOGLE FONTS INJECTION ---
+            const curatedFonts = [
+                "Inter", "Manjari", "Noto Sans Malayalam", "Roboto", "Open Sans", "Lato", "Montserrat", 
+                "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", "Merriweather", 
+                "Nunito", "Playfair Display", "Rubik", "Work Sans", "Fira Sans", "Quicksand"
+            ];
+            
+            // Build the URL & Inject Stylesheet
+            const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
+            const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap`;
+            $('head').append(`<link href="${googleFontsUrl}" rel="stylesheet">`);
+
+            // Populate Dropdown
+            const fontSelect = $('#obj-font-family');
+            curatedFonts.forEach(font => {
+                fontSelect.append(`<option value="'${font}', sans-serif">${font}</option>`);
+            });
+
             // --- MALAYALAM FML ↔ UNICODE ENGINE ---
             const uniToFmlDict = [
                 { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
@@ -522,7 +540,6 @@
                 if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
                 activeId = id; const p = projects[id]; canvas.clear();
                 
-                // Init History if missing
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
 
                 if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers) drawRulers(); }); } 
@@ -617,7 +634,10 @@
 
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask) canvas.remove(obj); });
+                
+                // FIXED BUG: Removing items during iteration skips elements. Filter first!
+                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
+                envItems.forEach(obj => canvas.remove(obj));
                 
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
                 let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
@@ -628,12 +648,14 @@
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
                     maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
                     
-                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
-                    if (showBleed && conf.bleedPx > 0) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
+                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
+                    
+                    // FIXED BUG: Render guides based on toggle, and use explicit HEX colors
+                    if (showBleed && conf.bleedPx > 0) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
                     if (showMargins) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--guide-margin)', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
+                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
                     }
                 }
                 canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false }));
@@ -664,7 +686,7 @@
                     const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
                     if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
                         const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
-                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: 'var(--guide-cyan)', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' });
+                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: '#00ffff', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' });
                         if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); saveHistory(); }
                     }
                 }
@@ -739,7 +761,7 @@
                 drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- TEXT BOX, OBJECT CREATION & MASKING ---
+            // --- TEXT BOX, OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); }
 
@@ -753,24 +775,41 @@
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
+            // --- ADVANCED IMAGE MASKING ---
+            // FIXED BUG: New standard workflow. Select an Image + Shape -> Click Mask.
             $('#tool-mask-image').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || (activeObj.type !== 'rect' && activeObj.type !== 'circle')) { alert("Please draw and select a Rectangle or Ellipse first to act as an image mask."); return; }
+                const activeSelection = canvas.getActiveObject();
+                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
+                    alert("Please select exactly ONE image and ONE shape to mask."); return;
+                }
                 
-                $('#place-image-input').click();
-                $('#place-image-input').off('change').on('change', function(e) {
-                    if(!e.target.files[0] || !activeId) return; const reader = new FileReader();
-                    reader.onload = function(f) { 
-                        fabric.Image.fromURL(f.target.result, function(img) { 
-                            img.scaleToWidth(activeObj.getScaledWidth() * 1.2);
-                            img.set({ left: activeObj.left, top: activeObj.top, clipPath: activeObj }); 
-                            canvas.remove(activeObj); processNewObject(img);
-                        }); 
-                    }; 
-                    reader.readAsDataURL(e.target.files[0]);
-                    $(this).val('');
-                    setTimeout(() => { $('#place-image-input').off('change').on('change', function(ev) { handleImageInsert(ev.target.files[0]); $(this).val(''); }); }, 500);
+                const objs = activeSelection.getObjects();
+                const img = objs.find(o => o.type === 'image');
+                const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
+
+                if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
+
+                // Determine coordinates relative to the image
+                activeSelection.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
+                
+                const cloneShape = fabric.util.object.clone(shape);
+                cloneShape.set({
+                    originX: 'center', originY: 'center',
+                    left: shape.left - img.left,
+                    top: shape.top - img.top
                 });
+                
+                img.set('clipPath', cloneShape);
+                canvas.remove(shape);
+                canvas.discardActiveObject();
+                canvas.setActiveObject(img);
+                canvas.requestRenderAll();
+                markDirty(); saveHistory();
+            });
+
+            $('#btn-unmask').click(function() {
+                const img = canvas.getActiveObject();
+                if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
             });
 
             // --- DYNAMIC TEXT ---
@@ -878,9 +917,19 @@
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
+                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
+
                 if (obj.type === 'textbox') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
-                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
+                    let font = obj.fontFamily; 
+                    // Safely set font family dropdown based on string contents
+                    if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); 
+                    else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); 
+                    else {
+                        const cleanFont = font.replace(/['"]/g, '').split(',')[0].trim();
+                        $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
+                    }
+                    
                     $('.btn-group button').removeClass('active');
                     if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
                 } else { $('#text-properties').hide(); }
@@ -942,7 +991,21 @@
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
             $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
-            $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
+            $('#obj-font-family').on('change', function() { 
+                const selectedFont = $(this).val();
+                const fontName = selectedFont.replace(/['"]/g, '').split(',')[0].trim();
+                
+                // Native fonts don't need loading check, others do
+                if (['Inter', 'Manjari', 'Noto Sans Malayalam'].includes(fontName)) {
+                    updateObj('fontFamily', selectedFont);
+                } else {
+                    document.fonts.load(`12px "${fontName}"`).then(() => {
+                        updateObj('fontFamily', selectedFont);
+                        canvas.requestRenderAll();
+                    });
+                }
+            });
+            
             $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
