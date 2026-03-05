@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.11</title>
+    <title>Thooval Workspace v1.12</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -92,14 +92,14 @@
 
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
-        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); } .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 12px; } .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; } .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; } .btn-cancel:hover { background: var(--bg-surface); }
+        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); } .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 12px; } .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; } .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; } .btn-cancel:hover { background: var(--bg-surface); } .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; } .btn-primary:hover { background: var(--accent-hover); }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.11</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.12</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -165,6 +165,7 @@
                 <canvas class="ruler-v" id="ruler-v"></canvas>
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
+                    
                     <div id="inner-welcome">
                         <i class="fa-solid fa-feather-pointed logo-huge"></i>
                         <h1 style="color: var(--text-main);">Welcome to Thooval</h1>
@@ -205,13 +206,10 @@
                 </div>
                 
                 <div id="text-properties" style="display: none;">
-                    
                     <div class="panel-section">
                         <h3>Paragraph Styles</h3>
                         <div class="prop-row">
-                            <select id="text-style-select" style="flex: 1;">
-                                <option value="[None]">[Basic Paragraph]</option>
-                            </select>
+                            <select id="text-style-select" style="flex: 1;"><option value="[None]">[Basic Paragraph]</option></select>
                             <button class="small-icon-btn" id="create-style-btn" title="Create new style from selection"><i class="fa-solid fa-plus"></i></button>
                             <button class="small-icon-btn" id="update-style-btn" title="Redefine style globally"><i class="fa-solid fa-rotate-right"></i></button>
                         </div>
@@ -270,11 +268,70 @@
         </aside>
     </div>
 
-    <div class="modal-overlay" id="new-doc-modal"><div class="modal"><h2 id="doc-modal-title">New Document Setup</h2><div class="prop-col" id="doc-name-group" style="margin-bottom: 16px;"><label>File Name</label><input type="text" id="doc-name" value="Untitled Project"></div><div class="prop-col" style="margin-bottom: 16px;"><label>Preset</label><select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select></div><div class="prop-row"><div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div><div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div><div class="prop-col" style="flex: 0.5;"><label>Unit</label><select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select></div></div><div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages</label></div><div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div><div class="prop-row"><div class="prop-col" style="flex: 2;"><label style="margin-bottom: 8px; display: block;">Margins</label><div class="prop-row" style="position: relative;"><div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div><div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div><div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div></div><div class="prop-row"><div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div><div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div></div></div><div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;"><label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div></div></div><div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;"><label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer; visibility: visible;"><input type="checkbox" id="doc-live-preview" checked> Live Preview</label><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create</button></div></div></div></div>
-    <div class="modal-overlay" id="live-preview-modal"><div class="modal" style="width: 300px;"><h2>Live Preview Setup</h2><div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide();">Save</button></div></div></div>
-    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
-    <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
+    <div class="modal-overlay" id="new-doc-modal">
+        <div class="modal">
+            <h2 id="doc-modal-title">New Document Setup</h2>
+            <div class="prop-col" id="doc-name-group" style="margin-bottom: 16px;"><label>File Name</label><input type="text" id="doc-name" value="Untitled Project"></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Preset</label><select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select></div>
+            <div class="prop-row">
+                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div><div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
+                <div class="prop-col" style="flex: 0.5;"><label>Unit</label><select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select></div>
+            </div>
+            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages (Spreads)</label></div>
+            <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
+            
+            <div class="prop-row">
+                <div class="prop-col" style="flex: 2;">
+                    <label style="margin-bottom: 8px; display: block;">Margins (Inside/Outside)</label>
+                    <div class="prop-row" style="position: relative;"><div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div><div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div><div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div></div>
+                    <div class="prop-row"><div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div><div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div></div>
+                </div>
+                <div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;">
+                    <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
+                </div>
+            </div>
+            
+            <div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;">
+                <label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer; visibility: visible;"><input type="checkbox" id="doc-live-preview" checked> Live Preview</label>
+                <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="live-preview-modal">
+        <div class="modal" style="width: 300px;">
+            <h2>Live Preview Setup</h2>
+            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide();">Save</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Export Document</h2>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
+            <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pages-modal">
+        <div class="modal" style="width: 300px;">
+            <h2 id="pages-modal-title">Manage Pages</h2>
+            <div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="unsaved-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Unsaved Changes</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p>
+            <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div>
+        </div>
+    </div>
+
 
     <script>
         $(document).ready(function() {
@@ -294,6 +351,14 @@
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
             function generateUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8); return v.toString(16); }); }
+
+            // --- STYLES HELPER ---
+            function populateStylesDropdown() {
+                if(!activeId) return; const p = projects[activeId];
+                if (!p.styles) p.styles = { '[None]': null };
+                const select = $('#text-style-select'); select.empty();
+                for (const styleName in p.styles) { select.append(new Option(styleName, styleName)); }
+            }
 
             // --- TAB MANAGEMENT ---
             function renderTabs() {
@@ -333,25 +398,15 @@
             canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
 
 
-            // --- PARAGRAPH STYLES LOGIC ---
-            function populateStylesDropdown() {
-                if(!activeId) return; const p = projects[activeId];
-                if (!p.styles) p.styles = { '[None]': null };
-                const select = $('#text-style-select'); select.empty();
-                for (const styleName in p.styles) { select.append(new Option(styleName, styleName)); }
-            }
-
+            // --- PARAGRAPH STYLES BINDINGS ---
             $('#text-style-select').change(function() {
                 const styleName = $(this).val(); const obj = canvas.getActiveObject();
                 if(styleName !== '[None]' && projects[activeId].styles[styleName] && obj) {
                     const s = projects[activeId].styles[styleName];
                     obj.set({ fontFamily: s.fontFamily, fontSize: s.fontSize, lineHeight: s.lineHeight, textAlign: s.textAlign, fill: s.fill, charSpacing: s.charSpacing, paragraphStyle: styleName });
                     canvas.renderAll(); updateUI({selected: [obj]}); markDirty();
-                } else if (obj) {
-                    obj.paragraphStyle = '[None]'; markDirty();
-                }
+                } else if (obj) { obj.paragraphStyle = '[None]'; markDirty(); }
             });
-
             $('#create-style-btn').click(function() {
                 const obj = canvas.getActiveObject(); if(!obj || (obj.type !== 'textbox' && obj.type !== 'i-text')) return;
                 const name = prompt("Name for new Paragraph Style (e.g. Chapter Title):");
@@ -360,7 +415,6 @@
                     obj.paragraphStyle = name; populateStylesDropdown(); $('#text-style-select').val(name); markDirty();
                 }
             });
-
             $('#update-style-btn').click(function() {
                 const obj = canvas.getActiveObject(); const name = $('#text-style-select').val();
                 if(!obj || name === '[None]') return;
@@ -423,9 +477,9 @@
 
 
             // --- DOCUMENT SETUP ---
-            let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
+            let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); updatePreview(); });
             $('.margin-input').on('input', function() { if (marginsLinked) $('.margin-input').val($(this).val()); });
-            $('#doc-preset').change(function() { const p = $(this).val(); if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); } if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); } });
+            $('#doc-preset').change(function() { const p = $(this).val(); if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); } if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); } updatePreview(); });
             
             $('#menu-doc-setup').click(function() {
                 if(!activeId) return; isEditingDoc = true; const conf = projects[activeId].config;
@@ -607,13 +661,9 @@
             });
             $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
 
-            // --- LOAD, SAVE & EXPORT ---
-            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, styles: data.styles || { '[None]': null }, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
-            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
-
+            // --- EXPORT ---
             $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
-            
             $('#confirm-export-btn').click(async function() {
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
@@ -662,7 +712,7 @@
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal; if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
             }
 
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); if(prop !== 'paragraphStyle' && obj.type === 'textbox') obj.paragraphStyle = '[None]'; canvas.renderAll(); markDirty(); renderOverflowIndicators(); updateUI({selected:[obj]}); } }
+            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); if (prop !== 'paragraphStyle' && (obj.type === 'textbox' || obj.type === 'i-text')) obj.paragraphStyle = '[None]'; canvas.renderAll(); markDirty(); renderOverflowIndicators(); updateUI({selected:[obj]}); } }
             
             $('#fill-focus, #stroke-focus').click(function() { focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke'; $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused'); updateColorsUI(canvas.getActiveObject()); });
             $('#unified-color-picker').on('input', function() { const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val(); if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); } updateColorsUI(obj); });
