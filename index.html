@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.8.8</title>
+    <title>Thooval Workspace v1.8.9</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -163,7 +163,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.8</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.9</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -366,11 +366,22 @@
                         </div>
                         <div class="prop-row">
                             <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                            <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
+                            <div class="prop-col"><label>Letter Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                         </div>
                         <div class="prop-row">
-                            <div class="prop-col"><label>Line Spacing</label><input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16"></div>
-                            <div class="prop-col"><label>Text Background</label><input type="color" id="obj-text-bg" value="#ffffff" style="height: 28px;"></div>
+                            <div class="prop-col" style="flex: 2;">
+                                <label>Line Spacing</label>
+                                <div style="display: flex; gap: 4px;">
+                                    <select id="obj-lh-preset" style="flex: 1;">
+                                        <option value="1">1.0</option>
+                                        <option value="1.16">1.16</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2">2.0</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    <input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16" style="flex: 1;">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -519,7 +530,7 @@
     </div>
 
     <script>
-        // GLOBAL FIX: Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
+        // Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
         fabric.Object.prototype.objectCaching = false;
 
         $(document).ready(function() {
@@ -532,7 +543,8 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'dropCapChars', 'dropCapLines']; 
+            // Added explicit custom variables to save the simulated paragraph options
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -907,10 +919,9 @@
                 if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 
-                // Inherit Global Defaults
                 if (obj.type !== 'image') {
                     obj.set('fill', globalFill);
-                    if (globalStrokeWeight > 0) {
+                    if (globalStroke !== 'transparent' && globalStrokeWeight > 0) {
                         obj.set('stroke', globalStroke);
                         obj.set('strokeWidth', globalStrokeWeight);
                     }
@@ -977,6 +988,96 @@
                     }
                 });
             }
+
+            // --- ALIGNMENT & DISTRIBUTION ---
+            function getAlignmentTargetCoords(targetType) {
+                if (targetType === 'selection') { 
+                    const obj = canvas.getActiveObject(); if(!obj) return null; return obj.getBoundingRect(); 
+                } 
+                else if (targetType === 'page') { 
+                    const p = projects[activeId]; if(!p) return null; const pageConf = p.config;
+                    const sel = canvas.getActiveObject(); if (!sel) return null;
+                    
+                    const objCenterY = sel.getBoundingRect().top + (sel.getBoundingRect().height / 2);
+                    const estimatedPage = Math.max(0, Math.floor((objCenterY - MARGIN_TOP) / (pageConf.heightPx + PAGE_GAP)));
+                    const pos = getPagePosition(estimatedPage, pageConf); const margins = pageConf.marginsPx; 
+                    let isLeftPage = pageConf.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0;
+                    let aL = isLeftPage ? margins.r : margins.l; let aR = isLeftPage ? margins.l : margins.r;
+                    
+                    return { left: pos.x + aL, top: pos.y + margins.t, width: pageConf.widthPx - aL - aR, height: pageConf.heightPx - margins.t - margins.b };
+                }
+                return null;
+            }
+
+            $('.align-action').click(function() {
+                const alignType = $(this).data('align'); const targetType = $('#align-to-target').val();
+                let sel = canvas.getActiveObject(); if(!sel) return;
+                let targetRect = getAlignmentTargetCoords(targetType); if(!targetRect) return;
+
+                // Fixed: Deselect group, move items absolutely, reselect.
+                let objects = sel.type === 'activeSelection' ? sel.getObjects().slice() : [sel];
+                canvas.discardActiveObject(); 
+
+                objects.forEach(obj => {
+                    let objB = obj.getBoundingRect();
+                    let newLeft = obj.left; let newTop = obj.top;
+
+                    if (alignType === 'left') newLeft -= (objB.left - targetRect.left);
+                    if (alignType === 'center') newLeft -= (objB.left + objB.width/2) - (targetRect.left + targetRect.width/2);
+                    if (alignType === 'right') newLeft -= (objB.left + objB.width) - (targetRect.left + targetRect.width);
+                    if (alignType === 'top') newTop -= (objB.top - targetRect.top);
+                    if (alignType === 'middle') newTop -= (objB.top + objB.height/2) - (targetRect.top + targetRect.height/2);
+                    if (alignType === 'bottom') newTop -= (objB.top + objB.height) - (targetRect.top + targetRect.height);
+
+                    obj.set({ left: newLeft, top: newTop }).setCoords();
+                });
+
+                if (objects.length > 1) { canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); } 
+                else { canvas.setActiveObject(objects[0]); }
+                canvas.requestRenderAll(); markDirty(); saveHistory();
+            });
+
+            $('.distribute-action').click(function() {
+                const distType = $(this).data('dist');
+                let sel = canvas.getActiveObject();
+                if (!sel || sel.type !== 'activeSelection' || sel.size() < 3) {
+                    alert("Please select at least 3 objects to distribute spacing."); return;
+                }
+
+                let objects = sel.getObjects().slice();
+                canvas.discardActiveObject(); 
+
+                if (distType[0] === 'v') {
+                    objects.sort((a,b) => a.getBoundingRect().top - b.getBoundingRect().top);
+                    const availableSpace = objects[objects.length - 1].getBoundingRect().top - objects[0].getBoundingRect().bottom;
+                    const objectsToMove = objects.slice(1, -1);
+                    const totalItemsToMoveHeight = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().height, 0);
+                    const gap = (availableSpace - totalItemsToMoveHeight) / (objectsToMove.length + 1);
+
+                    let currentY = objects[0].getBoundingRect().bottom;
+                    objectsToMove.forEach(obj => {
+                        let newTop = obj.top + (currentY + gap - obj.getBoundingRect().top);
+                        obj.set('top', newTop).setCoords();
+                        currentY = obj.getBoundingRect().bottom;
+                    });
+                } else {
+                    objects.sort((a,b) => a.getBoundingRect().left - b.getBoundingRect().left);
+                    const availableSpace = objects[objects.length - 1].getBoundingRect().left - objects[0].getBoundingRect().right;
+                    const objectsToMove = objects.slice(1, -1);
+                    const totalItemsToMoveWidth = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().width, 0);
+                    const gap = (availableSpace - totalItemsToMoveWidth) / (objectsToMove.length + 1);
+
+                    let currentX = objects[0].getBoundingRect().right;
+                    objectsToMove.forEach(obj => {
+                        let newLeft = obj.left + (currentX + gap - obj.getBoundingRect().left);
+                        obj.set('left', newLeft).setCoords();
+                        currentX = obj.getBoundingRect().right;
+                    });
+                }
+
+                canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas }));
+                canvas.requestRenderAll(); markDirty(); saveHistory();
+            });
 
             // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
@@ -1100,10 +1201,11 @@
                     $('.p-align').removeClass('active');
                     if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
                     
+                    // Populate saved simulated states
                     $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
                     $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
                     $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
-                    $('#obj-text-bg').val(obj.textBackgroundColor || '#ffffff'); $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
+                    $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
                     $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
                 } else { $('#text-properties').hide(); }
             }
@@ -1118,10 +1220,7 @@
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
                 
-                // Update Globals so new shapes inherit them
-                globalFill = fillVal;
-                globalStroke = strokeVal;
-                globalStrokeWeight = obj.strokeWidth || 0;
+                globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
 
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
@@ -1133,7 +1232,18 @@
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
+            // Upgrade updateObj to map across ActiveSelections
+            function updateObj(prop, val) { 
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') {
+                        sel.forEachObject(o => { o.set(prop, val); });
+                    } else {
+                        sel.set(prop, val); 
+                    }
+                    canvas.renderAll(); markDirty(); saveHistory(); 
+                } 
+            }
             
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
@@ -1144,7 +1254,7 @@
             $('#unified-color-picker').on('input', function() {
                 const obj = canvas.getActiveObject(); const col = $(this).val();
                 if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
-                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth) { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
+                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
             });
             
             $('#global-stroke-weight').on('input', function() {
@@ -1155,20 +1265,30 @@
             $('.swap-fill-stroke').click(() => {
                 let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
                 $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
-                const obj = canvas.getActiveObject(); if (obj) { const oldFill = obj.fill; const oldStroke = obj.stroke; obj.set('fill', oldStroke); obj.set('stroke', oldFill); if(!obj.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; obj.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory(); }
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') {
+                        sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); });
+                    } else {
+                        const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); 
+                        if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } 
+                    }
+                    canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); 
+                }
             });
 
             $('.apply-none').click(() => {
                 const obj = canvas.getActiveObject();
-                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) obj.set('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
-                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
+                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
+                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
                 if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
             $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
             $('#obj-w, #obj-h').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1;
+                const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; 
+                const newDim = parseFloat($(this).val()) || 1;
                 if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
                 canvas.renderAll(); markDirty(); saveHistory();
             });
@@ -1179,88 +1299,21 @@
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
-            // Simulating internal indents and spacing using object padding
-            const paddingVars = ['spaceBefore', 'indentLeft', 'indentRight', 'spaceAfter'];
-            function updateSimulatedPadding() { const obj = canvas.getActiveObject(); if(!obj || obj.type !== 'textbox') return; obj.set('padding', [$('#obj-space-before').val()||0, $('#obj-indent-right').val()||0, $('#obj-space-after').val()||0, $('#obj-indent-left').val()||0]); canvas.renderAll(); markDirty(); saveHistory(); }
-            $('#obj-space-before, #obj-indent-right, #obj-space-after, #obj-indent-left').on('input', updateSimulatedPadding);
-            
-            // First Line Indent (text-indent)
-            $('#obj-indent-first').on('input', function() { const val = parseInt($(this).val(), 10) || 0; updateObj('textIndent', val); });
-            
-            // Hyphenation
+            // Map the layout inputs to save data directly into object bounds safely
+            $('#obj-space-before').on('input', function() { updateObj('spaceBefore', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-right').on('input', function() { updateObj('indentRight', parseFloat($(this).val()) || 0); });
+            $('#obj-space-after').on('input', function() { updateObj('spaceAfter', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-left').on('input', function() { updateObj('indentLeft', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-first').on('input', function() { updateObj('textIndent', parseFloat($(this).val()) || 0); }); // Only property natively respected sometimes by Fabric Textbox
             $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
+            $('#obj-drop-cap-lines').on('input', function() { updateObj('dropCapLines', parseInt($(this).val()) || 0); });
+            $('#obj-drop-cap-chars').on('input', function() { updateObj('dropCapChars', parseInt($(this).val()) || 0); });
             
-            // Dynamic Page Num & arranging work as before
-            $('#obj-text-bg').on('input', function() { updateObj('textBackgroundColor', $(this).val()); });
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
-            // --- ALIGNMENT & DISTRIBUTION JS ---
-            function getAlignmentTargetCoords(targetType) {
-                if (targetType === 'selection') { const obj = canvas.getActiveObject(); if(!obj) return null; return obj.getBoundingRect(); } 
-                else if (targetType === 'page') { 
-                    const p = projects[activeId]; if(!p) return null; const pageConf = p.config; const zoom = canvas.getZoom();
-                    const estimatedPage = Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + PAGE_GAP) / (pageConf.heightPx + PAGE_GAP));
-                    const pos = getPagePosition(estimatedPage, pageConf); const margins = pageConf.marginsPx; let isLeftPage = pageConf.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0;
-                    let aL = isLeftPage ? margins.r : margins.l; let aR = isLeftPage ? margins.l : margins.r;
-                    // Coords are in canvas space
-                    return { left: pos.x + aL, top: pos.y + margins.t, width: pageConf.widthPx - aL - aR, height: pageConf.heightPx - margins.t - margins.b };
-                }
-                return null;
-            }
-
-            $('.align-action').click(function() {
-                const alignType = $(this).data('align'); const targetType = $('#align-to-target').val();
-                const sel = canvas.getActiveObject(); if(!sel) return;
-                const targetRect = getAlignmentTargetCoords(targetType); if(!targetRect) return;
-                const objects = sel.getObjects ? sel.getObjects() : [sel];
-                
-                canvas.discardActiveObject(); // Release selection before move
-
-                objects.forEach(obj => {
-                    const objRect = obj.getBoundingRect();
-                    switch(alignType) {
-                        case 'left': obj.set('left', targetRect.left + (obj.left - objRect.left)); break;
-                        case 'center': obj.set('left', targetRect.left + targetRect.width/2 - objRect.width/2 + (obj.left - objRect.left)); break;
-                        case 'right': obj.set('left', targetRect.left + targetRect.width - objRect.width + (obj.left - objRect.left)); break;
-                        case 'top': obj.set('top', targetRect.top + (obj.top - objRect.top)); break;
-                        case 'middle': obj.set('top', targetRect.top + targetRect.height/2 - objRect.height/2 + (obj.top - objRect.top)); break;
-                        case 'bottom': obj.set('top', targetRect.top + targetRect.height - objRect.height + (obj.top - objRect.top)); break;
-                    }
-                    obj.setCoords();
-                });
-                
-                canvas.setActiveObject(sel); // Restore selection bounds
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-            
-            $('.distribute-action').click(function() {
-                const distType = $(this).data('dist');
-                const sel = canvas.getActiveObject(); if(!sel || !sel.getObjects || sel.size() < 3) return;
-                const objects = sel.getObjects().sort((a,b) => (distType[0]==='v'?a.top-b.top:a.left-b.left));
-                const selRect = sel.getBoundingRect();
-                
-                canvas.discardActiveObject(); // Release for math-accurate relative bounds
-
-                if (distType[0] === 'v') { // Vertical distributing
-                    const availableSpace = objects[objects.length-1].getBoundingRect().top - objects[0].getBoundingRect().bottom;
-                    const objectsToMove = objects.slice(1, -1); const totalItemsToMoveHeight = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().height, 0);
-                    const gap = (availableSpace - totalItemsToMoveHeight) / (objectsToMove.length + 1);
-                    let currentBottom = objects[0].getBoundingRect().bottom;
-                    objectsToMove.forEach(obj => { obj.set('top', currentBottom + gap + (obj.top - obj.getBoundingRect().top)); obj.setCoords(); currentBottom = obj.getBoundingRect().bottom; });
-                } else { // Horizontal distributing
-                    const availableSpace = objects[objects.length-1].getBoundingRect().left - objects[0].getBoundingRect().right;
-                    const objectsToMove = objects.slice(1, -1); const totalItemsToMoveWidth = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().width, 0);
-                    const gap = (availableSpace - totalItemsToMoveWidth) / (objectsToMove.length + 1);
-                    let currentRight = objects[0].getBoundingRect().right;
-                    objectsToMove.forEach(obj => { obj.set('left', currentRight + gap + (obj.left - obj.getBoundingRect().left)); obj.setCoords(); currentRight = obj.getBoundingRect().right; });
-                }
-
-                canvas.setActiveObject(sel); canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-
-            // Grouping logic works as before
+            // --- GROUPING & UNGROUPING LOGIC ---
             $('#menu-group').click(function() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
@@ -1274,21 +1327,26 @@
                 activeObj.toActiveSelection(); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
-            // Typography converter logic works as before
+            // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
-                if(!activeId) return; const activeObj = canvas.getActiveObject();
+                if(!activeId) return;
+                const activeObj = canvas.getActiveObject();
                 if (activeObj && activeObj.type === 'textbox') { $('#typo-source-text').val(activeObj.text); } else { $('#typo-source-text').val(''); }
-                $('#typo-output-text').val(''); $('#typography-modal').css('display', 'flex');
+                $('#typo-output-text').val('');
+                $('#typography-modal').css('display', 'flex');
             });
             $('#btn-run-conversion').click(() => {
                 const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val();
-                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source); $('#typo-output-text').val(result);
+                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source);
+                $('#typo-output-text').val(result);
             });
             $('#btn-apply-text-canvas').click(() => {
-                const newText = $('#typo-output-text').val(); if (!newText) return; let activeObj = canvas.getActiveObject();
+                const newText = $('#typo-output-text').val(); if (!newText) return;
+                let activeObj = canvas.getActiveObject();
                 if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
                 else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
-                canvas.requestRenderAll(); markDirty(); saveHistory(); $('#typography-modal').hide();
+                canvas.requestRenderAll(); markDirty(); saveHistory();
+                $('#typography-modal').hide();
             });
             
             renderTabs();
