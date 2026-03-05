@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Layout Engine - Spatial Architecture</title>
+    <title>Thooval Layout Engine - Complete Edition</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -22,13 +22,16 @@
         .file-btn:hover { background: #505050; color: #fff; }
         .file-btn.export-btn { background: #0056b3; border-color: #004494; color: white; }
         .file-btn.export-btn:hover { background: #0069d9; }
+        #open-file-input { display: none; }
         
         .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        .toolbar-left { width: 70px; background: #252525; padding: 15px 10px; border-right: 1px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 100; }
-        .toolbar-left button, .toolbar-left label.upload-btn { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; cursor: pointer; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 8px; font-size: 18px; transition: all 0.2s; }
+        .toolbar-left { width: 70px; background: #252525; padding: 15px 10px; border-right: 1px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 100; overflow-y: auto; }
+        .toolbar-left button, .toolbar-left label.upload-btn { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; flex-shrink: 0; cursor: pointer; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 8px; font-size: 18px; transition: all 0.2s; }
         .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; color: #fff; border-color: #777; }
+        .toolbar-left button.active-tool { background: #0056b3; color: white; border-color: #007bff; }
         .delete-btn { margin-top: auto; background: #4a1c1c !important; border-color: #702a2a !important; color: #ff9999 !important; }
+        .delete-btn:hover { background: #702a2a !important; color: #fff !important; }
         #image-upload { display: none; }
         
         .panel-right { width: 280px; background: #252525; padding: 15px; border-left: 1px solid #444; overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
@@ -43,25 +46,34 @@
         .btn-group button { flex: 1; padding: 6px; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 3px; cursor: pointer; font-size: 12px;}
         .btn-group button:hover { background: #505050; }
 
-        /* Document Manager UI */
         .doc-btn { width: 100%; padding: 8px; background: #3a3a3a; border: 1px solid #555; color: #fff; border-radius: 4px; cursor: pointer; margin-bottom: 8px; font-size: 13px; }
         .doc-btn:hover { background: #444; }
         .doc-btn.master-active { background: #8b6b00; border-color: #cca418; font-weight: bold; }
         .master-banner { display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #cca418; color: #000; padding: 5px 20px; border-radius: 20px; font-weight: bold; z-index: 200; pointer-events: none; }
 
-        /* The Canvas Area */
-        .canvas-container-wrapper { flex: 1; background: #151515; position: relative; overflow: hidden; /* Scrollbars removed, handled by canvas pan */ }
+        .canvas-container-wrapper { flex: 1; background: #151515; position: relative; overflow: hidden; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
-        
-        /* Hint text for panning */
         .pan-hint { position: absolute; bottom: 15px; left: 15px; color: #666; font-size: 12px; z-index: 50; pointer-events: none; }
+        
+        .grid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+            background-image: linear-gradient(to right, rgba(0, 168, 255, 0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 168, 255, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px; display: none; z-index: 10;
+        }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
-        <div class="branding">Thooval Layout Engine <span style="color:#888; font-weight:normal; font-size: 14px;">| Spatial Mode</span></div>
+        <div class="branding">Thooval Layout Engine</div>
         <div class="file-menu">
+            <label class="file-btn" title="Open Document">
+                <i class="fa-solid fa-folder-open"></i> Open
+                <input type="file" id="open-file-input" accept=".thooval,.json">
+            </label>
+            <button class="file-btn" id="save-file-btn" title="Save Document">
+                <i class="fa-solid fa-floppy-disk"></i> Save
+            </button>
             <button class="file-btn export-btn" id="export-pdf-btn" title="Export to Printable PDF">
                 <i class="fa-solid fa-file-pdf"></i> Export PDF
             </button>
@@ -73,15 +85,19 @@
         
         <aside class="toolbar-left">
             <button id="add-rect" title="Add Rectangle"><i class="fa-solid fa-square"></i></button>
+            <button id="add-circle" title="Add Circle"><i class="fa-solid fa-circle"></i></button>
             <button id="add-text" title="Add Typography"><i class="fa-solid fa-font"></i></button>
             <label class="upload-btn" title="Place Image">
                 <i class="fa-solid fa-image"></i>
                 <input type="file" id="image-upload" accept="image/*">
             </label>
+            <div style="height: 1px; width: 80%; background: #444; margin: 10px 0;"></div>
+            <button id="toggle-grid" title="Toggle Grid & Snapping"><i class="fa-solid fa-border-all"></i></button>
             <button id="delete-obj" class="delete-btn" title="Delete Selected Object"><i class="fa-solid fa-trash"></i></button>
         </aside>
 
         <main class="canvas-container-wrapper" id="workspace-wrapper">
+            <div class="grid-overlay" id="grid-overlay"></div>
             <canvas id="layout-canvas"></canvas>
             <div class="pan-hint">Hold <b>Spacebar</b> + Drag to Pan • <b>Scroll Wheel</b> to Scroll Vertical</div>
         </main>
@@ -104,6 +120,10 @@
                         <label>Fill Color:</label>
                         <input type="color" id="obj-fill">
                     </div>
+                    <div class="prop-group">
+                        <label>Opacity:</label>
+                        <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
+                    </div>
                 </div>
 
                 <div id="text-properties" class="panel-section" style="display: none;">
@@ -120,6 +140,22 @@
                         <label>Font Size:</label>
                         <input type="number" id="obj-font-size" min="8" max="144" value="24">
                     </div>
+                    <div class="prop-group">
+                        <label>Alignment:</label>
+                        <div class="btn-group">
+                            <button id="align-left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                            <button id="align-center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                            <button id="align-right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Arrange Layer</h3>
+                    <div class="prop-group btn-group">
+                        <button id="bring-forward" title="Bring Forward"><i class="fa-solid fa-arrow-up"></i></button>
+                        <button id="send-backward" title="Send Backward"><i class="fa-solid fa-arrow-down"></i></button>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -128,268 +164,234 @@
     <script>
         $(document).ready(function() {
             
-            // --- CONSTANTS & ARCHITECTURE SETUP ---
             const PAGE_W = 600;
             const PAGE_H = 800;
             const PAGE_GAP = 50; 
-            const MARGIN_LEFT = 100; // Give some pasteboard space on the left
+            const MARGIN_LEFT = 100; 
             const MARGIN_TOP = 50;
+            
+            // WE MUST TELL FABRIC TO SAVE OUR CUSTOM TAGS DURING EXPORT
+            const CUSTOM_PROPS = ['isPaper', 'isMasterSource', 'isMasterClone', 'isRegular'];
             
             let totalPages = 1;
             let isMasterMode = false;
 
-            // Initialize canvas to strictly fill the dynamic wrapper size
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', {
-                width: wrapper.width(),
-                height: wrapper.height(),
-                selection: true,
-                preserveObjectStacking: true
+                width: wrapper.width(), height: wrapper.height(),
+                selection: true, preserveObjectStacking: true
             });
 
-            // Keep canvas responsive to window resizing
-            $(window).resize(function() {
-                canvas.setWidth(wrapper.width());
-                canvas.setHeight(wrapper.height());
-            });
+            $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); });
 
-
-            // --- 1. DRAWING THE SPATIAL PAGES (The "Paper") ---
+            // --- 1. SPATIAL PAGES ---
             function drawPaperBackgrounds() {
-                // Clear existing paper
                 const objects = canvas.getObjects();
                 objects.forEach(obj => { if (obj.isPaper) canvas.remove(obj); });
-
-                // If in Master mode, only draw ONE page for reference
                 const pagesToDraw = isMasterMode ? 1 : totalPages;
-
                 for (let i = 0; i < pagesToDraw; i++) {
                     const paper = new fabric.Rect({
-                        left: MARGIN_LEFT,
-                        top: MARGIN_TOP + (i * (PAGE_H + PAGE_GAP)),
-                        width: PAGE_W,
-                        height: PAGE_H,
-                        fill: '#ffffff',
-                        selectable: false, // User cannot click it
-                        evented: false,    // Clicks pass through it
-                        isPaper: true,     // Custom tag so we can identify it later
+                        left: MARGIN_LEFT, top: MARGIN_TOP + (i * (PAGE_H + PAGE_GAP)),
+                        width: PAGE_W, height: PAGE_H, fill: '#ffffff',
+                        selectable: false, evented: false, isPaper: true,
                         shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.5)', blur: 15, offsetX: 0, offsetY: 5 })
                     });
-                    canvas.add(paper);
-                    paper.sendToBack(); // Keep paper beneath all text and images
+                    canvas.add(paper); paper.sendToBack();
                 }
             }
             drawPaperBackgrounds();
 
+            // --- 2. GRID & PANNING ---
+            let isDragging = false; let isSpacePressed = false; let lastPosX, lastPosY;
+            let gridEnabled = false; const gridSize = 20;
 
-            // --- 2. THE PAN & ZOOM ENGINE (Continuous View) ---
-            let isDragging = false;
-            let isSpacePressed = false;
-            let lastPosX, lastPosY;
-
-            // Spacebar logic
-            $(window).keydown(function(e) {
-                if (e.code === 'Space' && !canvas.getActiveObject()?.isEditing) {
-                    isSpacePressed = true;
-                    canvas.defaultCursor = 'grab';
-                    e.preventDefault(); // Prevent page scroll down
-                }
-            });
-            $(window).keyup(function(e) {
-                if (e.code === 'Space') {
-                    isSpacePressed = false;
-                    canvas.defaultCursor = 'default';
-                }
+            $('#toggle-grid').click(function() {
+                gridEnabled = !gridEnabled;
+                if (gridEnabled) { $(this).addClass('active-tool'); $('#grid-overlay').show(); } 
+                else { $(this).removeClass('active-tool'); $('#grid-overlay').hide(); }
             });
 
-            // Middle mouse click & Spacebar Dragging
+            canvas.on('object:moving', function(options) {
+                if (!gridEnabled) return;
+                const obj = options.target;
+                obj.set({ left: Math.round(obj.left / gridSize) * gridSize, top: Math.round(obj.top / gridSize) * gridSize });
+            });
+
+            $(window).keydown(function(e) { if (e.code === 'Space' && !canvas.getActiveObject()?.isEditing) { isSpacePressed = true; canvas.defaultCursor = 'grab'; e.preventDefault(); } });
+            $(window).keyup(function(e) { if (e.code === 'Space') { isSpacePressed = false; canvas.defaultCursor = 'default'; } });
+
             canvas.on('mouse:down', function(opt) {
                 const evt = opt.e;
-                if (isSpacePressed || evt.button === 1) { // 1 is middle mouse button
-                    isDragging = true;
-                    canvas.selection = false;
-                    canvas.defaultCursor = 'grabbing';
-                    lastPosX = evt.clientX;
-                    lastPosY = evt.clientY;
+                if (isSpacePressed || evt.button === 1) {
+                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing';
+                    lastPosX = evt.clientX; lastPosY = evt.clientY;
                 }
             });
 
             canvas.on('mouse:move', function(opt) {
                 if (isDragging) {
-                    const e = opt.e;
                     let vpt = canvas.viewportTransform;
-                    // Move the mathematical camera relative to mouse movement
-                    vpt[4] += e.clientX - lastPosX;
-                    vpt[5] += e.clientY - lastPosY;
-                    canvas.requestRenderAll();
-                    lastPosX = e.clientX;
-                    lastPosY = e.clientY;
+                    vpt[4] += opt.e.clientX - lastPosX; vpt[5] += opt.e.clientY - lastPosY;
+                    canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY;
                 }
             });
 
             canvas.on('mouse:up', function() {
-                canvas.setViewportTransform(canvas.viewportTransform);
-                isDragging = false;
-                canvas.selection = true;
+                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; canvas.selection = true;
                 if (!isSpacePressed) canvas.defaultCursor = 'default';
             });
 
-            // Standard Scroll Wheel for Vertical Movement
             canvas.on('mouse:wheel', function(opt) {
-                let delta = opt.e.deltaY;
-                let vpt = canvas.viewportTransform;
-                // Move camera up and down naturally
-                vpt[5] -= delta;
-                canvas.requestRenderAll();
-                opt.e.preventDefault();
-                opt.e.stopPropagation();
+                let vpt = canvas.viewportTransform; vpt[5] -= opt.e.deltaY;
+                canvas.requestRenderAll(); opt.e.preventDefault(); opt.e.stopPropagation();
             });
 
+            // --- 3. SAVE / LOAD DOCUMENTS ---
+            $('#save-file-btn').click(function() {
+                if (isMasterMode) { alert("Please close the Master Page editor before saving."); return; }
+                
+                // Package the total pages count alongside the massive canvas JSON
+                const exportData = {
+                    pages: totalPages,
+                    canvasJSON: canvas.toJSON(CUSTOM_PROPS) 
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = "layout.thooval";
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            });
 
-            // --- 3. THE MASTER PAGES ENGINE ---
+            $('#open-file-input').on('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(f) {
+                    try {
+                        const loadedData = JSON.parse(f.target.result);
+                        if (loadedData.canvasJSON) {
+                            totalPages = loadedData.pages;
+                            $('#page-count-display').text(totalPages);
+                            
+                            // Load the spatial map back
+                            canvas.loadFromJSON(loadedData.canvasJSON, function() {
+                                // Ensure background paper stays behind objects after loading
+                                canvas.getObjects().forEach(o => { if(o.isPaper) o.sendToBack(); });
+                                canvas.requestRenderAll();
+                            });
+                        } else alert("Invalid .thooval layout file.");
+                    } catch (error) { alert("Error reading the file."); console.error(error); }
+                };
+                reader.readAsText(file);
+                $(this).val(''); 
+            });
+
+            // --- 4. MASTER PAGES ---
             $('#toggle-master-btn').click(function() {
-                isMasterMode = !isMasterMode;
-                canvas.discardActiveObject();
+                isMasterMode = !isMasterMode; canvas.discardActiveObject();
 
                 if (isMasterMode) {
-                    // ENTER MASTER MODE
                     $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Save & Close Master');
-                    $('#master-banner').fadeIn();
-                    $('#add-page-btn').prop('disabled', true).css('opacity', 0.5);
+                    $('#master-banner').fadeIn(); $('#add-page-btn').prop('disabled', true).css('opacity', 0.5);
+                    canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0; // Reset camera
 
-                    // Move camera back to top
-                    canvas.viewportTransform[4] = 0;
-                    canvas.viewportTransform[5] = 0;
-
-                    // Hide normal objects, delete clones, show master source objects
                     canvas.getObjects().forEach(obj => {
                         if (obj.isPaper) return;
-                        if (obj.isRegular) obj.set('opacity', 0).set('selectable', false); // Hide standard content
-                        if (obj.isMasterClone) canvas.remove(obj); // Erase old clones
-                        if (obj.isMasterSource) obj.set('opacity', 1).set('selectable', true).set('evented', true); // Reveal master components
+                        if (obj.isRegular) obj.set('opacity', 0).set('selectable', false); 
+                        if (obj.isMasterClone) canvas.remove(obj); 
+                        if (obj.isMasterSource) obj.set('opacity', 1).set('selectable', true).set('evented', true); 
                     });
-
                 } else {
-                    // EXIT MASTER MODE & APPLY TO ALL PAGES
                     $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Edit Master Page');
-                    $('#master-banner').fadeOut();
-                    $('#add-page-btn').prop('disabled', false).css('opacity', 1);
+                    $('#master-banner').fadeOut(); $('#add-page-btn').prop('disabled', false).css('opacity', 1);
 
-                    // 1. Hide master sources, reveal regular content
                     canvas.getObjects().forEach(obj => {
                         if (obj.isRegular) obj.set('opacity', 1).set('selectable', true);
                         if (obj.isMasterSource) obj.set('opacity', 0).set('selectable', false).set('evented', false);
                     });
 
-                    // 2. The Magic Trick: Clone the master sources onto every regular page
                     const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    
                     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
                         sources.forEach(sourceObj => {
                             sourceObj.clone(function(clone) {
-                                // Adjust Y position so it lands exactly on the correct page
                                 const newTop = clone.top + (pageIndex * (PAGE_H + PAGE_GAP));
-                                clone.set({
-                                    top: newTop,
-                                    selectable: false, // Locked!
-                                    evented: false,
-                                    isMasterClone: true // Tagged so we can delete it next time we edit master
-                                });
-                                canvas.add(clone);
-                                clone.sendToBack(); // Behind text, but...
-                            });
+                                clone.set({ top: newTop, selectable: false, evented: false, isMasterClone: true });
+                                canvas.add(clone); clone.sendToBack(); 
+                            }, CUSTOM_PROPS); // Ensure clones keep their custom properties!
                         });
                     }
-                    // Make sure paper stays at the absolute bottom
                     canvas.getObjects().forEach(obj => { if(obj.isPaper) obj.sendToBack(); });
                 }
-                
-                drawPaperBackgrounds();
-                canvas.requestRenderAll();
+                drawPaperBackgrounds(); canvas.requestRenderAll();
             });
 
-
-            // --- 4. MULTI-PAGE MANAGEMENT ---
+            // --- 5. MULTI-PAGE MANAGEMENT ---
             $('#add-page-btn').click(function() {
-                totalPages++;
-                $('#page-count-display').text(totalPages);
+                totalPages++; $('#page-count-display').text(totalPages);
                 drawPaperBackgrounds();
                 
-                // If we have master objects, immediately stamp them onto the new page
                 const sources = canvas.getObjects().filter(o => o.isMasterSource);
                 sources.forEach(sourceObj => {
                     sourceObj.clone(function(clone) {
                         const newTop = clone.top + ((totalPages - 1) * (PAGE_H + PAGE_GAP));
                         clone.set({ top: newTop, selectable: false, evented: false, isMasterClone: true });
-                        canvas.add(clone);
-                        clone.sendToBack();
-                    });
+                        canvas.add(clone); clone.sendToBack();
+                    }, CUSTOM_PROPS);
                 });
                 canvas.getObjects().forEach(obj => { if(obj.isPaper) obj.sendToBack(); });
                 canvas.requestRenderAll();
             });
 
-
-            // --- 5. CREATING OBJECTS (With tagging logic) ---
-            function tagAndAdd(obj) {
-                // If we are editing master, this object belongs to the master layer. Otherwise, regular.
-                if (isMasterMode) {
-                    obj.set({ isMasterSource: true });
-                } else {
-                    obj.set({ isRegular: true });
-                }
-                canvas.add(obj);
-                canvas.setActiveObject(obj);
-            }
-
-            // Calculate center of currently visible screen taking panning into account
+            // --- 6. CREATING OBJECTS ---
             function getScreenCenter() {
                 const vpt = canvas.viewportTransform;
-                return {
-                    x: (canvas.width / 2 - vpt[4]) / vpt[0],
-                    y: (canvas.height / 2 - vpt[5]) / vpt[3]
-                };
+                return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] };
+            }
+
+            function processNewObject(obj) {
+                if (gridEnabled) { obj.set({ left: Math.round(obj.left/gridSize)*gridSize, top: Math.round(obj.top/gridSize)*gridSize }); }
+                if (isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); }
+                canvas.add(obj); canvas.setActiveObject(obj);
             }
 
             $('#add-rect').click(function() {
-                const center = getScreenCenter();
-                tagAndAdd(new fabric.Rect({ left: center.x, top: center.y, fill: '#6c757d', width: 100, height: 100 }));
+                const c = getScreenCenter();
+                processNewObject(new fabric.Rect({ left: c.x, top: c.y, fill: '#6c757d', width: 100, height: 100 }));
+            });
+
+            $('#add-circle').click(function() {
+                const c = getScreenCenter();
+                processNewObject(new fabric.Circle({ left: c.x, top: c.y, fill: '#0d6efd', radius: 50 }));
             });
 
             $('#add-text').click(function() {
-                const center = getScreenCenter();
-                tagAndAdd(new fabric.IText('Hridayathil ninnu...', { left: center.x, top: center.y, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24 }));
+                const c = getScreenCenter();
+                processNewObject(new fabric.IText('Hridayathil ninnu...', { left: c.x, top: c.y, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24 }));
             });
 
             $('#image-upload').on('change', function(e) {
+                if (e.target.id === 'open-file-input') return; 
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = function(f) {
                     fabric.Image.fromURL(f.target.result, function(img) {
-                        const center = getScreenCenter();
+                        const c = getScreenCenter();
                         if (img.width > PAGE_W - 50) img.scaleToWidth(PAGE_W - 50);
-                        img.set({ left: center.x, top: center.y });
-                        tagAndAdd(img);
+                        img.set({ left: c.x, top: c.y }); processNewObject(img);
                     });
                 };
-                reader.readAsDataURL(file);
-                $(this).val(''); 
+                reader.readAsDataURL(file); $(this).val(''); 
             });
 
-
-            // --- 6. PDF EXPORT (Adapted for Spatial Architecture) ---
+            // --- 7. PDF EXPORT ---
             $('#export-pdf-btn').click(async function() {
-                if (isMasterMode) {
-                    alert("Please close the Master Page editor before exporting.");
-                    return;
-                }
+                if (isMasterMode) { alert("Please close the Master Page editor before exporting."); return; }
 
                 const originalText = $(this).html();
                 $(this).html('<i class="fa-solid fa-spinner fa-spin"></i> Generating...').prop('disabled', true);
                 canvas.discardActiveObject();
-
-                // Save current camera view to restore later
                 const originalVpt = [...canvas.viewportTransform];
                 
                 const { jsPDF } = window.jspdf;
@@ -397,27 +399,19 @@
 
                 for (let i = 0; i < totalPages; i++) {
                     if (i > 0) pdf.addPage();
-                    
-                    // Force the mathematical camera to perfectly frame the specific page coordinate
-                    canvas.viewportTransform[4] = -MARGIN_LEFT; // X offset
-                    canvas.viewportTransform[5] = -(MARGIN_TOP + (i * (PAGE_H + PAGE_GAP))); // Y offset
+                    canvas.viewportTransform[4] = -MARGIN_LEFT; 
+                    canvas.viewportTransform[5] = -(MARGIN_TOP + (i * (PAGE_H + PAGE_GAP))); 
                     canvas.requestRenderAll();
-
-                    // Wait a frame for rendering to finish
                     await new Promise(r => setTimeout(r, 50));
-                    
-                    // Take the photo of just the framed area
                     const imgData = canvas.toDataURL({ format: 'png', multiplier: 2, left: MARGIN_LEFT, top: MARGIN_TOP + (i * (PAGE_H + PAGE_GAP)), width: PAGE_W, height: PAGE_H });
                     pdf.addImage(imgData, 'PNG', 0, 0, PAGE_W, PAGE_H);
                 }
-
-                // Restore original camera view
                 canvas.setViewportTransform(originalVpt);
                 pdf.save('Thooval_Document.pdf');
                 $(this).html(originalText).prop('disabled', false);
             });
 
-            // --- 7. UI SYNC & DELETION (From previous versions) ---
+            // --- 8. UI SYNC & PROPERTIES ---
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
@@ -426,6 +420,7 @@
                 if (!obj) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 if (obj.fill && typeof obj.fill === 'string') $('#obj-fill').val(obj.fill);
+                $('#obj-opacity').val(obj.opacity !== undefined ? obj.opacity : 1);
 
                 if (obj.type === 'i-text' || obj.type === 'text') {
                     $('#text-properties').show();
@@ -439,8 +434,23 @@
 
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); } }
             $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); });
+            $('#obj-opacity').on('input', function() { updateObj('opacity', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            $('#align-left').click(function() { updateObj('textAlign', 'left'); });
+            $('#align-center').click(function() { updateObj('textAlign', 'center'); });
+            $('#align-right').click(function() { updateObj('textAlign', 'right'); });
+
+            // Layering - Special handling to keep paper at the absolute back
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } });
+            $('#send-backward').click(function() { 
+                const obj = canvas.getActiveObject(); 
+                if (obj) { 
+                    canvas.sendBackwards(obj); 
+                    canvas.getObjects().forEach(o => { if (o.isPaper) o.sendToBack(); }); // Protect the paper layer
+                    canvas.renderAll(); 
+                } 
+            });
 
             $('#delete-obj').click(deleteActive);
             $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
