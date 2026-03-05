@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.10</title>
+    <title>Thooval Workspace v1.11</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -84,11 +84,13 @@
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
         #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; } #exit-master-btn:hover { background: #000; border-color: var(--accent); }
         
+        /* --- EMPTY STATE --- */
         #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center; }
         .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; } #inner-welcome h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); } #inner-welcome p { color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; } .action-card { background: var(--bg-surface); border: 1px solid transparent; padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; } .action-card:hover { border-color: var(--accent); background: var(--bg-surface-hover); transform: translateY(-2px); } .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
+        /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); } .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 12px; } .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; } .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; } .btn-cancel:hover { background: var(--bg-surface); }
     </style>
@@ -97,7 +99,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.10</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.11</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -211,7 +213,7 @@
                                 <option value="[None]">[Basic Paragraph]</option>
                             </select>
                             <button class="small-icon-btn" id="create-style-btn" title="Create new style from selection"><i class="fa-solid fa-plus"></i></button>
-                            <button class="small-icon-btn" id="update-style-btn" title="Redefine style"><i class="fa-solid fa-rotate-right"></i></button>
+                            <button class="small-icon-btn" id="update-style-btn" title="Redefine style globally"><i class="fa-solid fa-rotate-right"></i></button>
                         </div>
                     </div>
 
@@ -331,6 +333,43 @@
             canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
 
 
+            // --- PARAGRAPH STYLES LOGIC ---
+            function populateStylesDropdown() {
+                if(!activeId) return; const p = projects[activeId];
+                if (!p.styles) p.styles = { '[None]': null };
+                const select = $('#text-style-select'); select.empty();
+                for (const styleName in p.styles) { select.append(new Option(styleName, styleName)); }
+            }
+
+            $('#text-style-select').change(function() {
+                const styleName = $(this).val(); const obj = canvas.getActiveObject();
+                if(styleName !== '[None]' && projects[activeId].styles[styleName] && obj) {
+                    const s = projects[activeId].styles[styleName];
+                    obj.set({ fontFamily: s.fontFamily, fontSize: s.fontSize, lineHeight: s.lineHeight, textAlign: s.textAlign, fill: s.fill, charSpacing: s.charSpacing, paragraphStyle: styleName });
+                    canvas.renderAll(); updateUI({selected: [obj]}); markDirty();
+                } else if (obj) {
+                    obj.paragraphStyle = '[None]'; markDirty();
+                }
+            });
+
+            $('#create-style-btn').click(function() {
+                const obj = canvas.getActiveObject(); if(!obj || (obj.type !== 'textbox' && obj.type !== 'i-text')) return;
+                const name = prompt("Name for new Paragraph Style (e.g. Chapter Title):");
+                if(name) {
+                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 };
+                    obj.paragraphStyle = name; populateStylesDropdown(); $('#text-style-select').val(name); markDirty();
+                }
+            });
+
+            $('#update-style-btn').click(function() {
+                const obj = canvas.getActiveObject(); const name = $('#text-style-select').val();
+                if(!obj || name === '[None]') return;
+                projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 };
+                canvas.getObjects().forEach(o => { if((o.type === 'textbox' || o.type === 'i-text') && o.paragraphStyle === name) { o.set(projects[activeId].styles[name]); } });
+                canvas.renderAll(); markDirty(); alert("Style '" + name + "' updated globally!");
+            });
+
+
             // --- DRAW TEXT FRAME TOOL ---
             let isDrawingText = false; let textDrawRect = null; let startTx = 0, startTy = 0;
             canvas.on('mouse:down', function(o) {
@@ -349,8 +388,8 @@
                     isDrawingText = false; canvas.selection = true;
                     if (textDrawRect) {
                         let w = textDrawRect.width; let h = textDrawRect.height; let finalX = textDrawRect.left; let finalY = textDrawRect.top; canvas.remove(textDrawRect); textDrawRect = null;
-                        if (w > 50 && h > 30) { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: w, height: h, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, lineHeight: 1.16, splitByGrapheme: false }); processNewObject(text); setTool('select'); text.enterEditing(); } 
-                        else { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: 200, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16 }); processNewObject(text); setTool('select'); text.enterEditing(); }
+                        if (w > 50 && h > 30) { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: w, height: h, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, lineHeight: 1.16, splitByGrapheme: false, paragraphStyle: '[None]' }); processNewObject(text); setTool('select'); text.enterEditing(); } 
+                        else { const text = new fabric.Textbox('', { id: generateUUID(), left: finalX, top: finalY, width: 200, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 16, paragraphStyle: '[None]' }); processNewObject(text); setTool('select'); text.enterEditing(); }
                     }
                 }
             });
@@ -377,7 +416,7 @@
             canvas.on('mouse:down', function(e) {
                 if (linkingMode && e.target && e.target.type === 'textbox' && e.target !== linkingFromBox) {
                     linkingFromBox.nextFrameId = e.target.id; e.target.prevFrameId = linkingFromBox.id;
-                    alert("Frames Linked! (Dynamic reflow processing activated in engine).");
+                    alert("Frames Linked!");
                     linkingMode = false; linkingFromBox = null; canvas.defaultCursor = 'default'; $('#link-frame-btn').removeClass('active-link').html('<i class="fa-solid fa-link"></i> Link Text Frame'); markDirty();
                 } else if (linkingMode && (!e.target || e.target === linkingFromBox)) { linkingMode = false; linkingFromBox = null; canvas.defaultCursor = 'default'; $('#link-frame-btn').removeClass('active-link').html('<i class="fa-solid fa-link"></i> Link Text Frame'); }
             });
@@ -407,21 +446,13 @@
                     bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked')
                 };
                 if (isEditingDoc && activeId) { projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); } 
-                else { 
-                    const newId = generateId(); 
-                    projects[newId] = { 
-                        name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, 
-                        config: confData, canvasData: null, vpt: [1,0,0,1,0,0],
-                        styles: { '[None]': null } // Initialize styles registry
-                    }; 
-                    switchProject(newId); fitWholePage(); 
-                }
+                else { const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], styles: { '[None]': null } }; switchProject(newId); fitWholePage(); }
                 $('#new-doc-modal').hide();
             });
             function updatePreview() { if (!activeId || !$('#doc-live-preview').is(':checked')) return; const u = $('#doc-unit').val(); const p = projects[activeId]; p.config.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); p.config.heightPx = toPx(parseFloat($('#doc-h').val()||0), u); p.config.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) }; p.config.bleedPx = toPx(parseFloat($('#doc-bleed').val()||0), u); p.config.facingPages = $('#doc-facing').is(':checked'); drawDocumentEnvironment(); }
             $('.margin-input, #doc-w, #doc-h, #doc-facing, #doc-bleed').on('input change', function() { if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); updatePreview(); });
 
-            // --- SPATIAL MATH & MASKING ---
+            // --- SPATIAL MATH & PERFECT MASKS ---
             function getPagePosition(index, pConf) { if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) }; if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; const isLeft = (index - 1) % 2 === 0; const row = Math.floor((index - 1) / 2) + 1; return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) }; }
             function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
             function maintainHairlines() { if(!activeId) return; const z = canvas.getZoom(); canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); }); }
@@ -442,7 +473,6 @@
                     if (showMargins) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        // STRICTLY SET TO MAGENTA #FF00FF
                         canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#FF00FF', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
                     }
                 }
@@ -523,6 +553,16 @@
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); }
 
+            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
+            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
+            
+            function handleImageInsert(file) {
+                if (!file || !activeId) return; const reader = new FileReader();
+                reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
+            }
+            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+
+            // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state'); if(tool==='text') $('#add-text').addClass('active-state');
@@ -530,7 +570,7 @@
                 else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
             }
-            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
+            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom')); $('#add-text').click(() => setTool('text'));
 
             function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); drawRulers(); renderOverflowIndicators(); }
             function fitWholePage() {
@@ -567,9 +607,13 @@
             });
             $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
 
-            // --- EXPORT ---
+            // --- LOAD, SAVE & EXPORT ---
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, styles: data.styles || { '[None]': null }, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
+
             $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
+            
             $('#confirm-export-btn').click(async function() {
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
@@ -589,44 +633,7 @@
                 showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines(); renderOverflowIndicators();
             });
 
-            // --- PARAGRAPH STYLES LOGIC ---
-            function populateStylesDropdown() {
-                if(!activeId) return; const p = projects[activeId];
-                if (!p.styles) p.styles = { '[None]': null };
-                const select = $('#text-style-select'); select.empty();
-                for (const styleName in p.styles) { select.append(new Option(styleName, styleName)); }
-            }
-
-            $('#text-style-select').change(function() {
-                const styleName = $(this).val(); const obj = canvas.getActiveObject();
-                if(styleName !== '[None]' && projects[activeId].styles[styleName] && obj) {
-                    const s = projects[activeId].styles[styleName];
-                    obj.set({ fontFamily: s.fontFamily, fontSize: s.fontSize, lineHeight: s.lineHeight, textAlign: s.textAlign, fill: s.fill, charSpacing: s.charSpacing, paragraphStyle: styleName });
-                    canvas.renderAll(); updateUI({selected: [obj]}); markDirty();
-                } else if (obj) {
-                    obj.paragraphStyle = '[None]'; markDirty();
-                }
-            });
-
-            $('#create-style-btn').click(function() {
-                const obj = canvas.getActiveObject(); if(!obj || obj.type !== 'textbox') return;
-                const name = prompt("Name for new Paragraph Style (e.g. Chapter Title):");
-                if(name) {
-                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 };
-                    obj.paragraphStyle = name; populateStylesDropdown(); $('#text-style-select').val(name); markDirty();
-                }
-            });
-
-            $('#update-style-btn').click(function() {
-                const obj = canvas.getActiveObject(); const name = $('#text-style-select').val();
-                if(!obj || name === '[None]') return;
-                projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, textAlign: obj.textAlign, fill: obj.fill, charSpacing: obj.charSpacing || 0 };
-                // Apply update globally to all objects using this style
-                canvas.getObjects().forEach(o => { if(o.type === 'textbox' && o.paragraphStyle === name) { o.set(projects[activeId].styles[name]); } });
-                canvas.renderAll(); markDirty(); alert("Style '" + name + "' updated globally across document!");
-            });
-
-            // UI PROPERTIES PANEL
+            // --- UI PROPERTIES PANEL ---
             let focusedColorType = 'fill'; 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
@@ -636,17 +643,14 @@
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
-                if (obj.type === 'textbox') { 
+                if (obj.type === 'textbox' || obj.type === 'i-text') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-char-spacing').val(obj.charSpacing || 0);
                     let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
                     $('.btn-group button').removeClass('active');
                     if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
                     
                     const textHeight = obj.calcTextHeight ? obj.calcTextHeight() : obj.height; if (textHeight > obj.getScaledHeight() + 5) $('#overflow-warning').show(); else $('#overflow-warning').hide();
-                    
-                    // Sync Paragraph Style
                     $('#text-style-select').val(obj.paragraphStyle || '[None]');
-
                 } else { $('#text-properties').hide(); }
             }
 
@@ -658,7 +662,7 @@
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal; if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
             }
 
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); if (prop !== 'paragraphStyle' && obj.type === 'textbox') obj.paragraphStyle = '[None]'; canvas.renderAll(); markDirty(); renderOverflowIndicators(); updateUI({selected:[obj]}); } }
+            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); if(prop !== 'paragraphStyle' && obj.type === 'textbox') obj.paragraphStyle = '[None]'; canvas.renderAll(); markDirty(); renderOverflowIndicators(); updateUI({selected:[obj]}); } }
             
             $('#fill-focus, #stroke-focus').click(function() { focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke'; $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused'); updateColorsUI(canvas.getActiveObject()); });
             $('#unified-color-picker').on('input', function() { const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val(); if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); } updateColorsUI(obj); });
