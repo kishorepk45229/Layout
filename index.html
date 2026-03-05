@@ -27,7 +27,7 @@
             --danger: #ef4444;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 12px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 11px; }
         body { display: flex; flex-direction: column; height: 100vh; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -70,29 +70,45 @@
         /* --- WORKSPACE --- */
         .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
         
-        .toolbar-left { width: 88px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
+        .toolbar-left { width: 110px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
         .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
-        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        /* Global Palette in Left Toolbar */
+        .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
+        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
+        .fill-block { top: 0; left: 0; z-index: 10; background: #3f3f46; }
+        .stroke-block { top: 18px; left: 18px; z-index: 5; background: transparent; border-width: 3px; }
+        .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
+        .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
+
+        .palette-btn-group { display: flex; gap: 6px; justify-content: center; width: 100%; margin-top: 12px; }
+        .palette-btn-group button { padding: 4px; border-radius: 4px; }
+        
+        .stroke-weight-control { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; }
+
+        .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
-        .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; width: 100%; }
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         
-        input[type="text"], input[type="number"], select { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
-        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; }
+        input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
+        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
+        input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
-        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; }
+        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .btn-group button:hover { background: var(--bg-surface); color: var(--text-main); }
         .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
+        
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; }
         .doc-btn:hover { background: var(--bg-surface-hover); }
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
@@ -118,16 +134,7 @@
         .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
-        /* Left Toolbar Permanent Palette */
-        .complex-color-block { position: relative; width: 60px; height: 60px; flex-shrink: 0;}
-        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
-        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
-        .fill-block { top: 0; left: 0; z-index: 10; background: #3f3f46; }
-        .stroke-block { top: 18px; left: 18px; z-index: 5; background: transparent; border-width: 3px; }
-        .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
-        .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
-
-        .small-icon-btn { width: 18px; height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
+        .small-icon-btn { min-width: 18px; min-height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
         .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
 
         /* --- MODALS --- */
@@ -137,13 +144,26 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
+        
+        /* New Formatting & Alignment Reskins */
+        .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; justify-items: center;}
+        .icon-row { display: flex; width: 100%; gap: 6px; justify-content: center;}
+        .format-icon-btn { padding: 6px; border-radius: 4px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; transition: 0.2s;}
+        .format-icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
+        .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
+        
+        .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
+        .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
+        .num-label { font-size: 10px; color: var(--text-muted); }
+        
+        .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.7</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.8</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -219,27 +239,24 @@
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
-            <div class="tool-divider"></div>
+            <div class="tool-divider" style="flex: 1;"></div>
             
-            <div class="palette-container" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-                <div class="complex-color-block">
-                    <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
-                    <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
-                </div>
-                <div style="display: flex; gap: 6px; width: 100%; justify-content: center;">
-                    <button class="small-icon-btn" id="swap-fill-stroke" title="Swap (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
-                    <button class="small-icon-btn" id="default-fill-stroke" title="Default (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
-                    <button class="small-icon-btn none-btn" id="apply-none" title="None (/)"><i class="fa-solid fa-slash"></i></button>
-                </div>
-                <input type="color" id="unified-color-picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 4px;" value="#3f3f46">
-                
-                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 6px; background: var(--bg-surface); border-radius: 4px; padding: 4px 6px;">
-                    <i class="fa-solid fa-border-top-left" style="color: var(--text-muted); font-size: 11px;" title="Stroke Width"></i>
-                    <input type="number" id="global-stroke-width" min="0" max="100" value="2" style="width: 40px; padding: 2px 4px; text-align: center; border-radius: 2px; height: 20px;">
-                </div>
+            <div class="global-palette-block">
+                <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
+                <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
+            </div>
+            <div class="palette-btn-group">
+                <button class="small-icon-btn swap-fill-stroke" title="Swap (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
+                <button class="small-icon-btn apply-none" title="None (/)"><i class="fa-solid fa-slash"></i></button>
+            </div>
+            
+            <div class="stroke-weight-control">
+                <i class="fa-solid fa-border-top-left" title="Stroke Weight" style="color: var(--text-muted); font-size: 11px;"></i>
+                <input type="number" id="global-stroke-weight" min="0" value="0" step="1" style="width: 40px; text-align: center; height: 22px;">
             </div>
 
-            <div style="flex: 1;"></div> 
+            <input type="color" id="unified-color-picker" title="Unified Color Picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
+            
             <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
@@ -291,6 +308,40 @@
                     <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
                 </div>
 
+                <div class="panel-section" id="align-panel" style="border-bottom: 2px solid var(--border);">
+                    <h3>Align Objects</h3>
+                    <div class="icon-row" style="margin-bottom: 8px;">
+                        <button class="format-icon-btn align-action" data-align="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                        <button class="format-icon-btn align-action" data-align="center" title="Horizontal Center"><i class="fa-solid fa-align-center"></i></button>
+                        <button class="format-icon-btn align-action" data-align="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                    </div>
+                    <div class="icon-row" style="margin-bottom: 12px;">
+                        <button class="format-icon-btn align-action" data-align="top" title="Align Top"><i class="fa-solid fa-square" style="transform: rotate(180deg);"></i></button>
+                        <button class="format-icon-btn align-action" data-align="middle" title="Vertical Center"><i class="fa-solid fa-square" style="transform: rotate(90deg);"></i></button>
+                        <button class="format-icon-btn align-action" data-align="bottom" title="Align Bottom"><i class="fa-solid fa-square"></i></button>
+                    </div>
+
+                    <h3 style="margin-top: 16px;">Distribute Objects</h3>
+                    <div class="icon-row" style="margin-bottom: 8px;">
+                        <button class="format-icon-btn distribute-action" data-dist="vtop" title="Vertical Top"><i class="fa-solid fa-distribute-spacing-vertical" style="transform: rotate(180deg);"></i></button>
+                        <button class="format-icon-btn distribute-action" data-dist="vmid" title="Vertical Center"><i class="fa-solid fa-distribute-spacing-vertical"></i></button>
+                        <button class="format-icon-btn distribute-action" data-dist="vbot" title="Vertical Bottom"><i class="fa-solid fa-distribute-spacing-vertical" style="transform: rotate(-180deg);"></i></button>
+                    </div>
+                    <div class="icon-row" style="margin-bottom: 12px;">
+                        <button class="format-icon-btn distribute-action" data-dist="hleft" title="Horizontal Left"><i class="fa-solid fa-distribute-spacing-horizontal"></i></button>
+                        <button class="format-icon-btn distribute-action" data-dist="hmid" title="Horizontal Center"><i class="fa-solid fa-distribute-spacing-horizontal" style="transform: rotate(180deg);"></i></button>
+                        <button class="format-icon-btn distribute-action" data-dist="hright" title="Horizontal Right"><i class="fa-solid fa-distribute-spacing-horizontal" style="transform: rotate(180deg);"></i></button>
+                    </div>
+                    
+                    <div class="align-option-row">
+                        <label style="color: var(--text-muted); font-size: 11px;">Align To:</label>
+                        <select id="align-to-target" style="flex: 1; padding: 4px 8px; font-size: 11px;">
+                            <option value="selection">Selection Bounds</option>
+                            <option value="page">Page Margins (Active Page)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="panel-section" id="geometry-properties">
                     <h3>Transform</h3>
                     <div class="prop-row">
@@ -315,44 +366,75 @@
                         </div>
                         <div class="prop-row">
                             <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                            <div class="prop-col"><label>Letter Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
+                            <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
+                        </div>
+                        <div class="prop-row">
+                            <div class="prop-col"><label>Line Spacing</label><input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16"></div>
+                            <div class="prop-col"><label>Text Background</label><input type="color" id="obj-text-bg" value="#ffffff" style="height: 28px;"></div>
                         </div>
                     </div>
 
                     <div class="panel-section">
                         <h3>Paragraph</h3>
-                        <div class="prop-row" style="margin-bottom: 12px;">
-                            <div class="prop-col">
-                                <label>Alignment</label>
-                                <div class="btn-group">
-                                    <button id="align-left"><i class="fa-solid fa-align-left"></i></button>
-                                    <button id="align-center"><i class="fa-solid fa-align-center"></i></button>
-                                    <button id="align-right"><i class="fa-solid fa-align-right"></i></button>
-                                    <button id="align-justify"><i class="fa-solid fa-align-justify"></i></button>
-                                }
-                            </div>
+                        
+                        <div class="icon-row" style="margin-bottom: 12px;">
+                            <button class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                            <button class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                            <button class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                            <button class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
                         </div>
-                        <div class="prop-row" style="margin-bottom: 12px;">
-                            <div class="prop-col" style="flex: 2;">
-                                <label>Line Spacing</label>
-                                <div style="display: flex; gap: 4px;">
-                                    <select id="obj-lh-preset" style="flex: 1;">
-                                        <option value="1">1.0</option>
-                                        <option value="1.16">1.16</option>
-                                        <option value="1.5">1.5</option>
-                                        <option value="2">2.0</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
-                                    <input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16" style="flex: 1;">
-                                </div>
+                        
+                        <div class="numeric-row" style="margin-bottom: 8px;">
+                            <div class="num-col">
+                                <span class="num-label">Left Indent (px)</span>
+                                <input type="number" id="obj-indent-left" min="0" value="0" step="1">
+                            </div>
+                            <div class="num-col">
+                                <span class="num-label">Right Indent (px)</span>
+                                <input type="number" id="obj-indent-right" min="0" value="0" step="1">
                             </div>
                         </div>
                         
-                        <div class="prop-row">
-                            <div class="prop-col"><label>Internal Padding</label><input type="number" id="obj-padding" min="0" max="100" step="1" value="0"></div>
-                            <div class="prop-col"><label>Text Background</label><input type="color" id="obj-text-bg" value="#ffffff" style="height: 28px;"></div>
+                        <div class="numeric-row" style="margin-bottom: 12px;">
+                            <div class="num-col">
+                                <span class="num-label">First Line Left (px)</span>
+                                <input type="number" id="obj-indent-first" value="0" step="1">
+                            </div>
+                            <div class="num-col">
+                                <span class="num-label">Last Line Right (px)</span>
+                                <input type="number" id="obj-indent-last" value="0" step="1">
+                            </div>
                         </div>
 
+                        <div class="numeric-row" style="margin-bottom: 12px;">
+                            <div class="num-col">
+                                <span class="num-label">Space Before (px)</span>
+                                <input type="number" id="obj-space-before" min="0" value="0" step="1">
+                            </div>
+                            <div class="num-col">
+                                <span class="num-label">Space After (px)</span>
+                                <input type="number" id="obj-space-after" min="0" value="0" step="1">
+                            </div>
+                        </div>
+                        
+                        <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
+                        
+                        <div class="numeric-row" style="margin-bottom: 12px;">
+                            <div class="num-col">
+                                <span class="num-label">Drop Cap lines</span>
+                                <input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1">
+                            </div>
+                            <div class="num-col">
+                                <span class="num-label">Drop Cap chars</span>
+                                <input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1">
+                            </div>
+                        </div>
+                        
+                        <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
+                            <input type="checkbox" id="obj-hyphenate">
+                            <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
+                        </div>
+                        
                         <div class="prop-row" style="margin-top: 16px;">
                             <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Dynamic Page Number</button>
                         </div>
@@ -450,7 +532,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'dropCapChars', 'dropCapLines']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -463,7 +545,7 @@
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
-            let globalStrokeWidth = 2;
+            let globalStrokeWeight = 0;
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -825,11 +907,12 @@
                 if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 
+                // Inherit Global Defaults
                 if (obj.type !== 'image') {
                     obj.set('fill', globalFill);
-                    if (globalStroke !== 'transparent' && globalStrokeWidth > 0) {
+                    if (globalStrokeWeight > 0) {
                         obj.set('stroke', globalStroke);
-                        obj.set('strokeWidth', globalStrokeWidth);
+                        obj.set('strokeWidth', globalStrokeWeight);
                     }
                 }
                 
@@ -1009,11 +1092,19 @@
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
+                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
+
                 if (obj.type === 'textbox') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
                     let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
-                    $('.btn-group button').removeClass('active');
-                    if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
+                    $('.p-align').removeClass('active');
+                    if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
+                    
+                    $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
+                    $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
+                    $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
+                    $('#obj-text-bg').val(obj.textBackgroundColor || '#ffffff'); $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
+                    $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
                 } else { $('#text-properties').hide(); }
             }
 
@@ -1026,12 +1117,20 @@
 
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                
+                // Update Globals so new shapes inherit them
+                globalFill = fillVal;
+                globalStroke = strokeVal;
+                globalStrokeWeight = obj.strokeWidth || 0;
+
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
                 
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+                
+                $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
@@ -1039,27 +1138,31 @@
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
                 $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
-                updateColorsUI(canvas.getActiveObject()); 
+                const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); 
             });
 
             $('#unified-color-picker').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val();
-                if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
-                updateColorsUI(obj);
+                const obj = canvas.getActiveObject(); const col = $(this).val();
+                if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
+                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth) { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
+            });
+            
+            $('#global-stroke-weight').on('input', function() {
+                globalStrokeWeight = parseFloat($(this).val()) || 0;
+                const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight);
             });
 
-            $('#swap-fill-stroke').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                const oldFill = obj.fill; const oldStroke = obj.stroke;
-                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
-                if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
-                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+            $('.swap-fill-stroke').click(() => {
+                let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
+                $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
+                const obj = canvas.getActiveObject(); if (obj) { const oldFill = obj.fill; const oldStroke = obj.stroke; obj.set('fill', oldStroke); obj.set('stroke', oldFill); if(!obj.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; obj.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory(); }
             });
 
-            $('#apply-none').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+            $('.apply-none').click(() => {
+                const obj = canvas.getActiveObject();
+                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) obj.set('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
+                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
+                if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
@@ -1074,16 +1177,90 @@
             $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
             $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
-            $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#align-justify').click(function() { updateObj('textAlign', 'justify'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+            $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
+            // Simulating internal indents and spacing using object padding
+            const paddingVars = ['spaceBefore', 'indentLeft', 'indentRight', 'spaceAfter'];
+            function updateSimulatedPadding() { const obj = canvas.getActiveObject(); if(!obj || obj.type !== 'textbox') return; obj.set('padding', [$('#obj-space-before').val()||0, $('#obj-indent-right').val()||0, $('#obj-space-after').val()||0, $('#obj-indent-left').val()||0]); canvas.renderAll(); markDirty(); saveHistory(); }
+            $('#obj-space-before, #obj-indent-right, #obj-space-after, #obj-indent-left').on('input', updateSimulatedPadding);
+            
+            // First Line Indent (text-indent)
+            $('#obj-indent-first').on('input', function() { const val = parseInt($(this).val(), 10) || 0; updateObj('textIndent', val); });
+            
+            // Hyphenation
+            $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
+            
+            // Dynamic Page Num & arranging work as before
+            $('#obj-text-bg').on('input', function() { updateObj('textBackgroundColor', $(this).val()); });
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
-            // --- GROUPING & UNGROUPING LOGIC ---
+            // --- ALIGNMENT & DISTRIBUTION JS ---
+            function getAlignmentTargetCoords(targetType) {
+                if (targetType === 'selection') { const obj = canvas.getActiveObject(); if(!obj) return null; return obj.getBoundingRect(); } 
+                else if (targetType === 'page') { 
+                    const p = projects[activeId]; if(!p) return null; const pageConf = p.config; const zoom = canvas.getZoom();
+                    const estimatedPage = Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + PAGE_GAP) / (pageConf.heightPx + PAGE_GAP));
+                    const pos = getPagePosition(estimatedPage, pageConf); const margins = pageConf.marginsPx; let isLeftPage = pageConf.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0;
+                    let aL = isLeftPage ? margins.r : margins.l; let aR = isLeftPage ? margins.l : margins.r;
+                    // Coords are in canvas space
+                    return { left: pos.x + aL, top: pos.y + margins.t, width: pageConf.widthPx - aL - aR, height: pageConf.heightPx - margins.t - margins.b };
+                }
+                return null;
+            }
+
+            $('.align-action').click(function() {
+                const alignType = $(this).data('align'); const targetType = $('#align-to-target').val();
+                const sel = canvas.getActiveObject(); if(!sel) return;
+                const targetRect = getAlignmentTargetCoords(targetType); if(!targetRect) return;
+                const objects = sel.getObjects ? sel.getObjects() : [sel];
+                
+                canvas.discardActiveObject(); // Release selection before move
+
+                objects.forEach(obj => {
+                    const objRect = obj.getBoundingRect();
+                    switch(alignType) {
+                        case 'left': obj.set('left', targetRect.left + (obj.left - objRect.left)); break;
+                        case 'center': obj.set('left', targetRect.left + targetRect.width/2 - objRect.width/2 + (obj.left - objRect.left)); break;
+                        case 'right': obj.set('left', targetRect.left + targetRect.width - objRect.width + (obj.left - objRect.left)); break;
+                        case 'top': obj.set('top', targetRect.top + (obj.top - objRect.top)); break;
+                        case 'middle': obj.set('top', targetRect.top + targetRect.height/2 - objRect.height/2 + (obj.top - objRect.top)); break;
+                        case 'bottom': obj.set('top', targetRect.top + targetRect.height - objRect.height + (obj.top - objRect.top)); break;
+                    }
+                    obj.setCoords();
+                });
+                
+                canvas.setActiveObject(sel); // Restore selection bounds
+                canvas.requestRenderAll(); markDirty(); saveHistory();
+            });
+            
+            $('.distribute-action').click(function() {
+                const distType = $(this).data('dist');
+                const sel = canvas.getActiveObject(); if(!sel || !sel.getObjects || sel.size() < 3) return;
+                const objects = sel.getObjects().sort((a,b) => (distType[0]==='v'?a.top-b.top:a.left-b.left));
+                const selRect = sel.getBoundingRect();
+                
+                canvas.discardActiveObject(); // Release for math-accurate relative bounds
+
+                if (distType[0] === 'v') { // Vertical distributing
+                    const availableSpace = objects[objects.length-1].getBoundingRect().top - objects[0].getBoundingRect().bottom;
+                    const objectsToMove = objects.slice(1, -1); const totalItemsToMoveHeight = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().height, 0);
+                    const gap = (availableSpace - totalItemsToMoveHeight) / (objectsToMove.length + 1);
+                    let currentBottom = objects[0].getBoundingRect().bottom;
+                    objectsToMove.forEach(obj => { obj.set('top', currentBottom + gap + (obj.top - obj.getBoundingRect().top)); obj.setCoords(); currentBottom = obj.getBoundingRect().bottom; });
+                } else { // Horizontal distributing
+                    const availableSpace = objects[objects.length-1].getBoundingRect().left - objects[0].getBoundingRect().right;
+                    const objectsToMove = objects.slice(1, -1); const totalItemsToMoveWidth = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().width, 0);
+                    const gap = (availableSpace - totalItemsToMoveWidth) / (objectsToMove.length + 1);
+                    let currentRight = objects[0].getBoundingRect().right;
+                    objectsToMove.forEach(obj => { obj.set('left', currentRight + gap + (obj.left - obj.getBoundingRect().left)); obj.setCoords(); currentRight = obj.getBoundingRect().right; });
+                }
+
+                canvas.setActiveObject(sel); canvas.requestRenderAll(); markDirty(); saveHistory();
+            });
+
+            // Grouping logic works as before
             $('#menu-group').click(function() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
@@ -1097,26 +1274,21 @@
                 activeObj.toActiveSelection(); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
-            // --- TYPOGRAPHY CONVERTER UI ---
+            // Typography converter logic works as before
             $('#menu-font-tool').click(() => {
-                if(!activeId) return;
-                const activeObj = canvas.getActiveObject();
+                if(!activeId) return; const activeObj = canvas.getActiveObject();
                 if (activeObj && activeObj.type === 'textbox') { $('#typo-source-text').val(activeObj.text); } else { $('#typo-source-text').val(''); }
-                $('#typo-output-text').val('');
-                $('#typography-modal').css('display', 'flex');
+                $('#typo-output-text').val(''); $('#typography-modal').css('display', 'flex');
             });
             $('#btn-run-conversion').click(() => {
                 const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val();
-                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source);
-                $('#typo-output-text').val(result);
+                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source); $('#typo-output-text').val(result);
             });
             $('#btn-apply-text-canvas').click(() => {
-                const newText = $('#typo-output-text').val(); if (!newText) return;
-                let activeObj = canvas.getActiveObject();
+                const newText = $('#typo-output-text').val(); if (!newText) return; let activeObj = canvas.getActiveObject();
                 if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
                 else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-                $('#typography-modal').hide();
+                canvas.requestRenderAll(); markDirty(); saveHistory(); $('#typography-modal').hide();
             });
             
             renderTabs();
