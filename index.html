@@ -3,196 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Layout Engine</title>
+    <title>Thooval Workspace</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-        body { display: flex; flex-direction: column; height: 100vh; background: #2c2c2c; color: #fff; overflow: hidden; }
+        :root {
+            /* Modern Dark Theme with Lemon Mint Accent */
+            --bg-base: #0e0e11;       /* Canvas Pasteboard */
+            --bg-panel: #18181b;      /* Sidebars & Topbar */
+            --bg-surface: #27272a;    /* Inputs & Buttons */
+            --bg-surface-hover: #3f3f46;
+            --border: #27272a;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            
+            /* Lemon Mint Green */
+            --accent: #cbfb45;
+            --accent-hover: #bceb35;
+            --accent-transparent: rgba(203, 251, 69, 0.15);
+            --accent-text: #1a2005; /* Dark text for inside mint buttons */
+            
+            --danger: #ef4444;
+            --danger-transparent: rgba(239, 68, 68, 0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; }
+        body { display: flex; flex-direction: column; height: 100vh; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
         
-        /* Menu Bar System */
-        .top-bar { background: #1e1e1e; border-bottom: 1px solid #444; display: flex; align-items: center; z-index: 200; position: relative; }
-        .branding { font-weight: bold; letter-spacing: 0.5px; padding: 10px 20px; border-right: 1px solid #444; background: #252525; }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* --- TOP BAR --- */
+        .top-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 44px; z-index: 200; position: relative; padding: 0 16px; }
+        
+        .top-left { display: flex; align-items: center; gap: 16px; }
+        .branding { font-weight: 600; font-size: 13px; color: var(--text-main); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+        .branding i { color: var(--accent); }
         
         .menu-bar { display: flex; list-style: none; }
-        .menu-item { position: relative; padding: 10px 15px; cursor: pointer; font-size: 13px; color: #ddd; transition: background 0.2s; }
-        .menu-item:hover { background: #3a3a3a; color: #fff; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: #252525; min-width: 180px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid #444; z-index: 300; }
+        .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; transition: all 0.2s; }
+        .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
+        
+        .dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; }
         .menu-item:hover .dropdown { display: block; }
-        .dropdown li { list-style: none; padding: 8px 15px; font-size: 13px; color: #ccc; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
-        .dropdown li:hover { background: #0056b3; color: white; cursor: pointer; }
-        .shortcut { color: #888; font-size: 11px; }
-        .dropdown li:hover .shortcut { color: #cce5ff; }
-        
+        .dropdown li { list-style: none; padding: 8px 12px; color: var(--text-main); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
+        .shortcut { color: var(--text-muted); font-size: 11px; }
+        .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
         #open-file-input { display: none; }
-        
-        /* Modal System */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 500; justify-content: center; align-items: center; }
-        .modal { background: #252525; padding: 25px; border-radius: 8px; width: 400px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .modal h2 { margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; color: #ccc; margin-bottom: 5px; }
-        .form-group select, .form-group input { width: 100%; padding: 8px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 4px; }
-        
-        .margin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; }
-        .link-margins { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #3a3a3a; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid #555; z-index: 10; }
-        .link-margins.active { background: #0056b3; border-color: #007bff; }
-        
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
-        .btn { padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; border: none; }
-        .btn-cancel { background: #444; color: white; }
-        .btn-primary { background: #0056b3; color: white; }
-        .btn:hover { filter: brightness(1.2); }
 
-        /* Workspace */
+        .top-right { display: flex; align-items: center; gap: 12px; }
+        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        /* --- WORKSPACE LAYOUT --- */
         .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
-        .toolbar-left { width: 70px; background: #252525; padding: 15px 10px; border-right: 1px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 100; overflow-y: auto; }
-        .toolbar-left button, .toolbar-left label.upload-btn { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; flex-shrink: 0; cursor: pointer; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 8px; font-size: 18px; }
-        .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; color: #fff; }
-        .delete-btn { margin-top: auto; background: #4a1c1c !important; border-color: #702a2a !important; color: #ff9999 !important; }
+        
+        /* --- LEFT TOOLBAR --- */
+        .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; }
+        .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
+        .tool-btn.active { background: var(--accent-transparent); color: var(--accent); }
         #image-upload { display: none; }
         
-        .panel-right { width: 280px; background: #252525; padding: 15px; border-left: 1px solid #444; overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
-        .panel-section { border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 15px; }
-        .panel-right h3 { font-size: 12px; text-transform: uppercase; color: #888; margin-bottom: 10px; }
-        .prop-group { margin-bottom: 10px; }
-        .prop-group label { display: block; font-size: 12px; color: #ccc; margin-bottom: 4px; }
-        .prop-group input[type="color"], .prop-group input[type="range"], .prop-group select, .prop-group input[type="number"] { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; font-size: 13px; }
+        .divider { width: 24px; height: 1px; background: var(--border); margin: 4px 0; }
         
-        .doc-btn { width: 100%; padding: 8px; background: #3a3a3a; border: 1px solid #555; color: #fff; border-radius: 4px; cursor: pointer; margin-bottom: 8px; font-size: 13px; }
-        .doc-btn.master-active { background: #8b6b00; border-color: #cca418; font-weight: bold; }
-        .master-banner { display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #cca418; color: #000; padding: 5px 20px; border-radius: 20px; font-weight: bold; z-index: 200; pointer-events: none; }
+        .delete-btn { color: var(--text-muted); }
+        .delete-btn:hover { background: var(--danger-transparent); color: var(--danger); }
 
-        .canvas-container-wrapper { flex: 1; background: #151515; position: relative; overflow: hidden; }
+        /* --- RIGHT PANEL --- */
+        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
+        
+        .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
+        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-main); margin-bottom: 12px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        
+        label { font-size: 11px; color: var(--text-muted); }
+        
+        /* Figma-style inputs */
+        input[type="text"], input[type="number"], select { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; outline: none; transition: 0.2s; width: 100%; }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
+        input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; border-radius: 4px; overflow: hidden; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+        .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
+        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .btn-group button:hover { color: var(--text-main); }
+        .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+        /* Master Page & Document Buttons */
+        .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; }
+        .doc-btn:hover { background: var(--bg-surface-hover); }
+        .doc-btn.master-active { background: var(--accent-transparent); border-color: var(--accent); color: var(--accent); }
+        
+        .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 24px; border-radius: 24px; font-weight: 600; font-size: 12px; z-index: 200; pointer-events: none; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
+
+        /* --- CANVAS AREA --- */
+        .canvas-container-wrapper { flex: 1; background: var(--bg-base); position: relative; overflow: hidden; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
-        .pan-hint { position: absolute; bottom: 15px; left: 15px; color: #666; font-size: 12px; z-index: 50; pointer-events: none; }
+        .pan-hint { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); border: 1px solid var(--border); padding: 6px 16px; border-radius: 20px; color: var(--text-muted); font-size: 11px; z-index: 50; pointer-events: none; opacity: 0.7; }
+        .pan-hint b { color: var(--text-main); }
+        
+        /* --- MODAL --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 500; justify-content: center; align-items: center; }
+        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 420px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; color: var(--text-main); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
+        .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .btn-cancel:hover { background: var(--bg-surface); }
+
+        .empty-state { padding: 40px 20px; text-align: center; color: var(--text-muted); font-style: normal; }
+        .empty-state i { font-size: 24px; margin-bottom: 12px; opacity: 0.5; }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
-        <div class="branding">Thooval</div>
-        <ul class="menu-bar">
-            <li class="menu-item">File
-                <ul class="dropdown">
-                    <li id="menu-new">New Document... <span class="shortcut">Ctrl+N</span></li>
-                    <li id="menu-open">
-                        <label style="cursor: pointer; width: 100%;">Open Document... <input type="file" id="open-file-input" accept=".thooval,.json"></label>
-                        <span class="shortcut">Ctrl+O</span>
-                    </li>
-                    <li id="menu-save">Save <span class="shortcut">Ctrl+S</span></li>
-                    <li id="menu-print">Print / Export PDF <span class="shortcut">Ctrl+P</span></li>
-                </ul>
-            </li>
-            <li class="menu-item">View
-                <ul class="dropdown">
-                    <li id="menu-toggle-margins">Show/Hide Margins <span class="shortcut">W</span></li>
-                </ul>
-            </li>
-        </ul>
+        <div class="top-left">
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval</div>
+            <ul class="menu-bar">
+                <li class="menu-item">File
+                    <ul class="dropdown">
+                        <li id="menu-new"><span>New Document</span> <span class="shortcut">Ctrl+N</span></li>
+                        <li id="menu-open">
+                            <label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;">
+                                <span>Open...</span> <input type="file" id="open-file-input" accept=".thooval,.json">
+                                <span class="shortcut">Ctrl+O</span>
+                            </label>
+                        </li>
+                        <li id="menu-save"><span>Save Local</span> <span class="shortcut">Ctrl+S</span></li>
+                    </ul>
+                </li>
+                <li class="menu-item">View
+                    <ul class="dropdown">
+                        <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">W</span></li>
+                        <li id="menu-toggle-grid"><span>Toggle Snap Grid</span> <span class="shortcut">G</span></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="top-right">
+            <span style="color: var(--text-muted); font-size: 11px; margin-right: 8px;">Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span></span>
+            <button class="btn-primary" id="export-pdf-btn"><i class="fa-solid fa-file-export"></i> Export PDF</button>
+        </div>
     </header>
 
     <div class="modal-overlay" id="new-doc-modal">
         <div class="modal">
-            <h2>New Document</h2>
+            <h2>New Layout</h2>
             
-            <div class="form-group">
-                <label>Preset Sizes</label>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Preset</label>
                 <select id="doc-preset">
                     <option value="A4">A4 (210 x 297 mm)</option>
                     <option value="A5">A5 (148 x 210 mm)</option>
                     <option value="Letter">US Letter (8.5 x 11 in)</option>
-                    <option value="Custom">Custom Size...</option>
+                    <option value="Custom">Custom Size</option>
                 </select>
             </div>
             
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 2;">
-                    <label>Width</label>
-                    <input type="number" id="doc-w" value="210">
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>Height</label>
-                    <input type="number" id="doc-h" value="297">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Units</label>
-                    <select id="doc-unit">
-                        <option value="mm" selected>mm</option>
-                        <option value="px">px</option>
-                        <option value="in">in</option>
-                    </select>
+            <div class="prop-row">
+                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div>
+                <div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
+                <div class="prop-col" style="flex: 0.5;"><label>Unit</label>
+                    <select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select>
                 </div>
             </div>
 
-            <h3 style="font-size: 13px; margin: 15px 0 10px; color: #888; border-bottom: 1px solid #444; padding-bottom: 5px;">Margins</h3>
-            <div class="margin-grid">
-                <div class="link-margins active" id="link-margins-btn" title="Link/Unlink Margins"><i class="fa-solid fa-link"></i></div>
-                <div class="form-group"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div>
-                <div class="form-group"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div>
-                <div class="form-group"><label>Left</label><input type="number" class="margin-input" id="mar-l" value="15"></div>
-                <div class="form-group"><label>Right</label><input type="number" class="margin-input" id="mar-r" value="15"></div>
+            <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
+
+            <label style="margin-bottom: 8px; display: block;">Margins</label>
+            <div class="prop-row" style="position: relative;">
+                <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div>
+                <div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div>
+                <div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div>
+            </div>
+            <div class="prop-row">
+                <div class="prop-col"><label>Left</label><input type="number" class="margin-input" id="mar-l" value="15"></div>
+                <div class="prop-col"><label>Right</label><input type="number" class="margin-input" id="mar-r" value="15"></div>
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-cancel" id="cancel-doc-btn">Cancel</button>
-                <button class="btn btn-primary" id="create-doc-btn">Create Document</button>
+                <button class="btn-cancel" id="cancel-doc-btn">Cancel</button>
+                <button class="btn-primary" id="create-doc-btn">Create</button>
             </div>
         </div>
     </div>
 
     <div class="workspace">
-        <div class="master-banner" id="master-banner"><i class="fa-solid fa-crown"></i> Editing Master Page</div>
+        <div class="master-banner" id="master-banner"><i class="fa-solid fa-crown"></i> Editing Master Template</div>
         
         <aside class="toolbar-left">
-            <button id="add-rect" title="Add Rectangle"><i class="fa-solid fa-square"></i></button>
-            <button id="add-circle" title="Add Circle"><i class="fa-solid fa-circle"></i></button>
-            <button id="add-text" title="Add Typography"><i class="fa-solid fa-font"></i></button>
-            <label class="upload-btn" title="Place Image">
-                <i class="fa-solid fa-image"></i>
+            <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
+            <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
+            <button class="tool-btn" id="add-text" title="Text (T)"><i class="fa-solid fa-t"></i></button>
+            
+            <label class="tool-btn" title="Place Image (I)">
+                <i class="fa-regular fa-image"></i>
                 <input type="file" id="image-upload" accept="image/*">
             </label>
-            <button id="delete-obj" class="delete-btn" title="Delete Selected Object"><i class="fa-solid fa-trash"></i></button>
+            
+            <div class="divider"></div>
+            <button class="tool-btn delete-btn" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
 
         <main class="canvas-container-wrapper" id="workspace-wrapper">
             <canvas id="layout-canvas"></canvas>
-            <div class="pan-hint">Hold <b>Spacebar</b> + Drag to Pan • Press <b>W</b> to Toggle Preview Mode</div>
+            <div class="pan-hint">Hold <b>Space</b> to pan • <b>W</b> to preview</div>
         </main>
 
         <aside class="panel-right">
+            
             <div class="panel-section">
-                <h3>Document Pages</h3>
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Total Pages: <span id="page-count-display">1</span></div>
-                <button class="doc-btn" id="add-page-btn"><i class="fa-solid fa-plus"></i> Add New Page</button>
-                <hr style="border-color:#444; margin: 15px 0;">
-                <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Page</button>
+                <h3>Pages</h3>
+                <div class="prop-row">
+                    <button class="doc-btn" id="add-page-btn"><i class="fa-solid fa-plus"></i> New Page</button>
+                </div>
+                <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Master Template</button>
             </div>
 
-            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic; text-align: center; margin-top: 20px;">Select an object.</div>
+            <div id="no-selection" class="empty-state">
+                <i class="fa-solid fa-arrow-pointer"></i>
+                <div>Select an object to inspect properties.</div>
+            </div>
             
             <div id="properties-form" style="display: none;">
+                
                 <div class="panel-section">
-                    <h3>Appearance</h3>
-                    <div class="prop-group"><label>Fill Color:</label><input type="color" id="obj-fill"></div>
+                    <h3>Design</h3>
+                    <div class="prop-row">
+                        <label style="flex: 1;">Fill</label>
+                        <input type="color" id="obj-fill">
+                        <input type="text" id="obj-fill-hex" style="width: 80px;" readonly>
+                    </div>
+                    <div class="prop-col" style="margin-top: 12px;">
+                        <label>Opacity</label>
+                        <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
+                    </div>
                 </div>
 
                 <div id="text-properties" class="panel-section" style="display: none;">
                     <h3>Typography</h3>
-                    <div class="prop-group">
-                        <label>Font Family:</label>
+                    <div class="prop-col" style="margin-bottom: 12px;">
                         <select id="obj-font-family">
-                            <option value="sans-serif">System Default</option>
+                            <option value="'Inter', sans-serif">Inter</option>
                             <option value="'Manjari', sans-serif">Manjari</option>
                             <option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option>
+                            <option value="Georgia, serif">Georgia</option>
                         </select>
                     </div>
-                    <div class="prop-group"><label>Font Size:</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
+                    
+                    <div class="prop-row">
+                        <div class="prop-col"><label>Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
+                        <div class="prop-col">
+                            <label>Align</label>
+                            <div class="btn-group">
+                                <button id="align-left" title="Left"><i class="fa-solid fa-align-left"></i></button>
+                                <button id="align-center" title="Center"><i class="fa-solid fa-align-center"></i></button>
+                                <button id="align-right" title="Right"><i class="fa-solid fa-align-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Layer</h3>
+                    <div class="btn-group">
+                        <button id="bring-forward" title="Bring Forward"><i class="fa-solid fa-layer-group"></i> Up</button>
+                        <button id="send-backward" title="Send Backward"><i class="fa-solid fa-layer-group" style="transform: rotate(180deg);"></i> Down</button>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -201,124 +294,63 @@
     <script>
         $(document).ready(function() {
             
-            // --- DOCUMENT SETTINGS & MATH ---
-            let docConfig = {
-                widthPx: 794, heightPx: 1123, // Default A4 in Pixels at 96 DPI
-                marginsPx: { t: 56, b: 56, l: 56, r: 56 }
-            };
-            
+            // --- DOCUMENT CONFIG ---
+            let docConfig = { widthPx: 794, heightPx: 1123, marginsPx: { t: 56, b: 56, l: 56, r: 56 } };
             const DPI = 96;
-            function toPx(val, unit) {
-                if (unit === 'in') return val * DPI;
-                if (unit === 'mm') return val * (DPI / 25.4);
-                return val; // already px
-            }
+            function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; }
 
-            const PAGE_GAP = 50; 
-            const MARGIN_LEFT = 100; 
-            const MARGIN_TOP = 50;
+            const PAGE_GAP = 60; const MARGIN_LEFT = 120; const MARGIN_TOP = 60;
             const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isMasterSource', 'isMasterClone', 'isRegular'];
             
-            let totalPages = 1;
-            let isMasterMode = false;
-            let showMargins = true;
+            let totalPages = 1; let isMasterMode = false; let showMargins = true; let gridEnabled = false; const gridSize = 10;
 
             const wrapper = $('#workspace-wrapper');
-            const canvas = new fabric.Canvas('layout-canvas', {
-                width: wrapper.width(), height: wrapper.height(),
-                selection: true, preserveObjectStacking: true
-            });
-
+            const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); });
 
-            // --- STRICT LAYERING ENGINE (Fixes the Master Page Bug) ---
+            // --- LAYERING & RENDER ---
             function sortLayers() {
                 const objects = canvas.getObjects();
-                // We sort by tagging. Paper goes to absolute bottom (-2). Margins go to (-1). Master Clones go to (0). Regular/Source goes to (1).
                 objects.sort((a, b) => {
-                    const getZ = (obj) => {
-                        if (obj.isPaper) return -2;
-                        if (obj.isMargin) return -1;
-                        if (obj.isMasterClone) return 0;
-                        return 1; // Everything else
-                    };
+                    const getZ = (obj) => { if (obj.isPaper) return -2; if (obj.isMargin) return -1; if (obj.isMasterClone) return 0; return 1; };
                     return getZ(a) - getZ(b);
                 });
-                
-                // Re-add to canvas in the correct order
-                objects.forEach(obj => {
-                    canvas.remove(obj);
-                    canvas.add(obj);
-                });
+                objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
             }
 
-            // --- DRAW PAGES & MARGINS ---
             function drawDocumentEnvironment() {
-                // Remove old paper and margins
                 canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin) canvas.remove(obj); });
-                
                 const pagesToDraw = isMasterMode ? 1 : totalPages;
                 
                 for (let i = 0; i < pagesToDraw; i++) {
                     const pageTop = MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP));
-                    
-                    // 1. Draw Paper
-                    const paper = new fabric.Rect({
-                        left: MARGIN_LEFT, top: pageTop,
-                        width: docConfig.widthPx, height: docConfig.heightPx, fill: '#ffffff',
-                        selectable: false, evented: false, isPaper: true,
-                        shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.5)', blur: 15, offsetX: 0, offsetY: 5 })
-                    });
+                    const paper = new fabric.Rect({ left: MARGIN_LEFT, top: pageTop, width: docConfig.widthPx, height: docConfig.heightPx, fill: '#ffffff', selectable: false, evented: false, isPaper: true, shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.3)', blur: 20, offsetX: 0, offsetY: 10 }) });
                     canvas.add(paper);
                     
-                    // 2. Draw Margin Guides (if toggled on)
                     if (showMargins) {
                         const m = docConfig.marginsPx;
-                        const marginGuide = new fabric.Rect({
-                            left: MARGIN_LEFT + m.l, top: pageTop + m.t,
-                            width: docConfig.widthPx - m.l - m.r, height: docConfig.heightPx - m.t - m.b,
-                            fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1, strokeDashArray: [5, 5],
-                            selectable: false, evented: false, isMargin: true
-                        });
+                        const marginGuide = new fabric.Rect({ left: MARGIN_LEFT + m.l, top: pageTop + m.t, width: docConfig.widthPx - m.l - m.r, height: docConfig.heightPx - m.t - m.b, fill: 'transparent', stroke: '#cbfb45', strokeWidth: 1, strokeDashArray: [4, 4], selectable: false, evented: false, isMargin: true, opacity: 0.6 });
                         canvas.add(marginGuide);
                     }
                 }
-                sortLayers();
-                canvas.requestRenderAll();
+                sortLayers(); canvas.requestRenderAll();
+                $('#page-indicator').text(Math.min(totalPages, Math.max(1, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP) / (docConfig.heightPx + PAGE_GAP)) + 1)));
             }
 
-            // Initialize App
             drawDocumentEnvironment();
 
-            // --- MODAL & NEW DOCUMENT UI ---
+            // --- UI MODALS & MENUS ---
             let marginsLinked = true;
-            $('#link-margins-btn').click(function() {
-                marginsLinked = !marginsLinked;
-                $(this).toggleClass('active');
-                if (marginsLinked) {
-                    const val = $('#mar-t').val();
-                    $('.margin-input').val(val);
-                }
-            });
-
-            $('.margin-input').on('input', function() {
-                if (marginsLinked) $('.margin-input').val($(this).val());
-                $('#doc-preset').val('Custom');
-            });
+            $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
+            $('.margin-input').on('input', function() { if (marginsLinked) $('.margin-input').val($(this).val()); $('#doc-preset').val('Custom'); });
             $('#doc-w, #doc-h').on('input', function() { $('#doc-preset').val('Custom'); });
 
             $('#doc-preset').change(function() {
-                const p = $(this).val();
-                const u = $('#doc-unit').val();
-                let w, h;
+                const p = $(this).val(); const u = $('#doc-unit').val(); let w, h;
                 if (p === 'A4') { w = 210; h = 297; $('#doc-unit').val('mm'); }
                 if (p === 'A5') { w = 148; h = 210; $('#doc-unit').val('mm'); }
                 if (p === 'Letter') { w = 8.5; h = 11; $('#doc-unit').val('in'); }
-                
-                if (w && h) {
-                    $('#doc-w').val(w); $('#doc-h').val(h);
-                    if (marginsLinked) $('.margin-input').val( $('#doc-unit').val() === 'in' ? 0.5 : 15 );
-                }
+                if (w && h) { $('#doc-w').val(w); $('#doc-h').val(h); if (marginsLinked) $('.margin-input').val( $('#doc-unit').val() === 'in' ? 0.5 : 15 ); }
             });
 
             $('#menu-new').click(function() { $('#new-doc-modal').css('display', 'flex'); });
@@ -326,46 +358,16 @@
 
             $('#create-doc-btn').click(function() {
                 const u = $('#doc-unit').val();
-                // Convert inputs to Pixels for the engine
-                docConfig.widthPx = toPx(parseFloat($('#doc-w').val()), u);
-                docConfig.heightPx = toPx(parseFloat($('#doc-h').val()), u);
-                docConfig.marginsPx = {
-                    t: toPx(parseFloat($('#mar-t').val()), u),
-                    b: toPx(parseFloat($('#mar-b').val()), u),
-                    l: toPx(parseFloat($('#mar-l').val()), u),
-                    r: toPx(parseFloat($('#mar-r').val()), u)
-                };
-                
-                // Clear the canvas, reset pages
-                canvas.clear();
-                totalPages = 1; $('#page-count-display').text(totalPages);
-                isMasterMode = false; $('#master-banner').hide(); $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Edit Master Page');
-                canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0; // Reset camera
-                
-                drawDocumentEnvironment();
-                $('#new-doc-modal').hide();
+                docConfig.widthPx = toPx(parseFloat($('#doc-w').val()), u); docConfig.heightPx = toPx(parseFloat($('#doc-h').val()), u);
+                docConfig.marginsPx = { t: toPx(parseFloat($('#mar-t').val()), u), b: toPx(parseFloat($('#mar-b').val()), u), l: toPx(parseFloat($('#mar-l').val()), u), r: toPx(parseFloat($('#mar-r').val()), u) };
+                canvas.clear(); totalPages = 1; $('#page-count-display').text(totalPages);
+                isMasterMode = false; $('#master-banner').hide(); $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template');
+                canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0;
+                drawDocumentEnvironment(); $('#new-doc-modal').hide();
             });
 
-
-            // --- MENU ACTIONS & SHORTCUTS ---
-            function togglePreviewMode() {
-                showMargins = !showMargins;
-                drawDocumentEnvironment();
-            }
-            $('#menu-toggle-margins').click(togglePreviewMode);
-
-            // Hotkeys
-            $(window).keydown(function(e) { 
-                if (canvas.getActiveObject()?.isEditing) return; // Don't trigger if typing in text box
-                
-                // Space to Pan
-                if (e.code === 'Space') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
-                
-                // W to Toggle Margins
-                if (e.key.toLowerCase() === 'w') { togglePreviewMode(); e.preventDefault(); }
-            });
-            $(window).keyup(function(e) { if (e.code === 'Space') { canvas.defaultCursor = 'default'; } });
-
+            $('#menu-toggle-margins').click(function(){ showMargins = !showMargins; drawDocumentEnvironment(); });
+            $('#menu-toggle-grid').click(function(){ gridEnabled = !gridEnabled; });
 
             // --- PANNING ---
             let isDragging = false; let lastPosX, lastPosY;
@@ -378,29 +380,33 @@
             });
             canvas.on('mouse:move', function(opt) {
                 if (isDragging) {
-                    let vpt = canvas.viewportTransform;
-                    vpt[4] += opt.e.clientX - lastPosX; vpt[5] += opt.e.clientY - lastPosY;
+                    canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY;
                     canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY;
+                    $('#page-indicator').text(Math.min(totalPages, Math.max(1, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP) / (docConfig.heightPx + PAGE_GAP)) + 1)));
                 }
             });
-            canvas.on('mouse:up', function() {
-                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; canvas.selection = true;
-                if (canvas.defaultCursor !== 'grab') canvas.defaultCursor = 'default';
-            });
-            canvas.on('mouse:wheel', function(opt) {
-                canvas.viewportTransform[5] -= opt.e.deltaY; canvas.requestRenderAll(); opt.e.preventDefault(); opt.e.stopPropagation();
-            });
+            canvas.on('mouse:up', function() { canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; canvas.selection = true; if (canvas.defaultCursor !== 'grab') canvas.defaultCursor = 'default'; });
+            canvas.on('mouse:wheel', function(opt) { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.requestRenderAll(); opt.e.preventDefault(); opt.e.stopPropagation(); $('#page-indicator').text(Math.min(totalPages, Math.max(1, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP) / (docConfig.heightPx + PAGE_GAP)) + 1)));});
 
+            // --- HOTKEYS ---
+            $(window).keydown(function(e) { 
+                if (canvas.getActiveObject()?.isEditing) return;
+                if (e.code === 'Space') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
+                if (e.key.toLowerCase() === 'w') { showMargins = !showMargins; drawDocumentEnvironment(); e.preventDefault(); }
+                if (e.key.toLowerCase() === 'g') { gridEnabled = !gridEnabled; e.preventDefault(); }
+                if (e.key.toLowerCase() === 'r') $('#add-rect').click();
+                if (e.key.toLowerCase() === 'o') $('#add-circle').click();
+                if (e.key.toLowerCase() === 't') $('#add-text').click();
+            });
+            $(window).keyup(function(e) { if (e.code === 'Space') canvas.defaultCursor = 'default'; });
 
-            // --- MASTER PAGES ENGINE (Fixed Layering) ---
+            // --- MASTER PAGES ---
             $('#toggle-master-btn').click(function() {
                 isMasterMode = !isMasterMode; canvas.discardActiveObject();
-
                 if (isMasterMode) {
-                    $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Save & Close Master');
-                    $('#master-banner').fadeIn(); $('#add-page-btn').prop('disabled', true).css('opacity', 0.5);
+                    $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master');
+                    $('#master-banner').fadeIn(); $('#add-page-btn').css('opacity', 0.5);
                     canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0; 
-
                     canvas.getObjects().forEach(obj => {
                         if (obj.isPaper || obj.isMargin) return;
                         if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); 
@@ -408,145 +414,102 @@
                         if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true }); 
                     });
                 } else {
-                    $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Edit Master Page');
-                    $('#master-banner').fadeOut(); $('#add-page-btn').prop('disabled', false).css('opacity', 1);
-
-                    // Re-show regular content, hide master sources
+                    $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template');
+                    $('#master-banner').fadeOut(); $('#add-page-btn').css('opacity', 1);
                     canvas.getObjects().forEach(obj => {
                         if (obj.isRegular) obj.set({ opacity: 1, selectable: true });
                         if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false });
                     });
-
-                    // Stamp new clones
                     const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    
-                    // We need a promise loop or a clean clone batch to ensure everything gets placed before we sort
                     let clonesCreated = 0;
-                    if (sources.length === 0) { drawDocumentEnvironment(); }
-                    
+                    if (sources.length === 0) drawDocumentEnvironment();
                     for (let p = 0; p < totalPages; p++) {
                         sources.forEach(sourceObj => {
                             sourceObj.clone(function(clone) {
-                                // Important: We calculate offset based on Page 0 (where master is drawn)
-                                const yOffset = p * (docConfig.heightPx + PAGE_GAP);
-                                clone.set({ 
-                                    top: clone.top + yOffset, 
-                                    selectable: false, evented: false, isMasterClone: true, opacity: 1 
-                                });
-                                canvas.add(clone);
-                                clonesCreated++;
-                                
-                                // Only sort and render once all clones are added
-                                if(clonesCreated === sources.length * totalPages) {
-                                    drawDocumentEnvironment(); // This handles paper, margins, AND layering
-                                }
+                                clone.set({ top: clone.top + (p * (docConfig.heightPx + PAGE_GAP)), selectable: false, evented: false, isMasterClone: true, opacity: 1 });
+                                canvas.add(clone); clonesCreated++;
+                                if(clonesCreated === sources.length * totalPages) drawDocumentEnvironment();
                             }, CUSTOM_PROPS);
                         });
                     }
                 }
-                if(sources && sources.length === 0) drawDocumentEnvironment();
             });
 
-            // --- PAGE MANAGEMENT ---
+            // --- PAGE MGMT ---
             $('#add-page-btn').click(function() {
+                if(isMasterMode) return;
                 totalPages++; $('#page-count-display').text(totalPages);
-                
-                // Automatically stamp master objects onto the new page
                 const sources = canvas.getObjects().filter(o => o.isMasterSource);
                 sources.forEach(sourceObj => {
                     sourceObj.clone(function(clone) {
-                        const yOffset = (totalPages - 1) * (docConfig.heightPx + PAGE_GAP);
-                        clone.set({ top: clone.top + yOffset, selectable: false, evented: false, isMasterClone: true, opacity: 1 });
+                        clone.set({ top: clone.top + ((totalPages - 1) * (docConfig.heightPx + PAGE_GAP)), selectable: false, evented: false, isMasterClone: true, opacity: 1 });
                         canvas.add(clone);
                     }, CUSTOM_PROPS);
                 });
-                
                 drawDocumentEnvironment();
             });
 
-
-            // --- OBJECT CREATION ---
-            function getScreenCenter() {
-                const vpt = canvas.viewportTransform;
-                return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] };
-            }
+            // --- OBJECT MGMT ---
+            function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
+            
+            // Visual tool active states
+            function highlightTool(id) { $('.tool-btn').removeClass('active'); $(id).addClass('active'); setTimeout(()=>$(id).removeClass('active'), 200); }
 
             function processNewObject(obj) {
                 if (isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); }
-                canvas.add(obj); canvas.setActiveObject(obj);
-                sortLayers();
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers();
             }
 
-            $('#add-rect').click(function() { const c = getScreenCenter(); processNewObject(new fabric.Rect({ left: c.x, top: c.y, fill: '#6c757d', width: 100, height: 100 })); });
-            $('#add-text').click(function() { const c = getScreenCenter(); processNewObject(new fabric.IText('Hridayathil ninnu...', { left: c.x, top: c.y, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24 })); });
+            canvas.on('object:moving', function(options) {
+                if (!gridEnabled) return;
+                options.target.set({ left: Math.round(options.target.left / gridSize) * gridSize, top: Math.round(options.target.top / gridSize) * gridSize });
+            });
+
+            $('#add-rect').click(function() { highlightTool('#add-rect'); const c = getScreenCenter(); processNewObject(new fabric.Rect({ left: c.x, top: c.y, fill: '#3f3f46', width: 100, height: 100 })); });
+            $('#add-circle').click(function() { highlightTool('#add-circle'); const c = getScreenCenter(); processNewObject(new fabric.Circle({ left: c.x, top: c.y, fill: '#cbfb45', radius: 50 })); });
+            $('#add-text').click(function() { highlightTool('#add-text'); const c = getScreenCenter(); processNewObject(new fabric.IText('Double click to edit', { left: c.x, top: c.y, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, fontWeight: 500 })); });
             $('#image-upload').on('change', function(e) {
                 if (e.target.id === 'open-file-input') return; 
-                const file = e.target.files[0];
-                if (!file) return;
+                highlightTool($(this).parent());
+                const file = e.target.files[0]; if (!file) return;
                 const reader = new FileReader();
-                reader.onload = function(f) {
-                    fabric.Image.fromURL(f.target.result, function(img) {
-                        const c = getScreenCenter();
-                        if (img.width > docConfig.widthPx - 50) img.scaleToWidth(docConfig.widthPx - 50);
-                        img.set({ left: c.x, top: c.y }); processNewObject(img);
-                    });
-                };
+                reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); if (img.width > docConfig.widthPx - 50) img.scaleToWidth(docConfig.widthPx - 50); img.set({ left: c.x, top: c.y }); processNewObject(img); }); };
                 reader.readAsDataURL(file); $(this).val(''); 
             });
 
-
             // --- EXPORT & SAVE ---
-            $('#menu-print').click(async function() {
-                if (isMasterMode) { alert("Please close the Master Page editor before exporting."); return; }
-                canvas.discardActiveObject();
-                const originalVpt = [...canvas.viewportTransform];
+            $('#export-pdf-btn').click(async function() {
+                if (isMasterMode) { alert("Close Master Template before exporting."); return; }
+                const origHtml = $(this).html(); $(this).html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...').prop('disabled', true);
+                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
                 
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [docConfig.widthPx, docConfig.heightPx] });
-
-                // Hide margin lines temporarily before taking the photo
-                const oldShowMargins = showMargins;
-                showMargins = false; drawDocumentEnvironment();
+                const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [docConfig.widthPx, docConfig.heightPx] });
+                const oldShowMargins = showMargins; showMargins = false; drawDocumentEnvironment();
 
                 for (let i = 0; i < totalPages; i++) {
                     if (i > 0) pdf.addPage();
-                    canvas.viewportTransform[4] = -MARGIN_LEFT; 
-                    canvas.viewportTransform[5] = -(MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP))); 
-                    canvas.requestRenderAll();
+                    canvas.viewportTransform[4] = -MARGIN_LEFT; canvas.viewportTransform[5] = -(MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP))); canvas.requestRenderAll();
                     await new Promise(r => setTimeout(r, 50));
-                    const imgData = canvas.toDataURL({ format: 'png', multiplier: 2, left: MARGIN_LEFT, top: MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP)), width: docConfig.widthPx, height: docConfig.heightPx });
-                    pdf.addImage(imgData, 'PNG', 0, 0, docConfig.widthPx, docConfig.heightPx);
+                    pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: MARGIN_LEFT, top: MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP)), width: docConfig.widthPx, height: docConfig.heightPx }), 'PNG', 0, 0, docConfig.widthPx, docConfig.heightPx);
                 }
                 
-                showMargins = oldShowMargins; drawDocumentEnvironment(); // Restore margins
-                canvas.setViewportTransform(originalVpt);
-                pdf.save('Thooval_Document.pdf');
+                showMargins = oldShowMargins; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt);
+                pdf.save('Thooval_Export.pdf'); $(this).html(origHtml).prop('disabled', false);
             });
 
             $('#menu-save').click(function() {
-                if (isMasterMode) { alert("Please close the Master Page editor before saving."); return; }
+                if (isMasterMode) { alert("Close Master Template before saving."); return; }
                 const exportData = { config: docConfig, pages: totalPages, canvasJSON: canvas.toJSON(CUSTOM_PROPS) };
-                const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = "layout.thooval";
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(exportData)], { type: "application/json" })); a.download = "layout.thooval";
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
             });
 
             $('#open-file-input').on('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
+                const file = e.target.files[0]; if (!file) return;
                 const reader = new FileReader();
                 reader.onload = function(f) {
-                    try {
-                        const data = JSON.parse(f.target.result);
-                        if (data.canvasJSON && data.config) {
-                            docConfig = data.config; totalPages = data.pages;
-                            $('#page-count-display').text(totalPages);
-                            canvas.loadFromJSON(data.canvasJSON, function() { drawDocumentEnvironment(); });
-                        } else alert("Invalid .thooval file.");
-                    } catch (error) { alert("Error reading the file."); }
-                };
-                reader.readAsText(file); $(this).val(''); 
+                    try { const data = JSON.parse(f.target.result); if (data.canvasJSON && data.config) { docConfig = data.config; totalPages = data.pages; $('#page-count-display').text(totalPages); canvas.loadFromJSON(data.canvasJSON, function() { drawDocumentEnvironment(); }); } else alert("Invalid .thooval file."); } catch (error) { alert("Error reading file."); }
+                }; reader.readAsText(file); $(this).val(''); 
             });
 
             // --- UI SYNC ---
@@ -555,23 +518,39 @@
 
             function updateUI(event) {
                 const obj = event.selected[0];
-                if (!obj || obj.isPaper || obj.isMargin) return; // Prevent editing paper/guides
+                if (!obj || obj.isPaper || obj.isMargin) return;
                 $('#no-selection').hide(); $('#properties-form').show();
-                if (obj.fill && typeof obj.fill === 'string') $('#obj-fill').val(obj.fill);
+                if (obj.fill && typeof obj.fill === 'string') { $('#obj-fill').val(obj.fill); $('#obj-fill-hex').val(obj.fill); }
+                $('#obj-opacity').val(obj.opacity !== undefined ? obj.opacity : 1);
+
                 if (obj.type === 'i-text' || obj.type === 'text') {
                     $('#text-properties').show();
                     let font = obj.fontFamily;
                     if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif");
                     else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif");
+                    else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif");
                     else $('#obj-font-family').val(font);
                     $('#obj-font-size').val(obj.fontSize);
+                    
+                    $('.btn-group button').removeClass('active');
+                    if(obj.textAlign === 'left') $('#align-left').addClass('active');
+                    if(obj.textAlign === 'center') $('#align-center').addClass('active');
+                    if(obj.textAlign === 'right') $('#align-right').addClass('active');
                 } else { $('#text-properties').hide(); }
             }
 
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); } }
-            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); });
+            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); });
+            $('#obj-opacity').on('input', function() { updateObj('opacity', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            
+            $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+            $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+            $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } });
+            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); } });
 
             $('#delete-obj').click(deleteActive);
             $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
