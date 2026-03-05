@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.3</title>
+    <title>Thooval Workspace v1.4</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -13,7 +13,6 @@
     
     <style>
         :root {
-            /* Theme Colors */
             --bg-base: #0e0e11;
             --bg-panel: #18181b;
             --bg-surface: #27272a;
@@ -25,11 +24,15 @@
             
             --accent: #cbfb45;
             --accent-hover: #bceb35;
-            --accent-transparent: rgba(203, 251, 69, 0.15);
             --accent-text: #1a2005;
             
+            /* Print Guides */
+            --guide-margin: #d946ef; /* Magenta */
+            --guide-bleed: #ef4444;  /* Red */
+            --guide-edge: #000000;   /* Black */
+            --guide-cyan: #00ffff;   /* Draggable Guides */
+            
             --danger: #ef4444;
-            --danger-transparent: rgba(239, 68, 68, 0.15);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 12px; }
@@ -39,7 +42,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
 
-        /* --- TOP BAR & MENUS --- */
+        /* --- TOP BAR & TABS --- */
         .top-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 44px; z-index: 200; position: relative; padding: 0 16px; }
         .top-left { display: flex; align-items: center; gap: 16px; }
         .branding { font-weight: 600; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
@@ -56,18 +59,17 @@
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
         .shortcut { color: var(--text-muted); font-size: 11px; }
         .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
-        #open-file-input { display: none; }
+        #open-file-input, #place-image-input { display: none; }
 
-        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .btn-primary:hover { background: var(--accent-hover); }
 
-        /* --- TABS --- */
         .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; }
         .tab { background: var(--bg-surface); color: var(--text-muted); padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent; border-bottom: none; max-width: 200px; font-size: 11px; }
         .tab:hover { background: var(--bg-surface-hover); }
         .tab.active { background: var(--bg-panel); color: var(--text-main); border-color: var(--border); border-top: 2px solid var(--accent); }
-        .tab-close { opacity: 0.5; transition: 0.2s; font-size: 10px; padding: 2px; border-radius: 50%; }
-        .tab-close:hover { opacity: 1; color: var(--danger); background: var(--danger-transparent); }
+        .tab-close { opacity: 0.5; font-size: 10px; padding: 2px; border-radius: 50%; }
+        .tab-close:hover { opacity: 1; color: var(--danger); background: rgba(239, 68, 68, 0.15); }
         .tab-new { background: transparent; color: var(--text-muted); border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; margin-bottom: 4px; }
         .tab-new:hover { background: var(--bg-surface); color: var(--text-main); }
         .dirty-dot { width: 6px; height: 6px; background: var(--text-main); border-radius: 50%; display: none; }
@@ -76,14 +78,13 @@
         /* --- WORKSPACE --- */
         .workspace-container { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; overflow-y: auto; transition: 0.3s opacity; }
+        .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; overflow-y: auto; }
         .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
-        #image-upload { display: none; }
         .divider { width: 24px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
         
-        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; transition: 0.3s opacity; }
+        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
         .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-main); margin-bottom: 12px; display: flex; justify-content: space-between; }
         .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
@@ -94,29 +95,26 @@
         input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
         .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; }
         .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
-
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; }
         .doc-btn:hover { background: var(--bg-surface-hover); }
-        .doc-btn.master-active { background: var(--accent-transparent); border-color: var(--accent); color: var(--accent); }
+        .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
         /* Rulers & Canvas Area */
         .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); }
-        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; }
+        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; }
         .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; }
-        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; }
+        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; cursor: col-resize; }
         .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; pointer-events: none; }
-        .pan-hint { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); border: 1px solid var(--border); padding: 6px 16px; border-radius: 20px; color: var(--text-muted); font-size: 11px; z-index: 50; pointer-events: none; opacity: 0.7; }
         
-        /* --- EMBEDDED WELCOME BOX --- */
+        /* --- EMPTY STATE --- */
         #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 400px; text-align: center; }
         .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; }
         #inner-welcome h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
@@ -125,8 +123,6 @@
         .action-card { background: var(--bg-surface); border: 1px solid transparent; padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .action-card:hover { border-color: var(--accent); background: var(--bg-surface-hover); transform: translateY(-2px); }
         .action-card i { font-size: 20px; color: var(--text-main); }
-
-        /* Disable Sidebars when no document */
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
         /* --- MODALS --- */
@@ -142,7 +138,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.3</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.4</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -150,6 +146,17 @@
                         <li id="menu-open"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Open...</span> <input type="file" id="open-file-input" accept=".thooval,.json"><span class="shortcut">Ctrl+O</span></label></li>
                         <li class="divider-li"></li>
                         <li id="menu-save"><span>Save Document</span> <span class="shortcut">Ctrl+S</span></li>
+                        <li id="menu-place-image"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Place Image...</span> <input type="file" id="place-image-input" accept="image/*"><span class="shortcut">Ctrl+I</span></label></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-export"><span>Export...</span> <span class="shortcut">Ctrl+E</span></li>
+                    </ul>
+                </li>
+                <li class="menu-item">Pages
+                    <ul class="dropdown">
+                        <li class="menu-page-action" data-action="insert"><span>Insert Pages...</span></li>
+                        <li class="menu-page-action" data-action="delete"><span>Delete Pages...</span></li>
+                        <li class="menu-page-action" data-action="move"><span>Move Pages...</span></li>
+                        <li class="menu-page-action" data-action="goto"><span>Go to Page...</span></li>
                     </ul>
                 </li>
                 <li class="menu-item">View
@@ -159,13 +166,16 @@
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
-                        <li id="menu-toggle-margins"><span>Toggle Margins/Bleed</span> <span class="shortcut">W</span></li>
+                        <li id="menu-toggle-guides"><span>Toggle Guides</span> <span class="shortcut">;</span></li>
+                        <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">M</span></li>
+                        <li id="menu-toggle-bleed"><span>Toggle Bleed</span> <span class="shortcut">B</span></li>
+                        <li id="menu-toggle-grid"><span>Toggle Snap Grid</span> <span class="shortcut">G</span></li>
                     </ul>
                 </li>
             </ul>
         </div>
         <div class="top-right">
-            <button class="btn-primary" id="export-pdf-btn"><i class="fa-solid fa-file-export"></i> Export PDF</button>
+            <span style="color: var(--text-muted); font-size: 11px; margin-right: 8px;">Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span></span>
         </div>
     </header>
 
@@ -174,7 +184,6 @@
     </div>
 
     <div class="workspace-container">
-        
         <aside class="toolbar-left" id="sidebar-left">
             <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
             <button class="tool-btn" id="tool-pan" title="Pan (H)"><i class="fa-regular fa-hand"></i></button>
@@ -183,7 +192,6 @@
             <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
             <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
             <button class="tool-btn" id="add-text" title="Text (T)"><i class="fa-solid fa-t"></i></button>
-            <label class="tool-btn" title="Place Image (I)"><i class="fa-regular fa-image"><input type="file" id="image-upload" accept="image/*"></i></label>
             <div class="divider"></div>
             <button class="tool-btn" style="margin-top: auto; color: var(--danger);" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
@@ -194,37 +202,25 @@
             
             <div class="editor-body">
                 <canvas class="ruler-v" id="ruler-v"></canvas>
-                
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
-                    <div class="pan-hint" id="pan-hint">Hold <b>Space</b> to pan • <b>W</b> to preview • <b>Ctrl+R</b> for rulers</div>
                     
                     <div id="inner-welcome">
                         <i class="fa-solid fa-feather-pointed logo-huge"></i>
                         <h1>Welcome to Thooval</h1>
                         <p>Create a new document or open an existing file to get started.</p>
                         <div class="action-grid">
-                            <div class="action-card" id="welcome-new-btn">
-                                <i class="fa-regular fa-file-lines"></i>
-                                <span>New Layout</span>
-                            </div>
-                            <label class="action-card" style="margin: 0; cursor: pointer;">
-                                <i class="fa-regular fa-folder-open"></i>
-                                <span>Open File...</span>
-                                <input type="file" id="welcome-open-input" accept=".thooval,.json" style="display:none;">
-                            </label>
+                            <div class="action-card" id="welcome-new-btn"><i class="fa-regular fa-file-lines"></i><span>New Layout</span></div>
+                            <label class="action-card" style="margin: 0; cursor: pointer;"><i class="fa-regular fa-folder-open"></i><span>Open File...</span><input type="file" id="welcome-open-input" accept=".thooval,.json" style="display:none;"></label>
                         </div>
                     </div>
-                    
                 </main>
             </div>
         </div>
 
         <aside class="panel-right" id="sidebar-right">
             <div class="panel-section">
-                <h3>Pages</h3>
-                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Total: <span id="page-count-display">0</span></div>
-                <div class="prop-row"><button class="doc-btn" id="add-page-btn"><i class="fa-solid fa-plus"></i> Add Page</button></div>
+                <h3>Template</h3>
                 <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Master Template</button>
             </div>
 
@@ -236,39 +232,19 @@
             <div id="properties-form" style="display: none;">
                 <div class="panel-section">
                     <h3>Design</h3>
-                    <div class="prop-row">
-                        <label style="flex: 1;">Fill</label>
-                        <input type="color" id="obj-fill">
-                        <input type="text" id="obj-fill-hex" style="width: 80px;" readonly>
-                    </div>
+                    <div class="prop-row"><label style="flex: 1;">Fill</label><input type="color" id="obj-fill"><input type="text" id="obj-fill-hex" style="width: 80px;" readonly></div>
                 </div>
                 <div id="text-properties" class="panel-section" style="display: none;">
                     <h3>Typography</h3>
-                    <div class="prop-col" style="margin-bottom: 12px;">
-                        <select id="obj-font-family">
-                            <option value="'Inter', sans-serif">Inter</option>
-                            <option value="'Manjari', sans-serif">Manjari</option>
-                            <option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option>
-                        </select>
-                    </div>
+                    <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"><option value="'Inter', sans-serif">Inter</option><option value="'Manjari', sans-serif">Manjari</option><option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option></select></div>
                     <div class="prop-row">
                         <div class="prop-col"><label>Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                        <div class="prop-col">
-                            <label>Align</label>
-                            <div class="btn-group">
-                                <button id="align-left"><i class="fa-solid fa-align-left"></i></button>
-                                <button id="align-center"><i class="fa-solid fa-align-center"></i></button>
-                                <button id="align-right"><i class="fa-solid fa-align-right"></i></button>
-                            </div>
-                        </div>
+                        <div class="prop-col"><label>Align</label><div class="btn-group"><button id="align-left"><i class="fa-solid fa-align-left"></i></button><button id="align-center"><i class="fa-solid fa-align-center"></i></button><button id="align-right"><i class="fa-solid fa-align-right"></i></button></div></div>
                     </div>
                 </div>
                 <div class="panel-section">
                     <h3>Arrange Layer</h3>
-                    <div class="btn-group">
-                        <button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button>
-                        <button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button>
-                    </div>
+                    <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
                 </div>
             </div>
         </aside>
@@ -277,52 +253,54 @@
     <div class="modal-overlay" id="new-doc-modal">
         <div class="modal">
             <h2>New Document Setup</h2>
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>File Name</label>
-                <input type="text" id="doc-name" value="Untitled Project" placeholder="Enter project name...">
-            </div>
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>Preset</label>
-                <select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select>
-            </div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>File Name</label><input type="text" id="doc-name" value="Untitled Project"></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Preset</label><select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select></div>
             <div class="prop-row">
-                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div>
-                <div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
+                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div><div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
                 <div class="prop-col" style="flex: 0.5;"><label>Unit</label><select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select></div>
             </div>
-            <div class="prop-row" style="margin-top: 16px;">
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages</label>
-            </div>
+            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages</label></div>
             <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
-            
             <div class="prop-row">
                 <div class="prop-col" style="flex: 2;">
                     <label style="margin-bottom: 8px; display: block;">Margins (Inside/Outside)</label>
-                    <div class="prop-row" style="position: relative;">
-                        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div>
-                        <div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div>
-                        <div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div>
-                        <div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div>
-                    </div>
+                    <div class="prop-row" style="position: relative;"><div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div><div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div><div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div></div>
+                    <div class="prop-row"><div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div><div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div></div>
                 </div>
                 <div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;">
-                    <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label>
-                    <div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
+                    <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
                 </div>
             </div>
+            <div class="modal-footer"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
+        </div>
+    </div>
 
-            <div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;">
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer;">
-                    <input type="checkbox" id="doc-preview" checked> Live Preview
-                </label>
-                <div class="modal-footer" style="margin-top: 0;">
-                    <button class="btn-cancel" id="cancel-doc-btn">Cancel</button>
-                    <button class="btn-primary" id="create-doc-btn">Create</button>
-                </div>
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Export Document</h2>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Format</label>
+                <select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select>
             </div>
+            <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;">
+                <div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div>
+            </div>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Pages to Export</label>
+                <select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select>
+            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pages-modal">
+        <div class="modal" style="width: 300px;">
+            <h2 id="pages-modal-title">Manage Pages</h2>
+            <div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;">
+                <label id="pages-input-label">Page Number</label>
+                <input type="number" id="pages-input-val" min="1" value="1">
+            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div>
         </div>
     </div>
 
@@ -330,11 +308,7 @@
         <div class="modal" style="width: 350px;">
             <h2>Unsaved Changes</h2>
             <p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p>
-            <div class="modal-footer" style="margin-top: 0;">
-                <button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button>
-                <button class="btn-cancel" id="btn-cancel-close">Cancel</button>
-                <button class="btn-primary" id="btn-save-close">Save</button>
-            </div>
+            <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div>
         </div>
     </div>
 
@@ -342,85 +316,56 @@
         $(document).ready(function() {
             
             // --- CORE MULTI-PROJECT STATE ---
-            let projects = {};
-            let activeId = null;
-            let tabIdToClose = null; 
+            let projects = {}; let activeId = null; let tabIdToClose = null; 
             
             const DPI = 96; function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; }
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular'];
+            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular', 'isGuide'];
             
-            let showGuides = true; let showRulers = false; let activeTool = 'select';
+            let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
+            let pagesActionType = null;
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
             
-            $(window).resize(function() { 
-                canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); 
-                if(showRulers && activeId) drawRulers();
+            $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId) drawRulers(); });
+
+            // --- BROWSER CLOSE PROTECTION ---
+            window.addEventListener('beforeunload', function (e) {
+                const hasDirty = Object.values(projects).some(p => p.isDirty);
+                if (hasDirty) { e.preventDefault(); e.returnValue = ''; }
             });
 
-            // --- TAB MANAGEMENT & UI STATE ---
+            // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
-            
             function renderTabs() {
-                $('.tab').remove(); 
-                let tabHtml = '';
+                $('.tab').remove(); let tabHtml = '';
                 for (const id in projects) {
-                    const p = projects[id];
-                    const activeClass = (id === activeId) ? 'active' : '';
-                    const dirtyClass = p.isDirty ? 'is-dirty' : '';
-                    tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}">
-                        <div class="dirty-dot"></div>
-                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span>
-                        <i class="fa-solid fa-xmark tab-close"></i>
-                    </div>`;
+                    const p = projects[id]; const activeClass = (id === activeId) ? 'active' : ''; const dirtyClass = p.isDirty ? 'is-dirty' : '';
+                    tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}"><div class="dirty-dot"></div><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><i class="fa-solid fa-xmark tab-close"></i></div>`;
                 }
                 $('#btn-new-tab').before(tabHtml);
                 
-                // Toggle Empty State UI vs Workspace UI
                 if (Object.keys(projects).length === 0) {
-                    $('#inner-welcome').show();
-                    $('.canvas-container').hide();
-                    $('#pan-hint').hide();
-                    $('#ruler-h, #ruler-v').hide();
-                    $('#sidebar-left, #sidebar-right').addClass('disabled-ui');
-                    $('#export-pdf-btn').prop('disabled', true).css('opacity', 0.5);
-                    $('#page-count-display').text('0');
+                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui');
+                    $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide();
                 } else {
-                    $('#inner-welcome').hide();
-                    $('.canvas-container').show();
-                    $('#pan-hint').show();
-                    $('#sidebar-left, #sidebar-right').removeClass('disabled-ui');
-                    $('#export-pdf-btn').prop('disabled', false).css('opacity', 1);
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui');
                     if(showRulers) drawRulers();
                 }
             }
 
             function switchProject(id) {
                 if (activeId === id) return;
-                if (activeId && projects[activeId]) {
-                    projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS);
-                    projects[activeId].vpt = [...canvas.viewportTransform];
-                }
+                if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
                 
-                activeId = id; const p = projects[id];
-                canvas.clear();
-                if (p.canvasData) {
-                    canvas.loadFromJSON(p.canvasData, function() {
-                        canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]);
-                        drawDocumentEnvironment(); 
-                        if(showRulers) drawRulers();
-                    });
-                } else {
-                    canvas.viewportTransform = [1,0,0,1,0,0];
-                    drawDocumentEnvironment();
-                }
+                activeId = id; const p = projects[id]; canvas.clear();
+                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); if(showRulers) drawRulers(); }); } 
+                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
                 
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) { $('#toggle-master-btn').addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master'); $('#master-banner').show(); }
                 else { $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template'); $('#master-banner').hide(); }
-                
                 renderTabs(); setTool('select');
             }
 
@@ -428,14 +373,10 @@
                 if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); return; }
                 forceCloseProject(id);
             }
-
             function forceCloseProject(id) {
                 delete projects[id];
-                if (activeId === id) {
-                    const remainingIds = Object.keys(projects);
-                    if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]);
-                    else { activeId = null; canvas.clear(); renderTabs(); } 
-                } else { renderTabs(); }
+                if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } 
+                else { renderTabs(); }
             }
 
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
@@ -447,62 +388,30 @@
             $('#btn-save-close').click(() => {
                 $('#unsaved-modal').hide(); const p = projects[tabIdToClose];
                 if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS);
-                const exportData = { name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData };
-                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(exportData)], {type: "application/json"})); a.download = `${p.name}.thooval`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                forceCloseProject(tabIdToClose); tabIdToClose = null;
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null;
             });
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
-            canvas.on('object:modified', markDirty); canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed) markDirty(); });
-            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed) markDirty(); });
+            canvas.on('object:modified', markDirty); canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
+            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
 
-
-            // --- CREATE NEW PROJECT & PREVIEW ---
-            let marginsLinked = true;
-            $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); updatePreview(); });
-            
-            function updatePreview() {
-                if (!activeId || !$('#doc-preview').is(':checked')) return; // Only preview if editing an active project
-                const u = $('#doc-unit').val(); const p = projects[activeId];
-                p.config.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); p.config.heightPx = toPx(parseFloat($('#doc-h').val()||0), u);
-                p.config.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) };
-                p.config.bleedPx = toPx(parseFloat($('#doc-bleed').val()||0), u); p.config.facingPages = $('#doc-facing').is(':checked');
-                drawDocumentEnvironment();
-            }
-
-            $('.margin-input, #doc-w, #doc-h, #doc-facing, #doc-bleed').on('input change', function() { 
-                if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); 
-                if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); 
-                updatePreview(); 
-            });
-
-            $('#doc-preset').change(function() {
-                const p = $(this).val(); const u = $('#doc-unit').val();
-                if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); }
-                if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); }
-                if (p !== 'Custom' && marginsLinked) $('.margin-input').val( $('#doc-unit').val() === 'in' ? 0.5 : 15 );
-                updatePreview();
-            });
-
+            // --- CREATE PROJECT ---
+            let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
+            $('.margin-input').on('input', function() { if (marginsLinked) $('.margin-input').val($(this).val()); });
+            $('#doc-preset').change(function() { const p = $(this).val(); if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); } if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); } });
             $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
-
             $('#create-doc-btn').click(function() {
                 const u = $('#doc-unit').val(); const newId = generateId();
                 projects[newId] = {
                     name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false,
-                    config: {
-                        widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u),
-                        marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) },
-                        bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked')
-                    },
+                    config: { widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u), marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) }, bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked') },
                     canvasData: null, vpt: [1,0,0,1,0,0]
                 };
                 $('#new-doc-modal').hide(); switchProject(newId); fitWholePage();
             });
 
-
-            // --- SPATIAL MATH & THE CLIPPING MASK FIX ---
+            // --- SPATIAL MATH & PERFECT MASKS ---
             function getPagePosition(index, pConf) {
                 if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) };
                 if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
@@ -514,13 +423,14 @@
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
                     const getZ = (o) => {
-                        if (o.isPaper) return -4;
-                        if (o.isMasterClone) return -3;
-                        if (o.isRegular || o.isMasterSource) return -2;
-                        if (o.isMask) return -1; // Mask covers artwork that spills outside the page
-                        if (o.isBleed) return 0; // Bleed guide sits on top of mask
-                        if (o.isMargin) return 1; // Margin guide is highest
-                        return -2;
+                        if (o.isPaper) return -5;
+                        if (o.isMasterClone) return -4;
+                        if (o.isRegular || o.isMasterSource) return -3;
+                        if (o.isMask) return -2; // Mask sits above artwork!
+                        if (o.isBleed) return -1; 
+                        if (o.isMargin) return 0;
+                        if (o.isGuide) return 1; // Draggable guides are topmost
+                        return -3;
                     };
                     return getZ(a) - getZ(b);
                 });
@@ -530,67 +440,124 @@
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask) canvas.remove(obj); });
-                
                 const pagesToDraw = p.isMasterMode ? 1 : p.totalPages;
                 
-                // 1. PERFECT MASKING: Explicit hex colors and 'evenodd' fill rule to cut holes for the pages
-                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `; // Massive background cover
+                // Construct mask path (Solid Hex color to prevent canvas parse bugs)
+                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
                 
                 for (let i = 0; i < pagesToDraw; i++) {
                     const pos = getPagePosition(i, conf);
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx;
                     const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
                     
-                    // Counter-clockwise hole punch
-                    maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `;
+                    maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; // Punch hole
                     
-                    // The Physical Paper
-                    const paper = new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1, selectable: false, evented: false, isPaper: true, shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.5)', blur: 20, offsetX: 0, offsetY: 10 }) });
+                    // Paper (No shadow, solid 1px black stroke for crispness)
+                    const paper = new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1, strokeUniform: true, selectable: false, evented: false, isPaper: true });
                     canvas.add(paper);
                     
-                    if (showGuides) {
-                        if (conf.bleedPx > 0) {
-                            const bleedGuide = new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ef4444', strokeWidth: 1, selectable: false, evented: false, isBleed: true, opacity: 0.8 });
-                            canvas.add(bleedGuide);
-                        }
+                    if (showBleed && conf.bleedPx > 0) {
+                        canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1, strokeUniform: true, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
+                    }
+                    if (showMargins) {
                         const m = conf.marginsPx; let isLeftPage = conf.facingPages && i > 0 && (i - 1) % 2 === 0;
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        const marginGuide = new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#d946ef', strokeWidth: 1, selectable: false, evented: false, isMargin: true, opacity: 0.8 });
-                        canvas.add(marginGuide);
+                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--guide-margin)', strokeWidth: 1, strokeUniform: true, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
                     }
                 }
                 
-                // Add the magic mask over everything
-                const pasteboardMask = new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, opacity: 1 });
+                // Mask obj (objectCaching disabled prevents blur/disappearance at extreme zooms)
+                const pasteboardMask = new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false });
                 canvas.add(pasteboardMask);
                 
                 sortLayers(); canvas.requestRenderAll();
             }
 
-
-            // --- DYNAMIC RULERS ---
+            // --- DRAGGABLE RULERS & GUIDES ---
             function drawRulers() {
                 if (!showRulers || !activeId) { $('#ruler-h, #ruler-v').hide(); return; }
                 $('#ruler-h, #ruler-v').show();
-                
                 const cV = document.getElementById('ruler-v'); const cH = document.getElementById('ruler-h');
                 cV.width = 20; cV.height = wrapper.height(); cH.width = wrapper.width(); cH.height = 20;
                 const ctxV = cV.getContext('2d'); const ctxH = cH.getContext('2d');
                 ctxV.clearRect(0,0,cV.width,cV.height); ctxH.clearRect(0,0,cH.width,cH.height);
-                
                 const zoom = canvas.getZoom(); const vpt = canvas.viewportTransform;
                 ctxV.fillStyle = '#a1a1aa'; ctxH.fillStyle = '#a1a1aa'; ctxV.font = '9px Inter'; ctxH.font = '9px Inter';
-                
-                const step = 100 * zoom; 
-                const offsetX = vpt[4] % step; const offsetY = vpt[5] % step;
+                const step = 100 * zoom; const offsetX = vpt[4] % step; const offsetY = vpt[5] % step;
                 const startValX = -Math.floor(vpt[4] / step) * 100; const startValY = -Math.floor(vpt[5] / step) * 100;
-
                 for(let i=0; i<cH.width; i+=step) { ctxH.fillRect(i + offsetX, 15, 1, 5); ctxH.fillText(startValX + Math.round(i/zoom), i + offsetX + 2, 12); }
                 for(let i=0; i<cV.height; i+=step) { ctxV.fillRect(15, i + offsetY, 5, 1); ctxV.save(); ctxV.translate(12, i + offsetY + 2); ctxV.rotate(-Math.PI/2); ctxV.fillText(startValY + Math.round(i/zoom), 0, 0); ctxV.restore(); }
             }
-            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); });
             canvas.on('after:render', drawRulers);
 
+            let draggingGuideType = null;
+            $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; });
+            $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
+            $(window).mouseup((e) => {
+                if (draggingGuideType && activeId) {
+                    const rect = wrapper[0].getBoundingClientRect();
+                    const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+                    if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
+                        const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
+                        let guide = new fabric.Line(
+                            draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], 
+                            { stroke: 'var(--guide-cyan)', strokeWidth: 1, strokeUniform: true, isGuide: true, selectable: true, hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' }
+                        );
+                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
+                    }
+                }
+                draggingGuideType = null;
+            });
+
+            // --- VIEW TOGGLES ---
+            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); });
+            $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); });
+            $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); });
+            $('#menu-toggle-guides').click(() => { 
+                showGuides = !showGuides; 
+                canvas.getObjects().forEach(o => { if(o.isGuide) o.set('opacity', showGuides ? 1 : 0); }); 
+                canvas.requestRenderAll(); 
+            });
+
+            // --- PAGES MENU MODAL LOGIC ---
+            $('.menu-page-action').click(function() {
+                if(!activeId || projects[activeId].isMasterMode) return;
+                pagesActionType = $(this).data('action');
+                if (pagesActionType === 'insert') { $('#pages-modal-title').text('Insert Pages'); $('#pages-input-label').text('Number of Pages to Insert'); $('#pages-input-val').val(1); }
+                if (pagesActionType === 'delete') { $('#pages-modal-title').text('Delete Page'); $('#pages-input-label').text('Page Number to Delete'); $('#pages-input-val').val(projects[activeId].totalPages); }
+                if (pagesActionType === 'goto') { $('#pages-modal-title').text('Go to Page'); $('#pages-input-label').text('Page Number'); $('#pages-input-val').val(1); }
+                if (pagesActionType === 'move') { alert('Advanced page moving requires the upcoming Spreads Panel feature.'); return; }
+                $('#pages-modal').css('display', 'flex');
+            });
+
+            $('#confirm-pages-btn').click(function() {
+                const val = parseInt($('#pages-input-val').val()); const p = projects[activeId];
+                if (pagesActionType === 'insert') {
+                    p.totalPages += val;
+                    const sources = canvas.getObjects().filter(o => o.isMasterSource);
+                    for(let i = p.totalPages - val; i < p.totalPages; i++) {
+                        const targetPos = getPagePosition(i, p.config); const masterPos = getPagePosition(0, p.config);
+                        sources.forEach(s => { s.clone(function(c) { c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
+                    }
+                    drawDocumentEnvironment(); markDirty();
+                } 
+                else if (pagesActionType === 'delete') {
+                    if (p.totalPages <= 1) { alert("Cannot delete the last page."); return; }
+                    p.totalPages--;
+                    // Real deletion of objects requires spatial filtering. For now, simply reduce count and clear pasteboard objects below the threshold
+                    const cutoff = getPagePosition(p.totalPages, p.config).y - 100;
+                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); });
+                    drawDocumentEnvironment(); markDirty();
+                }
+                else if (pagesActionType === 'goto') {
+                    let pg = Math.min(p.totalPages, Math.max(1, val));
+                    const pos = getPagePosition(pg - 1, p.config);
+                    canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2);
+                    canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2);
+                    canvas.requestRenderAll(); drawRulers();
+                }
+                $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
+            });
 
             // --- MASTER PAGES & TOOLS ---
             $('#toggle-master-btn').click(function() {
@@ -599,29 +566,13 @@
                 if (p.isMasterMode) {
                     $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master'); $('#master-banner').fadeIn();
                     const pos = getPagePosition(0, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = 40; 
-                    canvas.getObjects().forEach(obj => {
-                        if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed) return;
-                        if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); 
-                        if (obj.isMasterClone) canvas.remove(obj); 
-                        if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true }); 
-                    });
+                    canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true }); });
                 } else {
                     $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template'); $('#master-banner').fadeOut();
                     canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
                     const sources = canvas.getObjects().filter(o => o.isMasterSource); const masterPos = getPagePosition(0, p.config);
-                    for (let pg = 0; pg < p.totalPages; pg++) {
-                        const targetPos = getPagePosition(pg, p.config);
-                        sources.forEach(sourceObj => { sourceObj.clone(function(clone) { clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
-                    }
+                    for (let pg = 0; pg < p.totalPages; pg++) { const targetPos = getPagePosition(pg, p.config); sources.forEach(s => { s.clone(function(c) { c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); }); }
                 }
-                drawDocumentEnvironment(); markDirty();
-            });
-
-            $('#add-page-btn').click(function() {
-                if(!activeId || projects[activeId].isMasterMode) return;
-                const p = projects[activeId]; p.totalPages++; $('#page-count-display').text(p.totalPages);
-                const sources = canvas.getObjects().filter(o => o.isMasterSource); const targetPos = getPagePosition(p.totalPages - 1, p.config); const masterPos = getPagePosition(0, p.config);
-                sources.forEach(sourceObj => { sourceObj.clone(function(clone) { clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
                 drawDocumentEnvironment(); markDirty();
             });
 
@@ -632,11 +583,18 @@
             $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
             $('#add-text').click(() => processNewObject(new fabric.IText('Double click to edit', { left: getScreenCenter().x, top: getScreenCenter().y, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, fontWeight: 500 })));
             
+            function handleImageInsert(file) {
+                if (!file || !activeId) return; const reader = new FileReader();
+                reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); };
+                reader.readAsDataURL(file);
+            }
+            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
-                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
+                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
+                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
             }
             $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
@@ -649,7 +607,6 @@
                 canvas.requestRenderAll(); drawRulers();
             }
             $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#menu-toggle-margins').click(() => { showGuides = !showGuides; drawDocumentEnvironment(); });
             $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
 
             let isDragging = false; let lastPosX, lastPosY;
@@ -658,29 +615,32 @@
                 if (opt.e.code === 'Space' || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; }
             });
             canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
-            canvas.on('mouse:up', function() { canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; if (activeTool === 'select') { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan') { canvas.defaultCursor = 'grab'; } });
+            canvas.on('mouse:up', function(opt) { 
+                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; if (activeTool === 'select') { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan') { canvas.defaultCursor = 'grab'; } 
+                // Check if deleting a guide (dragged off screen)
+                if(opt.target && opt.target.isGuide) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); } }
+            });
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers(); });
+            
             $(window).keydown(function(e) { 
-                if(!activeId || canvas.getActiveObject()?.isEditing || $('#new-doc-modal').is(':visible') || $('#unsaved-modal').is(':visible')) return;
+                if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
                 if(e.ctrlKey && e.key.toLowerCase()==='r') { showRulers = !showRulers; drawRulers(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
                 if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
                 if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
-                if (e.key.toLowerCase() === 'w') { showGuides = !showGuides; drawDocumentEnvironment(); e.preventDefault(); }
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); }
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); }
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
             $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
 
 
-            // --- LOAD & SAVE & EXPORT ---
+            // --- LOAD, SAVE & EXPORT ---
             function handleFileUpload(file) {
                 const reader = new FileReader();
                 reader.onload = function(f) {
-                    try {
-                        const data = JSON.parse(f.target.result);
-                        if (data.canvasData && data.config) {
-                            const newId = generateId(); projects[newId] = { name: data.name || file.name.replace('.thooval',''), isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0] };
-                            switchProject(newId); fitWholePage();
-                        } else alert("Invalid .thooval file.");
-                    } catch (error) { alert("Error reading file."); }
+                    try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || file.name.replace('.thooval',''), isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } else alert("Invalid file."); } catch (error) { alert("Error reading file."); }
                 }; reader.readAsText(file);
             }
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) handleFileUpload(e.target.files[0]); $(this).val(''); });
@@ -688,43 +648,63 @@
             $('#menu-save').click(function() {
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; }
                 p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs();
-                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
             });
 
-            $('#export-pdf-btn').click(async function() {
-                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before exporting."); return; }
-                const origHtml = $(this).html(); $(this).html('<i class="fa-solid fa-spinner fa-spin"></i> Exporting...').prop('disabled', true);
+            $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
+            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
+            
+            $('#confirm-export-btn').click(async function() {
+                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
+                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
+                
                 canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                const oldGuides = showGuides; showGuides = false; drawDocumentEnvironment(); 
-
-                for (let i = 0; i < p.totalPages; i++) {
-                    if (i > 0) pdf.addPage();
-                    const pos = getPagePosition(i, p.config);
-                    canvas.viewportTransform[4] = -pos.x + p.config.bleedPx; canvas.viewportTransform[5] = -pos.y + p.config.bleedPx; canvas.requestRenderAll();
-                    await new Promise(r => setTimeout(r, 50)); 
-                    pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx);
+                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; drawDocumentEnvironment(); 
+                
+                let pagesToExport = [];
+                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); }
+                else { 
+                    // Calculate current visible page
+                    const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP)));
+                    pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); // Rough estimate for current view
                 }
-                showGuides = oldGuides; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt);
-                pdf.save(`${p.name}_Export.pdf`); $(this).html(origHtml).prop('disabled', false);
+
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                    for (let i = 0; i < pagesToExport.length; i++) {
+                        const pg = pagesToExport[i]; if (i > 0) pdf.addPage();
+                        const pos = getPagePosition(pg, p.config); canvas.viewportTransform[4] = -pos.x; canvas.viewportTransform[5] = -pos.y; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 50)); 
+                        pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx);
+                    }
+                    pdf.save(`${p.name}_Export.pdf`);
+                } else {
+                    // Image Export (PNG/JPEG)
+                    for (let i = 0; i < pagesToExport.length; i++) {
+                        const pg = pagesToExport[i];
+                        const pos = getPagePosition(pg, p.config); canvas.viewportTransform[4] = -pos.x; canvas.viewportTransform[5] = -pos.y; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 50)); 
+                        const dataUrl = canvas.toDataURL({ format: format, quality: 0.9, multiplier: scaleMult, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx });
+                        const a = document.createElement('a'); a.href = dataUrl; a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        await new Promise(r => setTimeout(r, 300)); // slight delay between downloads
+                    }
+                }
+                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt);
             });
 
             // UI Properties sync
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
             function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed) return;
+                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 if (obj.fill && typeof obj.fill === 'string') { $('#obj-fill').val(obj.fill); $('#obj-fill-hex').val(obj.fill); }
                 if (obj.type === 'i-text' || obj.type === 'text') { $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); } else { $('#text-properties').hide(); }
             }
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
-            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); });
-            $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); }); $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            
+            // Delete key logic (and throwing guides away)
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); } }
             
-            // Initial call to show Welcome screen
             renderTabs();
         });
     </script>
