@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.6</title>
+    <title>Thooval Workspace v1.7</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -30,7 +30,7 @@
             --guide-margin: #ff00ff; /* Magenta */
             --guide-bleed: #ff0000;  /* Red */
             --guide-edge: #000000;   /* Black */
-            --guide-cyan: #00ffff;   /* Cyan */
+            --guide-cyan: #00ffff;   /* Draggable Guides */
             
             --danger: #ef4444;
         }
@@ -78,11 +78,12 @@
         /* --- WORKSPACE --- */
         .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
         
-        .toolbar-left { width: 52px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 100; overflow-y: auto; flex-shrink: 0; }
-        .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        /* TWO COLUMN TOOLBOX */
+        .toolbar-left { width: 92px; background: var(--bg-panel); border-right: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 12px 6px; gap: 8px; z-index: 100; overflow-y: auto; flex-shrink: 0; }
+        .tool-btn { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 16px; cursor: pointer; grid-column: auto / span 1;}
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
-        .divider { width: 24px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
+        .divider { grid-column: 1 / span 2; width: 100%; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
         
         .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
@@ -125,6 +126,34 @@
         .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
+        /* Color Control Block */
+        .complex-color-block { position: relative; width: 60px; height: 60px; margin-right: 12px; }
+        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
+        .fill-block { top: 0; left: 0; z-index: 10; background: #ffffff; }
+        .stroke-block { top: 18px; left: 18px; z-index: 5; background: #cccccc; border-width: 3px; }
+        .fill-block.focused { z-index: 15; border-color: var(--accent); }
+        .stroke-block.focused { z-index: 15; border-color: var(--accent); }
+
+        .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
+
+        .small-icon-btn { width: 18px; height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
+        .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); }
+
+        /* Swatches Modal (simple text for v1.7) */
+        .color-none-swatch { width: 100%; height: 32px; background: var(--bg-base); border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--danger); font-weight: 700; cursor: pointer; margin-bottom: 12px; font-size: 14px; }
+        .color-none-swatch:hover { border-color: var(--danger); background: var(--danger-transparent); }
+
+        /* Formatting affects container and text icons */
+        .formatting-wrapper { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .affect-container-icon, .affect-text-icon { position: absolute; width: 28px; height: 28px; background: transparent; border: 1px solid transparent; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 16px; font-family: 'Times New Roman', serif !important; }
+        .affect-container-icon:hover, .affect-text-icon:hover { color: var(--text-main); background: var(--bg-surface); }
+        
+        .affect-container-icon { z-index: 5; border-color: var(--border); color: #fff; font-size: 10px !important; line-height: 10px; width: 24px; height: 24px; top: 0; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .affect-text-icon { z-index: 10; top: 8px; left: 8px; font-size: 24px !important; color: transparent; -webkit-text-stroke: 1px #888; text-shadow: 0 0 transparent; }
+        .affect-text-icon.visible { color: #fff; -webkit-text-stroke: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .affect-container-icon.visible { border-color: var(--accent); color: var(--accent); }
+
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -138,7 +167,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.6</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.7</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -147,6 +176,7 @@
                         <li class="divider-li"></li>
                         <li id="menu-save"><span>Save Document</span> <span class="shortcut">Ctrl+S</span></li>
                         <li id="menu-doc-setup"><span>Document Setup...</span> <span class="shortcut">Alt+Ctrl+P</span></li>
+                        <li id="menu-live-preview-setup"><span>Live Preview Setup...</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-place-image"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Place Image...</span> <input type="file" id="place-image-input" accept="image/*"><span class="shortcut">Ctrl+I</span></label></li>
                         <li class="divider-li"></li>
@@ -188,10 +218,10 @@
             <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
             <button class="tool-btn" id="tool-pan" title="Pan (H)"><i class="fa-regular fa-hand"></i></button>
             <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
             <div class="divider"></div>
             <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
             <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
-            <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
             <div class="divider"></div>
             <button class="tool-btn" style="margin-top: auto; color: var(--danger);" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
@@ -222,8 +252,7 @@
             
             <div id="panel-pages">
                 <div class="panel-section">
-                    <h3>Pages Setup</h3>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Total Document Pages: <span id="page-count-display">0</span></div>
+                    <h3>Template</h3>
                     <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Master Template</button>
                 </div>
             </div>
@@ -235,9 +264,42 @@
             
             <div id="properties-form" style="display: none;">
                 
-                <div class="panel-section" id="design-properties">
-                    <h3>Appearance</h3>
-                    <div class="prop-row"><label style="flex: 1;">Fill</label><input type="color" id="obj-fill"><input type="text" id="obj-fill-hex" style="width: 80px;" readonly></div>
+                <div class="panel-section">
+                    <h3>Integrated Palette</h3>
+                    <div class="prop-row" style="position: relative; align-items: flex-start;">
+                        <div class="complex-color-block">
+                            <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
+                            <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
+                        </div>
+                        <div class="prop-col" style="gap: 6px;">
+                            <div style="display: flex; gap: 6px;">
+                                <button class="small-icon-btn" id="swap-fill-stroke" title="Swap Fill and Stroke (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
+                                <button class="small-icon-btn" id="default-fill-stroke" title="Default Fill and Stroke (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                                <button class="small-icon-btn none-btn" id="apply-none" title="Apply None (/)"><i class="fa-solid fa-slash"></i></button>
+                            </div>
+                            <div style="height: 1px; background: var(--border-light); width: 100%;"></div>
+                            <div class="formatting-wrapper">
+                                <div class="affect-container-icon visible" id="affect-container" title="Formatting affects container (J)"><i class="fa-regular fa-square"></i></div>
+                                <div class="affect-text-icon" id="affect-text" title="Formatting affects text">T</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prop-row"><input type="color" id="unified-color-picker" style="width:100%; height:32px;"></div>
+                </div>
+
+                <div class="panel-section" id="geometry-properties">
+                    <h3>Transform</h3>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>Position X</label><input type="number" id="obj-x" step="1"></div>
+                        <div class="prop-col"><label>Position Y</label><input type="number" id="obj-y" step="1"></div>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>Width</label><input type="number" id="obj-w" step="1" min="1"></div>
+                        <div class="prop-col"><label>Height</label><input type="number" id="obj-h" step="1" min="1"></div>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
+                        <div style="width: 24px;"></div> </div>
                 </div>
                 
                 <div id="text-properties" style="display: none;">
@@ -247,7 +309,7 @@
                         <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"><option value="'Inter', sans-serif">Inter</option><option value="'Manjari', sans-serif">Manjari</option><option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option></select></div>
                         <div class="prop-row">
                             <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                            <div class="prop-col"><label>Text Color</label><input type="color" id="obj-text-color" style="width:100%"></div>
+                            <div class="prop-col"></div>
                         </div>
                     </div>
 
@@ -300,7 +362,29 @@
                     <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
+            
+            <div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;">
+                <label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer; visibility: visible;">
+                    <input type="checkbox" id="doc-live-preview" checked> Live Preview
+                </label>
+                <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="live-preview-modal">
+        <div class="modal" style="width: 300px;">
+            <h2>Live Preview Setup</h2>
+            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide(); alert('Preference saved.');">Save</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="swatches-modal">
+        <div class="modal" style="width: 300px;">
+            <h2>Apply Swatch</h2>
+            <div class="color-none-swatch" id="swatch-none" title="Apply None"><i class="fa-solid fa-slash"></i> [None]</div>
+            <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" onclick="$('#swatches-modal').hide()">Cancel</button></div>
         </div>
     </div>
 
@@ -378,7 +462,7 @@
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
-            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); });
+            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); $('#live-preview-checkbox-wrapper').css('visibility', 'visible'); });
 
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
@@ -402,8 +486,11 @@
                 $('#mar-t').val(+(fromPx(conf.marginsPx.t, conf.unit).toFixed(2))); $('#mar-b').val(+(fromPx(conf.marginsPx.b, conf.unit).toFixed(2)));
                 $('#mar-l').val(+(fromPx(conf.marginsPx.l, conf.unit).toFixed(2))); $('#mar-r').val(+(fromPx(conf.marginsPx.r, conf.unit).toFixed(2)));
                 $('#doc-bleed').val(+(fromPx(conf.bleedPx, conf.unit).toFixed(2))); $('#doc-facing').prop('checked', conf.facingPages);
+                $('#live-preview-checkbox-wrapper').css('visibility', 'hidden'); // Hide live preview when editing setup
                 $('#new-doc-modal').css('display', 'flex');
             });
+
+            $('#menu-live-preview-setup').click(() => $('#live-preview-modal').css('display', 'flex'));
 
             $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
             $('#create-doc-btn').click(function() {
@@ -532,22 +619,26 @@
                 $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
             });
 
-            // --- MASTER TEMPLATES ---
+            // --- MASTER TEMPLATES & EXIT FIX ---
             $('#toggle-master-btn').click(function() {
                 if(!activeId) return; const p = projects[activeId];
                 p.isMasterMode = !p.isMasterMode; canvas.discardActiveObject(); setTool('select');
                 if (p.isMasterMode) {
                     $('#toggle-master-btn').addClass('master-active').html('<i class="fa-solid fa-check"></i> Close Master'); $('#master-banner').fadeIn(); $('#panel-pages').hide();
                     const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
-                    canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                    // Hide regular, delete old clones, show sources
+                    canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 } else {
+                    // FIX: Exit Master Page Mode
                     $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Master Template'); $('#master-banner').fadeOut(); $('#panel-pages').show();
-                    canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
+                    // Show regular, hide sources, rebuild clones
+                    canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
                     const sources = canvas.getObjects().filter(o => o.isMasterSource); 
                     for (let pg = 0; pg < p.totalPages; pg++) {
                         const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
                         sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
                     }
+                    fitWholePage(); // Reset view to first page on exit
                 }
                 drawDocumentEnvironment(); markDirty();
             });
@@ -559,10 +650,10 @@
             $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
             $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
             
-            // TEXT BOX FEATURE
+            // NEW INDESIGN-STYLE TEXTBOX
             $('#add-text').click(() => {
-                const text = new fabric.Textbox('Hridayathil ninnu Hridayathilek\nStart typing your chapter here...', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 18, lineHeight: 1.16, splitByGrapheme: false });
-                processNewObject(text);
+                const text = new fabric.Textbox('Double-click to edit.\nWraps text perfectly.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true // wrap within words if needed
+                }); processNewObject(text);
             });
             
             $('#image-upload, #place-image-input').on('change', function(e) { 
@@ -643,25 +734,91 @@
             });
 
             // UI PROPERTIES PANEL
-            canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
+            let focusedColorType = 'fill'; // Track if modifying fill or stroke
+
+            canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
+            canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
+            canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
+
             function updateUI(event) {
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
-                if (obj.fill && typeof obj.fill === 'string') { $('#obj-fill, #obj-text-color').val(obj.fill); $('#obj-fill-hex').val(obj.fill); }
-                if (obj.type === 'textbox' || obj.type === 'text' || obj.type === 'i-text') { 
-                    $('#text-properties').show(); $('#design-properties').hide();
-                    $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight);
+                
+                updateTransformUI({ target: obj }); // Initialize transform fields
+                updateColorsUI(obj);
+
+                if (obj.type === 'textbox') { 
+                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight);
                     let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
                     $('.btn-group button').removeClass('active');
                     if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
-                } else { $('#text-properties').hide(); $('#design-properties').show(); }
+                } else { $('#text-properties').hide(); }
             }
+
+            function updateTransformUI(e) {
+                const obj = e.target;
+                $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top));
+                $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight()));
+                $('#obj-rotation').val(Math.round(obj.angle % 360));
+            }
+
+            function updateColorsUI(obj) {
+                const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
+                if (fillVal === 'transparent') $('#fill-focus').addClass('none');
+                if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', '#transparent');
+                
+                // Update picker color based on focus
+                const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
+                if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+            }
+
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
-            $('#obj-fill, #obj-text-color').on('input', function() { updateObj('fill', $(this).val()); $('#obj-fill-hex').val($(this).val()); $('#obj-fill, #obj-text-color').val($(this).val()); }); 
+            
+            // INDESIGN COLOR PALETTE LOGIC
+            $('#fill-focus, #stroke-focus').click(function() {
+                focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
+                $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
+                updateColorsUI(canvas.getActiveObject()); // sync picker
+            });
+
+            $('#unified-color-picker').on('input', function() {
+                const obj = canvas.getActiveObject(); if(!obj) return;
+                const col = $(this).val();
+                if(focusedColorType === 'fill') { updateObj('fill', col); } 
+                else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
+                updateColorsUI(obj);
+            });
+
+            $('#swap-fill-stroke').click(() => {
+                const obj = canvas.getActiveObject(); if (!obj) return;
+                const oldFill = obj.fill; const oldStroke = obj.stroke;
+                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
+                if(!obj.strokeWidth && oldFill) obj.set('strokeWidth', 2);
+                canvas.renderAll(); updateColorsUI(obj); markDirty();
+            });
+
+            $('#apply-none').click(() => {
+                const obj = canvas.getActiveObject(); if (!obj) return;
+                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else obj.set('stroke', 'transparent');
+                canvas.renderAll(); updateColorsUI(obj); markDirty();
+            });
+
+            // TRANSFORM PALETTE LOGIC
+            $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
+            $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
+            $('#obj-w, #obj-h').on('input', function() {
+                const obj = canvas.getActiveObject(); if(!obj) return;
+                const newDim = parseFloat($(this).val()) || 1;
+                const isW = $(this).attr('id') === 'obj-w';
+                if(isW) obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
+                canvas.renderAll(); markDirty();
+            });
+
+            // TEXT PROPERTIES
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
-            
             $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
