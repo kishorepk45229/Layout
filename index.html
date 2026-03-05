@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.15</title>
+    <title>Thooval Workspace v1.8</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -78,7 +78,7 @@
         /* --- WORKSPACE --- */
         .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
         
-        /* TWO COLUMN TOOLBOX FIXED ALIGNMENT */
+        /* TWO COLUMN TOOLBOX */
         .toolbar-left { width: 88px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; }
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
         .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
@@ -142,14 +142,6 @@
         .small-icon-btn { width: 18px; height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
         .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
 
-        .formatting-wrapper { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .affect-container-icon, .affect-text-icon { position: absolute; width: 28px; height: 28px; background: transparent; border: 1px solid transparent; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 16px; font-family: 'Times New Roman', serif !important; }
-        .affect-container-icon:hover, .affect-text-icon:hover { color: var(--text-main); background: var(--bg-surface); }
-        .affect-container-icon { z-index: 5; border-color: var(--border); color: #fff; font-size: 10px !important; line-height: 10px; width: 24px; height: 24px; top: 0; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .affect-text-icon { z-index: 10; top: 8px; left: 8px; font-size: 24px !important; color: transparent; -webkit-text-stroke: 1px #888; text-shadow: 0 0 transparent; }
-        .affect-text-icon.visible { color: #fff; -webkit-text-stroke: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
-        .affect-container-icon.visible { border-color: var(--accent); color: var(--accent); }
-
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -157,19 +149,13 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 768px) {
-            .panel-right { position: absolute; right: 0; height: 100%; box-shadow: -5px 0 15px rgba(0,0,0,0.5); transform: translateX(100%); transition: 0.3s; }
-            .panel-right.mobile-open { transform: translateX(0); }
-        }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.5</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -187,8 +173,8 @@
                 </li>
                 <li class="menu-item">Edit
                     <ul class="dropdown">
-                        <li id="menu-undo" class="disabled-ui"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
-                        <li id="menu-redo" class="disabled-ui"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
+                        <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
+                        <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
@@ -239,6 +225,7 @@
                 
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
+                <button class="tool-btn" id="tool-mask-image" title="Place Image in Shape"><i class="fa-solid fa-crop-simple"></i></button>
             </div>
             
             <div style="flex: 1;"></div> <div class="tool-divider"></div>
@@ -300,11 +287,6 @@
                                 <button class="small-icon-btn" id="default-fill-stroke" title="Default Fill and Stroke (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
                                 <button class="small-icon-btn none-btn" id="apply-none" title="Apply None (/)"><i class="fa-solid fa-slash"></i></button>
                             </div>
-                            <div style="height: 1px; background: var(--border-light); width: 100%;"></div>
-                            <div class="formatting-wrapper">
-                                <div class="affect-container-icon visible" id="affect-container" title="Formatting affects container (J)"><i class="fa-regular fa-square"></i></div>
-                                <div class="affect-text-icon" id="affect-text" title="Formatting affects text">T</div>
-                            </div>
                         </div>
                     </div>
                     <div class="prop-row"><input type="color" id="unified-color-picker" style="width:100%; height:32px;"></div>
@@ -331,7 +313,10 @@
                         <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"><option value="'Inter', sans-serif">Inter</option><option value="'Manjari', sans-serif">Manjari</option><option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option></select></div>
                         <div class="prop-row">
                             <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                            <div class="prop-col"></div>
+                            <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
+                        </div>
+                        <div class="prop-row" style="margin-top: 8px;">
+                            <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Insert Page Number Here</button>
                         </div>
                     </div>
 
@@ -394,14 +379,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="live-preview-modal">
-        <div class="modal" style="width: 300px;">
-            <h2>Live Preview Setup</h2>
-            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide(); alert('Preference saved.');">Save</button></div>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="export-modal">
         <div class="modal" style="width: 350px;">
             <h2>Export Document</h2>
@@ -411,14 +388,8 @@
             <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
         </div>
     </div>
-
-    <div class="modal-overlay" id="pages-modal">
-        <div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div>
-    </div>
-
-    <div class="modal-overlay" id="unsaved-modal">
-        <div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div>
-    </div>
+    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
+    <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
     <div class="modal-overlay" id="typography-modal">
         <div class="modal" style="width: 400px;">
@@ -461,7 +432,9 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular', 'isGuide'];
+            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular', 'isGuide', 'isDynamicText'];
+            const SNAP_THRESHOLD = 8;
+            let isHistoryProcessing = false;
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let pagesActionType = null; let isEditingDoc = false;
@@ -472,6 +445,60 @@
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId) drawRulers(); });
 
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
+
+            // --- MALAYALAM FML ↔ UNICODE ENGINE ---
+            const uniToFmlDict = [
+                { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
+                { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
+                { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
+                { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
+                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sெ" } 
+            ];
+            const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
+
+            function convertUnicodeToFml(text) {
+                let processedText = text;
+                const preBaseVowels = /([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g;
+                processedText = processedText.replace(preBaseVowels, function(match, p1, p2, p3) { return p3 + p1 + (p2 || ""); });
+                uniToFmlDict.forEach(mapping => { const regex = new RegExp(mapping.uni, "g"); processedText = processedText.replace(regex, mapping.fml); });
+                return processedText;
+            }
+            function convertFmlToUnicode(text) {
+                let processedText = text;
+                fmlToUniDict.forEach(mapping => {
+                    const escapedFml = mapping.fml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(escapedFml, "g"); processedText = processedText.replace(regex, mapping.uni);
+                });
+                const reversePreBase = /([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g;
+                processedText = processedText.replace(reversePreBase, function(match, p1, p2, p3) { return p2 + (p3 || "") + p1; });
+                return processedText;
+            }
+
+            // --- HISTORY STACK ---
+            function saveHistory() {
+                if (!activeId || isHistoryProcessing) return;
+                const p = projects[activeId];
+                if (!p.history) { p.history = []; p.historyIndex = -1; }
+                if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
+                
+                p.history.push(canvas.toJSON(CUSTOM_PROPS));
+                p.historyIndex++;
+                if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
+            }
+            function performUndo() {
+                if (!activeId) return; const p = projects[activeId];
+                if (p.history && p.historyIndex > 0) {
+                    isHistoryProcessing = true; p.historyIndex--;
+                    canvas.loadFromJSON(p.history[p.historyIndex], function() { canvas.renderAll(); isHistoryProcessing = false; });
+                }
+            }
+            function performRedo() {
+                if (!activeId) return; const p = projects[activeId];
+                if (p.history && p.historyIndex < p.history.length - 1) {
+                    isHistoryProcessing = true; p.historyIndex++;
+                    canvas.loadFromJSON(p.history[p.historyIndex], function() { canvas.renderAll(); isHistoryProcessing = false; });
+                }
+            }
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -494,17 +521,15 @@
                 if (activeId === id) return;
                 if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
                 activeId = id; const p = projects[id]; canvas.clear();
+                
+                // Init History if missing
+                if (!p.history) { p.history = []; p.historyIndex = -1; }
+
                 if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers) drawRulers(); }); } 
                 else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
                 
                 $('#page-count-display').text(p.totalPages);
-                
-                // Toggle UI for Master Mode
-                if(p.isMasterMode) { 
-                    $('#master-banner').css('display', 'flex'); 
-                } else { 
-                    $('#master-banner').hide(); 
-                }
+                if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
                 renderTabs(); setTool('select');
             }
 
@@ -518,8 +543,9 @@
             $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
-            canvas.on('object:modified', markDirty); canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
-            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) markDirty(); });
+            canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) { markDirty(); saveHistory(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide) { markDirty(); saveHistory(); } });
 
 
             // --- DOCUMENT SETUP ---
@@ -535,11 +561,9 @@
                 $('#mar-t').val(+(fromPx(conf.marginsPx.t, conf.unit).toFixed(2))); $('#mar-b').val(+(fromPx(conf.marginsPx.b, conf.unit).toFixed(2)));
                 $('#mar-l').val(+(fromPx(conf.marginsPx.l, conf.unit).toFixed(2))); $('#mar-r').val(+(fromPx(conf.marginsPx.r, conf.unit).toFixed(2)));
                 $('#doc-bleed').val(+(fromPx(conf.bleedPx, conf.unit).toFixed(2))); $('#doc-facing').prop('checked', conf.facingPages);
-                $('#live-preview-checkbox-wrapper').css('visibility', 'hidden'); // Hide live preview when editing setup
+                $('#live-preview-checkbox-wrapper').css('visibility', 'hidden'); 
                 $('#new-doc-modal').css('display', 'flex');
             });
-
-            $('#menu-live-preview-setup').click(() => $('#live-preview-modal').css('display', 'flex'));
 
             $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
             $('#create-doc-btn').click(function() {
@@ -550,15 +574,14 @@
                 };
 
                 if (isEditingDoc && activeId) {
-                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty();
+                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
-                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0] };
-                    switchProject(newId); fitWholePage();
+                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 };
+                    switchProject(newId); fitWholePage(); saveHistory();
                 }
                 $('#new-doc-modal').hide();
             });
 
-            // Live Preview Logic
             function updatePreview() {
                 if (!activeId || !$('#doc-live-preview').is(':checked')) return; 
                 const u = $('#doc-unit').val(); const p = projects[activeId];
@@ -569,8 +592,7 @@
             }
             $('.margin-input, #doc-w, #doc-h, #doc-facing, #doc-bleed').on('input change', function() { if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); updatePreview(); });
 
-
-            // --- SPATIAL MATH & MASKING ---
+            // --- SPATIAL MATH & ENVIRONMENT ---
             function getPagePosition(index, pConf) {
                 if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) };
                 if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
@@ -579,7 +601,6 @@
             }
             function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
 
-            // HAIRLINE ENGINE
             function maintainHairlines() {
                 if(!activeId) return; const z = canvas.getZoom();
                 canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
@@ -600,8 +621,7 @@
                 
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
                 let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
-                
-                const initZoom = canvas.getZoom(); // Base stroke width calculation
+                const initZoom = canvas.getZoom(); 
 
                 for (let i = 0; i < pagesToDraw; i++) {
                     let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
@@ -645,17 +665,29 @@
                     if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
                         const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
                         let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: 'var(--guide-cyan)', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' });
-                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
+                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); saveHistory(); }
                     }
                 }
                 draggingGuideType = null;
             });
 
-            // --- VIEW TOGGLES ---
-            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); });
-            $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); });
-            $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); });
-            $('#menu-toggle-guides').click(() => { showGuides = !showGuides; canvas.getObjects().forEach(o => { if(o.isGuide) o.set('opacity', showGuides ? 1 : 0); }); canvas.requestRenderAll(); });
+            // --- SMART GUIDES SNAPPING ---
+            canvas.on('object:moving', function(options) {
+                if (!activeId || !showGuides) return;
+                const obj = options.target; const zoom = canvas.getZoom();
+                const guides = canvas.getObjects().filter(o => o.isGuide);
+                
+                guides.forEach(guide => {
+                    if (guide.lockMovementX) { 
+                        if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
+                        if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
+                    }
+                    if (guide.lockMovementY) {
+                        if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
+                        if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
+                    }
+                });
+            });
 
             // --- PAGES MANAGER ---
             $('.menu-page-action').click(function() {
@@ -673,9 +705,9 @@
                         const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
                         sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
                     }
-                    drawDocumentEnvironment(); markDirty();
+                    drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText();
                 } 
-                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); }
+                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText(); }
                 else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
                 $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
             });
@@ -692,7 +724,6 @@
                 drawDocumentEnvironment(); markDirty();
             });
 
-            // THE EXIT MASTER BUTTON FIX
             $('#exit-master-btn').click(function() {
                 if(!activeId) return; const p = projects[activeId];
                 p.isMasterMode = false; canvas.discardActiveObject(); setTool('select');
@@ -705,26 +736,59 @@
                     sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
                 }
                 
-                drawDocumentEnvironment(); fitWholePage(); markDirty();
+                drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- TEXT BOX & OBJECT CREATION ---
+            // --- TEXT BOX, OBJECT CREATION & MASKING ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); }
+            function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); }
 
             $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
             $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
-            
-            $('#add-text').click(() => {
-                const text = new fabric.Textbox('Double-click to edit.\nWraps text perfectly.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true }); 
-                processNewObject(text);
-            });
+            $('#add-text').click(() => processNewObject(new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true })));
             
             function handleImageInsert(file) {
                 if (!file || !activeId) return; const reader = new FileReader();
                 reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
             }
-            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+            $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+
+            $('#tool-mask-image').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || (activeObj.type !== 'rect' && activeObj.type !== 'circle')) { alert("Please draw and select a Rectangle or Ellipse first to act as an image mask."); return; }
+                
+                $('#place-image-input').click();
+                $('#place-image-input').off('change').on('change', function(e) {
+                    if(!e.target.files[0] || !activeId) return; const reader = new FileReader();
+                    reader.onload = function(f) { 
+                        fabric.Image.fromURL(f.target.result, function(img) { 
+                            img.scaleToWidth(activeObj.getScaledWidth() * 1.2);
+                            img.set({ left: activeObj.left, top: activeObj.top, clipPath: activeObj }); 
+                            canvas.remove(activeObj); processNewObject(img);
+                        }); 
+                    }; 
+                    reader.readAsDataURL(e.target.files[0]);
+                    $(this).val('');
+                    setTimeout(() => { $('#place-image-input').off('change').on('change', function(ev) { handleImageInsert(ev.target.files[0]); $(this).val(''); }); }, 500);
+                });
+            });
+
+            // --- DYNAMIC TEXT ---
+            $('#btn-insert-page-num').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
+                else { alert("Please select a text box first to turn it into a dynamic page number."); }
+            });
+            function updateDynamicText() {
+                if (!activeId) return; const p = projects[activeId];
+                canvas.getObjects().forEach(obj => {
+                    if (obj.type === 'textbox' && obj.isDynamicText) {
+                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
+                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
+                    }
+                });
+            }
 
             // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
@@ -754,25 +818,20 @@
             canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
             canvas.on('mouse:up', function(opt) { 
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; if (activeTool === 'select') { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan') { canvas.defaultCursor = 'grab'; } 
-                if(opt.target && opt.target.isGuide) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); } }
+                if(opt.target && opt.target.isGuide) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers(); });
             
             $(window).keydown(function(e) { 
                 if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
                 
-                // Toggle / Tools commands
+                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
                 if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
                 if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
-                
-                // Add Grouping Shortcut
-                if (e.ctrlKey && e.key.toLowerCase() === 'g') {
-                    e.preventDefault();
-                    if (e.shiftKey) { $('#menu-ungroup').click(); } 
-                    else { $('#menu-group').click(); }
-                }
 
                 if (e.code === 'Space' && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
                 if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
@@ -780,9 +839,8 @@
             });
             $(window).keyup(function(e) { if (e.code === 'Space' && activeTool === 'select') canvas.defaultCursor = 'default'; });
 
-
             // --- LOAD, SAVE & EXPORT ---
-            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
             $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
 
             $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
@@ -808,7 +866,7 @@
                 showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
             });
 
-            // --- UI PROPERTIES PANEL & PALETTE ---
+            // --- UI PROPERTIES PANEL ---
             let focusedColorType = 'fill'; 
 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
@@ -818,12 +876,10 @@
             function updateUI(event) {
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
-                
-                updateTransformUI({ target: obj }); 
-                updateColorsUI(obj);
+                updateTransformUI({ target: obj }); updateColorsUI(obj);
 
                 if (obj.type === 'textbox') { 
-                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight);
+                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
                     let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
                     $('.btn-group button').removeClass('active');
                     if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
@@ -847,7 +903,7 @@
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
             }
 
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
+            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
             
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
@@ -866,13 +922,13 @@
                 const oldFill = obj.fill; const oldStroke = obj.stroke;
                 obj.set('fill', oldStroke); obj.set('stroke', oldFill);
                 if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
-                canvas.renderAll(); updateColorsUI(obj); markDirty();
+                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
             });
 
             $('#apply-none').click(() => {
                 const obj = canvas.getActiveObject(); if (!obj) return;
                 if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                canvas.renderAll(); updateColorsUI(obj); markDirty();
+                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
@@ -880,10 +936,11 @@
             $('#obj-w, #obj-h').on('input', function() {
                 const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1;
                 if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
-                canvas.renderAll(); markDirty();
+                canvas.renderAll(); markDirty(); saveHistory();
             });
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
             $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
@@ -891,82 +948,43 @@
             $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             $('#align-justify').click(function() { updateObj('textAlign', 'justify'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); } });
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
-            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); } }
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
             // --- GROUPING & UNGROUPING LOGIC ---
             $('#menu-group').click(function() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'activeSelection') {
-                    alert("Please select multiple objects to group.");
-                    return;
-                }
-                activeObj.toGroup();
-                canvas.requestRenderAll();
-                markDirty();
+                if (!activeObj || activeObj.type !== 'activeSelection') { alert("Please select multiple objects to group."); return; }
+                activeObj.toGroup(); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
-
             $('#menu-ungroup').click(function() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'group') {
-                    alert("Please select a grouped object to ungroup.");
-                    return;
-                }
-                activeObj.toActiveSelection();
-                canvas.requestRenderAll();
-                markDirty();
+                if (!activeObj || activeObj.type !== 'group') { alert("Please select a grouped object to ungroup."); return; }
+                activeObj.toActiveSelection(); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
-            // --- TYPOGRAPHY CONVERTER LOGIC ---
+            // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
                 if(!activeId) return;
                 const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') {
-                    $('#typo-source-text').val(activeObj.text);
-                } else {
-                    $('#typo-source-text').val('');
-                }
+                if (activeObj && activeObj.type === 'textbox') { $('#typo-source-text').val(activeObj.text); } else { $('#typo-source-text').val(''); }
                 $('#typo-output-text').val('');
                 $('#typography-modal').css('display', 'flex');
             });
-
             $('#btn-run-conversion').click(() => {
-                const source = $('#typo-source-text').val();
-                const type = $('#typo-convert-type').val();
-                
-                // Placeholder for actual FML/Unicode mapping logic
-                let result = ""; 
-                if (type === 'uni2fml') {
-                    result = "[FML Converted Output]: " + source; 
-                } else {
-                    result = "[Unicode Converted Output]: " + source; 
-                }
+                const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val();
+                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source);
                 $('#typo-output-text').val(result);
             });
-
             $('#btn-apply-text-canvas').click(() => {
-                const newText = $('#typo-output-text').val();
-                if (!newText) return;
-                
+                const newText = $('#typo-output-text').val(); if (!newText) return;
                 let activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') {
-                    activeObj.set('text', newText);
-                } else {
-                    const text = new fabric.Textbox(newText, { 
-                        left: getScreenCenter().x, 
-                        top: getScreenCenter().y, 
-                        width: 300, 
-                        fontFamily: "'Manjari', sans-serif", 
-                        fill: '#18181b', 
-                        fontSize: 24 
-                    }); 
-                    processNewObject(text);
-                }
-                canvas.requestRenderAll();
-                markDirty();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
+                else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
+                canvas.requestRenderAll(); markDirty(); saveHistory();
                 $('#typography-modal').hide();
             });
             
