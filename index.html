@@ -3,45 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web DTP Layout Tool - Prototype</title>
+    <title>Web DTP Layout Tool - Advanced Prototype</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     
     <style>
-        /* CSS Styling */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { display: flex; flex-direction: column; height: 100vh; background: #2c2c2c; color: #fff; }
         
-        .top-bar { background: #1e1e1e; padding: 12px 20px; border-bottom: 1px solid #444; font-weight: bold; letter-spacing: 0.5px; }
+        .top-bar { background: #1e1e1e; padding: 12px 20px; border-bottom: 1px solid #444; font-weight: bold; }
         
         .workspace { display: flex; flex: 1; overflow: hidden; }
         
         .toolbar-left { width: 160px; background: #252525; padding: 15px; border-right: 1px solid #444; }
-        .toolbar-left button { display: block; width: 100%; margin-bottom: 12px; padding: 10px; cursor: pointer; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 4px; transition: background 0.2s; }
-        .toolbar-left button:hover { background: #505050; }
+        .toolbar-left button, .toolbar-left label.upload-btn { display: block; width: 100%; margin-bottom: 12px; padding: 10px; cursor: pointer; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 4px; text-align: center; font-size: 13px; }
+        .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; }
+        #image-upload { display: none; }
         
-        .panel-right { width: 260px; background: #252525; padding: 15px; border-left: 1px solid #444; }
-        .panel-right h3 { margin-bottom: 15px; font-size: 14px; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #444; padding-bottom: 8px; }
-        .panel-right label { display: block; margin-bottom: 6px; font-size: 13px; color: #ccc; }
-        .panel-right input[type="color"], .panel-right input[type="range"] { width: 100%; margin-bottom: 20px; cursor: pointer; }
+        .panel-right { width: 280px; background: #252525; padding: 15px; border-left: 1px solid #444; overflow-y: auto; }
+        .panel-right h3 { font-size: 12px; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; padding-bottom: 5px; margin: 15px 0 10px 0; }
+        .panel-right h3:first-child { margin-top: 0; }
         
+        .prop-group { margin-bottom: 15px; }
+        .prop-group label { display: block; font-size: 12px; color: #ccc; margin-bottom: 4px; }
+        .prop-group input[type="color"], .prop-group input[type="range"], .prop-group select, .prop-group input[type="number"] { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 5px; border-radius: 3px; }
+        
+        .btn-group { display: flex; gap: 5px; }
+        .btn-group button { flex: 1; padding: 5px; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 3px; cursor: pointer; font-size: 12px;}
+        .btn-group button:hover { background: #505050; }
+
         .canvas-container-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a1a; overflow: auto; padding: 40px; }
-        
-        /* Fabric.js wrapper styling */
         .canvas-container { box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
     </style>
 </head>
 <body>
 
-    <header class="top-bar">
-        <div>WebLayout Pro</div>
-    </header>
+    <header class="top-bar">WebLayout Pro</header>
 
     <div class="workspace">
         <aside class="toolbar-left">
             <button id="add-rect">Add Rectangle</button>
+            <button id="add-circle">Add Circle</button>
             <button id="add-text">Add Text</button>
+            <label class="upload-btn">
+                Upload Image
+                <input type="file" id="image-upload" accept="image/*">
+            </label>
+            <button id="delete-obj" style="background: #6b2424; margin-top: 20px;">Delete Selected</button>
         </aside>
 
         <main class="canvas-container-wrapper">
@@ -49,109 +58,179 @@
         </main>
 
         <aside class="panel-right">
-            <h3>Properties</h3>
-            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic;">Select an object on the canvas to edit its properties.</div>
+            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic;">Select an object to edit.</div>
             
             <div id="properties-form" style="display: none;">
-                <label>Fill Color:</label>
-                <input type="color" id="obj-color">
                 
-                <label>Opacity:</label>
-                <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
+                <h3>Appearance</h3>
+                <div class="prop-group">
+                    <label>Fill Color:</label>
+                    <input type="color" id="obj-fill">
+                </div>
+                <div class="prop-group">
+                    <label>Opacity:</label>
+                    <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
+                </div>
+
+                <h3>Border / Stroke</h3>
+                <div class="prop-group">
+                    <label>Stroke Color:</label>
+                    <input type="color" id="obj-stroke-color" value="#000000">
+                </div>
+                <div class="prop-group">
+                    <label>Stroke Width:</label>
+                    <input type="number" id="obj-stroke-width" min="0" max="20" value="0">
+                </div>
+
+                <div id="text-properties" style="display: none;">
+                    <h3>Typography</h3>
+                    <div class="prop-group">
+                        <label>Font Family:</label>
+                        <select id="obj-font-family">
+                            <option value="sans-serif">Sans-Serif</option>
+                            <option value="serif">Serif</option>
+                            <option value="monospace">Monospace</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Impact">Impact</option>
+                        </select>
+                    </div>
+                    <div class="prop-group">
+                        <label>Font Size:</label>
+                        <input type="number" id="obj-font-size" min="8" max="144" value="24">
+                    </div>
+                    <div class="prop-group">
+                        <label>Alignment:</label>
+                        <div class="btn-group">
+                            <button id="align-left">Left</button>
+                            <button id="align-center">Center</button>
+                            <button id="align-right">Right</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Arrange</h3>
+                <div class="prop-group btn-group">
+                    <button id="bring-forward">Bring Forward</button>
+                    <button id="send-backward">Send Backward</button>
+                </div>
+
             </div>
         </aside>
     </div>
 
     <script>
-        // JavaScript Application Logic
         $(document).ready(function() {
             
-            // 1. Initialize the Artboard
             const canvas = new fabric.Canvas('layout-canvas', {
-                width: 600,
-                height: 800,
-                backgroundColor: '#ffffff'
+                width: 600, height: 800, backgroundColor: '#ffffff',
+                preserveObjectStacking: true // Keeps selected objects in their Z-index layer
             });
 
-            // 2. Toolbar Actions
+            // --- 1. ADDING OBJECTS ---
             $('#add-rect').click(function() {
                 const rect = new fabric.Rect({
-                    left: canvas.width / 2 - 50, // Center horizontally
-                    top: canvas.height / 2 - 50, // Center vertically
-                    fill: '#ff5722',
-                    width: 100,
-                    height: 100,
-                    cornerStyle: 'circle',
-                    borderColor: '#00a8ff',
-                    cornerColor: '#00a8ff',
-                    transparentCorners: false
+                    left: 250, top: 350, fill: '#ff5722', width: 100, height: 100,
+                    strokeWidth: 0, stroke: '#000000'
                 });
-                canvas.add(rect);
-                canvas.setActiveObject(rect);
+                canvas.add(rect); canvas.setActiveObject(rect);
+            });
+
+            $('#add-circle').click(function() {
+                const circle = new fabric.Circle({
+                    left: 250, top: 350, fill: '#4caf50', radius: 50,
+                    strokeWidth: 0, stroke: '#000000'
+                });
+                canvas.add(circle); canvas.setActiveObject(circle);
             });
 
             $('#add-text').click(function() {
-                const text = new fabric.IText('Double click to edit text', {
-                    left: canvas.width / 2 - 100,
-                    top: canvas.height / 2 - 15,
-                    fontFamily: 'sans-serif',
-                    fill: '#333333',
-                    fontSize: 24
+                const text = new fabric.IText('Type your content here...', {
+                    left: 100, top: 100, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24
                 });
-                canvas.add(text);
-                canvas.setActiveObject(text);
+                canvas.add(text); canvas.setActiveObject(text);
             });
 
-            // 3. Sync Canvas Selection with Right Panel
-            canvas.on('selection:created', updatePropertiesPanel);
-            canvas.on('selection:updated', updatePropertiesPanel);
-            
+            // Image Upload Handler
+            $('#image-upload').on('change', function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(f) {
+                    const data = f.target.result;
+                    fabric.Image.fromURL(data, function(img) {
+                        // Scale down if image is too large
+                        if (img.width > canvas.width) img.scaleToWidth(canvas.width - 50);
+                        canvas.add(img); canvas.setActiveObject(img);
+                    });
+                };
+                reader.readAsDataURL(file);
+                $(this).val(''); // Reset input
+            });
+
+            // --- 2. MANAGING SELECTION & UI SYNC ---
+            canvas.on('selection:created', updateUI);
+            canvas.on('selection:updated', updateUI);
             canvas.on('selection:cleared', function() {
-                $('#no-selection').show();
-                $('#properties-form').hide();
+                $('#no-selection').show(); $('#properties-form').hide();
             });
 
-            function updatePropertiesPanel(event) {
-                const activeObj = event.selected[0];
-                if (!activeObj) return;
+            function updateUI(event) {
+                const obj = event.selected[0];
+                if (!obj) return;
 
-                $('#no-selection').hide();
-                $('#properties-form').show();
+                $('#no-selection').hide(); $('#properties-form').show();
                 
-                // Update inputs based on what is selected
-                if (activeObj.fill && typeof activeObj.fill === 'string') {
-                    $('#obj-color').val(activeObj.fill);
+                // Sync general properties
+                if (obj.fill && typeof obj.fill === 'string') $('#obj-fill').val(obj.fill);
+                $('#obj-opacity').val(obj.opacity !== undefined ? obj.opacity : 1);
+                $('#obj-stroke-color').val(obj.stroke || '#000000');
+                $('#obj-stroke-width').val(obj.strokeWidth || 0);
+
+                // Show/hide text properties based on object type
+                if (obj.type === 'i-text' || obj.type === 'text') {
+                    $('#text-properties').show();
+                    $('#obj-font-family').val(obj.fontFamily);
+                    $('#obj-font-size').val(obj.fontSize);
+                } else {
+                    $('#text-properties').hide();
                 }
-                $('#obj-opacity').val(activeObj.opacity !== undefined ? activeObj.opacity : 1);
             }
 
-            // 4. Update Canvas when Right Panel inputs change
-            $('#obj-color').on('input', function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj) {
-                    activeObj.set('fill', $(this).val());
-                    canvas.renderAll();
-                }
+            // --- 3. UPDATING OBJECTS FROM UI ---
+            function updateObj(prop, val) {
+                const obj = canvas.getActiveObject();
+                if (obj) { obj.set(prop, val); canvas.renderAll(); }
+            }
+
+            $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); });
+            $('#obj-opacity').on('input', function() { updateObj('opacity', parseFloat($(this).val())); });
+            $('#obj-stroke-color').on('input', function() { updateObj('stroke', $(this).val()); });
+            $('#obj-stroke-width').on('input', function() { updateObj('strokeWidth', parseInt($(this).val(), 10)); });
+            
+            // Text Updates
+            $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
+            $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            $('#align-left').click(function() { updateObj('textAlign', 'left'); });
+            $('#align-center').click(function() { updateObj('textAlign', 'center'); });
+            $('#align-right').click(function() { updateObj('textAlign', 'right'); });
+
+            // Layering (Z-Index)
+            $('#bring-forward').click(function() {
+                const obj = canvas.getActiveObject();
+                if (obj) { canvas.bringForward(obj); canvas.renderAll(); }
+            });
+            $('#send-backward').click(function() {
+                const obj = canvas.getActiveObject();
+                if (obj) { canvas.sendBackwards(obj); canvas.renderAll(); }
             });
 
-            $('#obj-opacity').on('input', function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj) {
-                    activeObj.set('opacity', parseFloat($(this).val()));
-                    canvas.renderAll();
-                }
-            });
+            // Delete Object
+            $('#delete-obj').click(deleteActive);
+            $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             
-            // Helpful feature: Delete object on Backspace/Delete key
-            $('html').keyup(function(e) {
-                if(e.keyCode === 46 || e.keyCode === 8) { // Delete or Backspace
-                    const activeObj = canvas.getActiveObject();
-                    if (activeObj && !activeObj.isEditing) { // Make sure we aren't typing inside a text box
-                        canvas.remove(activeObj);
-                    }
-                }
-            });
-            
+            function deleteActive() {
+                const obj = canvas.getActiveObject();
+                if (obj) { canvas.remove(obj); canvas.discardActiveObject(); }
+            }
         });
     </script>
 </body>
