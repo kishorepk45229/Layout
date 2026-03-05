@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.8.6</title>
+    <title>Thooval Workspace v1.8.7</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -70,12 +70,12 @@
         /* --- WORKSPACE --- */
         .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
         
-        .toolbar-left { width: 88px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; }
+        .toolbar-left { width: 88px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
         .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
-        .tool-divider { grid-column: 1 / -1; width: 100%; height: 1px; background: var(--border); margin: 4px 0; }
+        .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
         .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
@@ -118,11 +118,12 @@
         .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
-        .complex-color-block { position: relative; width: 60px; height: 60px; margin-right: 12px; flex-shrink: 0;}
+        /* Left Toolbar Permanent Palette */
+        .complex-color-block { position: relative; width: 60px; height: 60px; flex-shrink: 0;}
         .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
         .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
-        .fill-block { top: 0; left: 0; z-index: 10; background: #ffffff; }
-        .stroke-block { top: 18px; left: 18px; z-index: 5; background: #cccccc; border-width: 3px; }
+        .fill-block { top: 0; left: 0; z-index: 10; background: #3f3f46; }
+        .stroke-block { top: 18px; left: 18px; z-index: 5; background: transparent; border-width: 3px; }
         .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
         .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
 
@@ -142,7 +143,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.6</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.7</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -168,6 +169,15 @@
                         <li id="menu-font-tool"><span>Malayalam Font Tools...</span></li>
                     </ul>
                 </li>
+                
+                <li class="menu-item">Pages
+                    <ul class="dropdown">
+                        <li class="menu-page-action" data-action="insert"><span>Insert Pages...</span></li>
+                        <li class="menu-page-action" data-action="delete"><span>Delete Pages...</span></li>
+                        <li class="menu-page-action" data-action="goto"><span>Go to Page...</span></li>
+                    </ul>
+                </li>
+
                 <li class="menu-item">View
                     <ul class="dropdown">
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
@@ -193,6 +203,7 @@
     </div>
 
     <div class="workspace-container">
+        
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
@@ -201,14 +212,35 @@
                 <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
                 
-                <div class="tool-divider"></div>
+                <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
-            <div style="flex: 1;"></div> <div class="tool-divider"></div>
+            <div class="tool-divider"></div>
+            
+            <div class="palette-container" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
+                <div class="complex-color-block">
+                    <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
+                    <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
+                </div>
+                <div style="display: flex; gap: 6px; width: 100%; justify-content: center;">
+                    <button class="small-icon-btn" id="swap-fill-stroke" title="Swap (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
+                    <button class="small-icon-btn" id="default-fill-stroke" title="Default (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                    <button class="small-icon-btn none-btn" id="apply-none" title="None (/)"><i class="fa-solid fa-slash"></i></button>
+                </div>
+                <input type="color" id="unified-color-picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 4px;" value="#3f3f46">
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 6px; background: var(--bg-surface); border-radius: 4px; padding: 4px 6px;">
+                    <i class="fa-solid fa-border-top-left" style="color: var(--text-muted); font-size: 11px;" title="Stroke Width"></i>
+                    <input type="number" id="global-stroke-width" min="0" max="100" value="2" style="width: 40px; padding: 2px 4px; text-align: center; border-radius: 2px; height: 20px;">
+                </div>
+            </div>
+
+            <div style="flex: 1;"></div> 
+            <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
 
@@ -259,24 +291,6 @@
                     <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
                 </div>
 
-                <div class="panel-section">
-                    <h3>Integrated Palette</h3>
-                    <div class="prop-row" style="position: relative; align-items: flex-start;">
-                        <div class="complex-color-block">
-                            <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
-                            <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
-                        </div>
-                        <div class="prop-col" style="gap: 6px;">
-                            <div style="display: flex; gap: 6px;">
-                                <button class="small-icon-btn" id="swap-fill-stroke" title="Swap Fill and Stroke (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
-                                <button class="small-icon-btn" id="default-fill-stroke" title="Default Fill and Stroke (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
-                                <button class="small-icon-btn none-btn" id="apply-none" title="Apply None (/)"><i class="fa-solid fa-slash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="prop-row"><input type="color" id="unified-color-picker" style="width:100%; height:32px;"></div>
-                </div>
-
                 <div class="panel-section" id="geometry-properties">
                     <h3>Transform</h3>
                     <div class="prop-row">
@@ -318,7 +332,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="prop-row">
+                        <div class="prop-row" style="margin-bottom: 12px;">
                             <div class="prop-col" style="flex: 2;">
                                 <label>Line Spacing</label>
                                 <div style="display: flex; gap: 4px;">
@@ -333,6 +347,12 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="prop-row">
+                            <div class="prop-col"><label>Internal Padding</label><input type="number" id="obj-padding" min="0" max="100" step="1" value="0"></div>
+                            <div class="prop-col"><label>Text Background</label><input type="color" id="obj-text-bg" value="#ffffff" style="height: 28px;"></div>
+                        </div>
+
                         <div class="prop-row" style="margin-top: 16px;">
                             <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Dynamic Page Number</button>
                         </div>
@@ -417,6 +437,9 @@
     </div>
 
     <script>
+        // GLOBAL FIX: Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
+        fabric.Object.prototype.objectCaching = false;
+
         $(document).ready(function() {
             
             // --- CORE STATE ---
@@ -428,7 +451,6 @@
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
             const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
-            // Removed layout objects from custom props so they aren't duplicated in history
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -437,6 +459,11 @@
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let pagesActionType = null; let isEditingDoc = false;
+
+            // --- PALETTE STATE ---
+            let globalFill = '#3f3f46';
+            let globalStroke = 'transparent';
+            let globalStrokeWidth = 2;
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -497,7 +524,6 @@
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
                 if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
                 
-                // Exclude guides, margins, bleeds from serialization to prevent ghosting
                 p.history.push(canvas.toJSON(CUSTOM_PROPS));
                 p.historyIndex++;
                 if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
@@ -508,7 +534,7 @@
                 if (p.history && p.historyIndex > 0) {
                     isHistoryProcessing = true; p.historyIndex--;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); // Re-inject environment after load clears canvas
+                        drawDocumentEnvironment(); 
                         maintainHairlines();
                         canvas.renderAll(); 
                         isHistoryProcessing = false; 
@@ -572,7 +598,6 @@
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
-            // Limit event hooking specifically to non-environment elements to keep History stack clean
             canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
             canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
             canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
@@ -636,7 +661,6 @@
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 
-                // Remove existing environment objects safely
                 const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
                 envItems.forEach(obj => canvas.remove(obj));
                 
@@ -649,7 +673,6 @@
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
                     maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
                     
-                    // excludeFromExport: true ensures these NEVER get pushed into the history stack!
                     canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
                     
                     if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
@@ -667,9 +690,7 @@
             function updateVisibilityToggles() {
                 if (isPreviewMode) {
                     $('#ruler-h, #ruler-v').hide();
-                    canvas.getObjects().forEach(o => {
-                       if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0);
-                    });
+                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
                 } else {
                     if(showRulers) $('#ruler-h, #ruler-v').show();
                     canvas.getObjects().forEach(o => {
@@ -740,7 +761,6 @@
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
-                    // Lock visual font scaling, translate scale to exact bounding box width/height changes
                     var w = obj.width * obj.scaleX;
                     var h = obj.height * obj.scaleY;
                     obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
@@ -799,11 +819,27 @@
 
             // --- TEXT BOX, OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            function processNewObject(obj) { if(!activeId) return; if(activeTool !== 'select') setTool('select'); if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); }
+            
+            function processNewObject(obj) { 
+                if(!activeId) return; 
+                if(activeTool !== 'select') setTool('select'); 
+                if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
+                
+                // Automatically apply Palette defaults to newly created objects
+                if (obj.type !== 'image') {
+                    obj.set('fill', globalFill);
+                    if (globalStroke !== 'transparent' && globalStrokeWidth > 0) {
+                        obj.set('stroke', globalStroke);
+                        obj.set('strokeWidth', globalStrokeWidth);
+                    }
+                }
+                
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
+            }
 
-            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
-            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
-            $('#add-text').click(() => processNewObject(new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true })));
+            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, width: 100, height: 100 })));
+            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, radius: 50 })));
+            $('#add-text').click(() => processNewObject(new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true })));
             
             function handleImageInsert(file) {
                 if (!file || !activeId) return; const reader = new FileReader();
@@ -882,11 +918,9 @@
 
             let isDragging = false; let lastPosX, lastPosY;
             
-            // KEYBOARD & SHORTCUT HANDLERS
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 
-                // Track Spacebar Globally
                 if(e.code === 'Space') {
                     isSpaceDown = true;
                     if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
@@ -894,7 +928,7 @@
                     }
                 }
 
-                if (canvas.getActiveObject()?.isEditing) return; // Prevent firing shortcuts while typing text
+                if (canvas.getActiveObject()?.isEditing) return; 
                 
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
@@ -937,7 +971,7 @@
             });
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
 
-            // --- LOAD, SAVE & EXPORT ---
+            // --- EXPORT & SAVE ---
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
             $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
 
@@ -964,7 +998,7 @@
                 showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
             });
 
-            // --- UI PROPERTIES PANEL ---
+            // --- GLOBAL PALETTE & PROPERTIES PANEL ---
             let focusedColorType = 'fill'; 
 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
@@ -984,6 +1018,9 @@
                     $('#obj-line-height').val(obj.lineHeight); 
                     $('#obj-tracking').val(obj.charSpacing || 0);
                     
+                    $('#obj-padding').val(obj.padding || 0);
+                    $('#obj-text-bg').val(obj.textBackgroundColor || '#ffffff');
+                    
                     let font = obj.fontFamily; 
                     if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); 
                     else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); 
@@ -992,7 +1029,6 @@
                         $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
                     }
                     
-                    // Match Line Height UI Preset
                     const lh = obj.lineHeight;
                     if ([1, 1.16, 1.5, 2].includes(lh)) { $('#obj-lh-preset').val(lh); } else { $('#obj-lh-preset').val('custom'); }
                     
@@ -1010,12 +1046,20 @@
 
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                
+                // Update Global Variables so new shapes inherit this
+                globalFill = fillVal;
+                globalStroke = strokeVal;
+                globalStrokeWidth = obj.strokeWidth || 0;
+
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
                 
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+                
+                $('#global-stroke-width').val(globalStrokeWidth);
             }
 
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
@@ -1023,27 +1067,71 @@
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
                 $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
-                updateColorsUI(canvas.getActiveObject()); 
+                const obj = canvas.getActiveObject();
+                if(obj) updateColorsUI(obj); 
             });
 
             $('#unified-color-picker').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val();
-                if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
-                updateColorsUI(obj);
+                const col = $(this).val();
+                if(focusedColorType === 'fill') { 
+                    globalFill = col;
+                    $('#fill-focus').css('background', col).removeClass('none');
+                } else { 
+                    globalStroke = col;
+                    $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none');
+                }
+                
+                const obj = canvas.getActiveObject();
+                if(obj) {
+                    if(focusedColorType === 'fill') { updateObj('fill', col); } 
+                    else { 
+                        updateObj('stroke', col); 
+                        if(!obj.strokeWidth) {
+                            globalStrokeWidth = globalStrokeWidth || 1;
+                            updateObj('strokeWidth', globalStrokeWidth); 
+                            $('#global-stroke-width').val(globalStrokeWidth);
+                        }
+                    }
+                }
+            });
+            
+            $('#global-stroke-width').on('input', function() {
+                const val = parseFloat($(this).val()) || 0;
+                globalStrokeWidth = val;
+                updateObj('strokeWidth', val);
             });
 
             $('#swap-fill-stroke').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                const oldFill = obj.fill; const oldStroke = obj.stroke;
-                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
-                if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
-                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+                let temp = globalFill;
+                globalFill = globalStroke;
+                globalStroke = temp;
+                
+                const obj = canvas.getActiveObject(); 
+                if (obj) {
+                    const oldFill = obj.fill; const oldStroke = obj.stroke;
+                    obj.set('fill', oldStroke); obj.set('stroke', oldFill);
+                    if(!obj.strokeWidth && oldFill !== 'transparent') {
+                        globalStrokeWidth = globalStrokeWidth || 2;
+                        obj.set('strokeWidth', globalStrokeWidth);
+                        $('#global-stroke-width').val(globalStrokeWidth);
+                    }
+                    canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+                } else {
+                    $('#fill-focus').css('background', globalFill);
+                    $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke);
+                }
             });
 
             $('#apply-none').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+                if(focusedColorType === 'fill') { globalFill = 'transparent'; $('#fill-focus').addClass('none'); } 
+                else { globalStroke = 'transparent'; globalStrokeWidth = 0; $('#stroke-focus').addClass('none'); $('#global-stroke-width').val(0); }
+                
+                const obj = canvas.getActiveObject(); 
+                if (obj) {
+                    if(focusedColorType === 'fill') obj.set('fill', 'transparent'); 
+                    else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
+                    canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+                }
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
@@ -1056,8 +1144,9 @@
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
+            $('#obj-padding').on('input', function() { updateObj('padding', parseInt($(this).val(), 10) || 0); });
+            $('#obj-text-bg').on('input', function() { updateObj('textBackgroundColor', $(this).val()); });
             
-            // New Line Height dual UI
             $('#obj-line-height').on('input', function() { 
                 const val = parseFloat($(this).val());
                 $('#obj-lh-preset').val('custom');
@@ -1074,7 +1163,6 @@
             $('#obj-font-family').on('change', function() { 
                 const selectedFont = $(this).val();
                 const fontName = selectedFont.replace(/['"]/g, '').split(',')[0].trim();
-                
                 if (['Inter', 'Manjari', 'Noto Sans Malayalam'].includes(fontName)) {
                     updateObj('fontFamily', selectedFont);
                 } else {
