@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Layout Engine - Complete Edition</title>
+    <title>Thooval Layout Engine</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -15,70 +15,136 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
         body { display: flex; flex-direction: column; height: 100vh; background: #2c2c2c; color: #fff; overflow: hidden; }
         
-        .top-bar { background: #1e1e1e; padding: 12px 20px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .branding { font-weight: bold; letter-spacing: 0.5px; }
-        .file-menu { display: flex; gap: 10px; }
-        .file-btn { background: #3a3a3a; color: #ddd; border: 1px solid #555; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-        .file-btn:hover { background: #505050; color: #fff; }
-        .file-btn.export-btn { background: #0056b3; border-color: #004494; color: white; }
-        .file-btn.export-btn:hover { background: #0069d9; }
+        /* Menu Bar System */
+        .top-bar { background: #1e1e1e; border-bottom: 1px solid #444; display: flex; align-items: center; z-index: 200; position: relative; }
+        .branding { font-weight: bold; letter-spacing: 0.5px; padding: 10px 20px; border-right: 1px solid #444; background: #252525; }
+        
+        .menu-bar { display: flex; list-style: none; }
+        .menu-item { position: relative; padding: 10px 15px; cursor: pointer; font-size: 13px; color: #ddd; transition: background 0.2s; }
+        .menu-item:hover { background: #3a3a3a; color: #fff; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: #252525; min-width: 180px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid #444; z-index: 300; }
+        .menu-item:hover .dropdown { display: block; }
+        .dropdown li { list-style: none; padding: 8px 15px; font-size: 13px; color: #ccc; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
+        .dropdown li:hover { background: #0056b3; color: white; cursor: pointer; }
+        .shortcut { color: #888; font-size: 11px; }
+        .dropdown li:hover .shortcut { color: #cce5ff; }
+        
         #open-file-input { display: none; }
         
-        .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+        /* Modal System */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 500; justify-content: center; align-items: center; }
+        .modal { background: #252525; padding: 25px; border-radius: 8px; width: 400px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .modal h2 { margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: #ccc; margin-bottom: 5px; }
+        .form-group select, .form-group input { width: 100%; padding: 8px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 4px; }
         
+        .margin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; }
+        .link-margins { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #3a3a3a; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid #555; z-index: 10; }
+        .link-margins.active { background: #0056b3; border-color: #007bff; }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+        .btn { padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; border: none; }
+        .btn-cancel { background: #444; color: white; }
+        .btn-primary { background: #0056b3; color: white; }
+        .btn:hover { filter: brightness(1.2); }
+
+        /* Workspace */
+        .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
         .toolbar-left { width: 70px; background: #252525; padding: 15px 10px; border-right: 1px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 100; overflow-y: auto; }
-        .toolbar-left button, .toolbar-left label.upload-btn { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; flex-shrink: 0; cursor: pointer; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 8px; font-size: 18px; transition: all 0.2s; }
-        .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; color: #fff; border-color: #777; }
-        .toolbar-left button.active-tool { background: #0056b3; color: white; border-color: #007bff; }
+        .toolbar-left button, .toolbar-left label.upload-btn { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; flex-shrink: 0; cursor: pointer; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 8px; font-size: 18px; }
+        .toolbar-left button:hover, .toolbar-left label.upload-btn:hover { background: #505050; color: #fff; }
         .delete-btn { margin-top: auto; background: #4a1c1c !important; border-color: #702a2a !important; color: #ff9999 !important; }
-        .delete-btn:hover { background: #702a2a !important; color: #fff !important; }
         #image-upload { display: none; }
         
         .panel-right { width: 280px; background: #252525; padding: 15px; border-left: 1px solid #444; overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
         .panel-section { border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 15px; }
         .panel-right h3 { font-size: 12px; text-transform: uppercase; color: #888; margin-bottom: 10px; }
-        
         .prop-group { margin-bottom: 10px; }
         .prop-group label { display: block; font-size: 12px; color: #ccc; margin-bottom: 4px; }
         .prop-group input[type="color"], .prop-group input[type="range"], .prop-group select, .prop-group input[type="number"] { width: 100%; background: #1a1a1a; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; font-size: 13px; }
         
-        .btn-group { display: flex; gap: 5px; }
-        .btn-group button { flex: 1; padding: 6px; background: #3a3a3a; color: white; border: 1px solid #555; border-radius: 3px; cursor: pointer; font-size: 12px;}
-        .btn-group button:hover { background: #505050; }
-
         .doc-btn { width: 100%; padding: 8px; background: #3a3a3a; border: 1px solid #555; color: #fff; border-radius: 4px; cursor: pointer; margin-bottom: 8px; font-size: 13px; }
-        .doc-btn:hover { background: #444; }
         .doc-btn.master-active { background: #8b6b00; border-color: #cca418; font-weight: bold; }
         .master-banner { display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #cca418; color: #000; padding: 5px 20px; border-radius: 20px; font-weight: bold; z-index: 200; pointer-events: none; }
 
         .canvas-container-wrapper { flex: 1; background: #151515; position: relative; overflow: hidden; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         .pan-hint { position: absolute; bottom: 15px; left: 15px; color: #666; font-size: 12px; z-index: 50; pointer-events: none; }
-        
-        .grid-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-            background-image: linear-gradient(to right, rgba(0, 168, 255, 0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 168, 255, 0.15) 1px, transparent 1px);
-            background-size: 20px 20px; display: none; z-index: 10;
-        }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
-        <div class="branding">Thooval Layout Engine</div>
-        <div class="file-menu">
-            <label class="file-btn" title="Open Document">
-                <i class="fa-solid fa-folder-open"></i> Open
-                <input type="file" id="open-file-input" accept=".thooval,.json">
-            </label>
-            <button class="file-btn" id="save-file-btn" title="Save Document">
-                <i class="fa-solid fa-floppy-disk"></i> Save
-            </button>
-            <button class="file-btn export-btn" id="export-pdf-btn" title="Export to Printable PDF">
-                <i class="fa-solid fa-file-pdf"></i> Export PDF
-            </button>
-        </div>
+        <div class="branding">Thooval</div>
+        <ul class="menu-bar">
+            <li class="menu-item">File
+                <ul class="dropdown">
+                    <li id="menu-new">New Document... <span class="shortcut">Ctrl+N</span></li>
+                    <li id="menu-open">
+                        <label style="cursor: pointer; width: 100%;">Open Document... <input type="file" id="open-file-input" accept=".thooval,.json"></label>
+                        <span class="shortcut">Ctrl+O</span>
+                    </li>
+                    <li id="menu-save">Save <span class="shortcut">Ctrl+S</span></li>
+                    <li id="menu-print">Print / Export PDF <span class="shortcut">Ctrl+P</span></li>
+                </ul>
+            </li>
+            <li class="menu-item">View
+                <ul class="dropdown">
+                    <li id="menu-toggle-margins">Show/Hide Margins <span class="shortcut">W</span></li>
+                </ul>
+            </li>
+        </ul>
     </header>
+
+    <div class="modal-overlay" id="new-doc-modal">
+        <div class="modal">
+            <h2>New Document</h2>
+            
+            <div class="form-group">
+                <label>Preset Sizes</label>
+                <select id="doc-preset">
+                    <option value="A4">A4 (210 x 297 mm)</option>
+                    <option value="A5">A5 (148 x 210 mm)</option>
+                    <option value="Letter">US Letter (8.5 x 11 in)</option>
+                    <option value="Custom">Custom Size...</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 2;">
+                    <label>Width</label>
+                    <input type="number" id="doc-w" value="210">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>Height</label>
+                    <input type="number" id="doc-h" value="297">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Units</label>
+                    <select id="doc-unit">
+                        <option value="mm" selected>mm</option>
+                        <option value="px">px</option>
+                        <option value="in">in</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3 style="font-size: 13px; margin: 15px 0 10px; color: #888; border-bottom: 1px solid #444; padding-bottom: 5px;">Margins</h3>
+            <div class="margin-grid">
+                <div class="link-margins active" id="link-margins-btn" title="Link/Unlink Margins"><i class="fa-solid fa-link"></i></div>
+                <div class="form-group"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div>
+                <div class="form-group"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div>
+                <div class="form-group"><label>Left</label><input type="number" class="margin-input" id="mar-l" value="15"></div>
+                <div class="form-group"><label>Right</label><input type="number" class="margin-input" id="mar-r" value="15"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-cancel" id="cancel-doc-btn">Cancel</button>
+                <button class="btn btn-primary" id="create-doc-btn">Create Document</button>
+            </div>
+        </div>
+    </div>
 
     <div class="workspace">
         <div class="master-banner" id="master-banner"><i class="fa-solid fa-crown"></i> Editing Master Page</div>
@@ -91,15 +157,12 @@
                 <i class="fa-solid fa-image"></i>
                 <input type="file" id="image-upload" accept="image/*">
             </label>
-            <div style="height: 1px; width: 80%; background: #444; margin: 10px 0;"></div>
-            <button id="toggle-grid" title="Toggle Grid & Snapping"><i class="fa-solid fa-border-all"></i></button>
             <button id="delete-obj" class="delete-btn" title="Delete Selected Object"><i class="fa-solid fa-trash"></i></button>
         </aside>
 
         <main class="canvas-container-wrapper" id="workspace-wrapper">
-            <div class="grid-overlay" id="grid-overlay"></div>
             <canvas id="layout-canvas"></canvas>
-            <div class="pan-hint">Hold <b>Spacebar</b> + Drag to Pan • <b>Scroll Wheel</b> to Scroll Vertical</div>
+            <div class="pan-hint">Hold <b>Spacebar</b> + Drag to Pan • Press <b>W</b> to Toggle Preview Mode</div>
         </main>
 
         <aside class="panel-right">
@@ -111,19 +174,12 @@
                 <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Page</button>
             </div>
 
-            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic; text-align: center; margin-top: 20px;">Select an object to edit properties.</div>
+            <div id="no-selection" style="color: #777; font-size: 13px; font-style: italic; text-align: center; margin-top: 20px;">Select an object.</div>
             
             <div id="properties-form" style="display: none;">
                 <div class="panel-section">
                     <h3>Appearance</h3>
-                    <div class="prop-group">
-                        <label>Fill Color:</label>
-                        <input type="color" id="obj-fill">
-                    </div>
-                    <div class="prop-group">
-                        <label>Opacity:</label>
-                        <input type="range" id="obj-opacity" min="0" max="1" step="0.05" value="1">
-                    </div>
+                    <div class="prop-group"><label>Fill Color:</label><input type="color" id="obj-fill"></div>
                 </div>
 
                 <div id="text-properties" class="panel-section" style="display: none;">
@@ -136,26 +192,7 @@
                             <option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option>
                         </select>
                     </div>
-                    <div class="prop-group">
-                        <label>Font Size:</label>
-                        <input type="number" id="obj-font-size" min="8" max="144" value="24">
-                    </div>
-                    <div class="prop-group">
-                        <label>Alignment:</label>
-                        <div class="btn-group">
-                            <button id="align-left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                            <button id="align-center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                            <button id="align-right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <h3>Arrange Layer</h3>
-                    <div class="prop-group btn-group">
-                        <button id="bring-forward" title="Bring Forward"><i class="fa-solid fa-arrow-up"></i></button>
-                        <button id="send-backward" title="Send Backward"><i class="fa-solid fa-arrow-down"></i></button>
-                    </div>
+                    <div class="prop-group"><label>Font Size:</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                 </div>
             </div>
         </aside>
@@ -164,17 +201,27 @@
     <script>
         $(document).ready(function() {
             
-            const PAGE_W = 600;
-            const PAGE_H = 800;
+            // --- DOCUMENT SETTINGS & MATH ---
+            let docConfig = {
+                widthPx: 794, heightPx: 1123, // Default A4 in Pixels at 96 DPI
+                marginsPx: { t: 56, b: 56, l: 56, r: 56 }
+            };
+            
+            const DPI = 96;
+            function toPx(val, unit) {
+                if (unit === 'in') return val * DPI;
+                if (unit === 'mm') return val * (DPI / 25.4);
+                return val; // already px
+            }
+
             const PAGE_GAP = 50; 
             const MARGIN_LEFT = 100; 
             const MARGIN_TOP = 50;
-            
-            // WE MUST TELL FABRIC TO SAVE OUR CUSTOM TAGS DURING EXPORT
-            const CUSTOM_PROPS = ['isPaper', 'isMasterSource', 'isMasterClone', 'isRegular'];
+            const CUSTOM_PROPS = ['isPaper', 'isMargin', 'isMasterSource', 'isMasterClone', 'isRegular'];
             
             let totalPages = 1;
             let isMasterMode = false;
+            let showMargins = true;
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', {
@@ -184,50 +231,151 @@
 
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); });
 
-            // --- 1. SPATIAL PAGES ---
-            function drawPaperBackgrounds() {
+            // --- STRICT LAYERING ENGINE (Fixes the Master Page Bug) ---
+            function sortLayers() {
                 const objects = canvas.getObjects();
-                objects.forEach(obj => { if (obj.isPaper) canvas.remove(obj); });
+                // We sort by tagging. Paper goes to absolute bottom (-2). Margins go to (-1). Master Clones go to (0). Regular/Source goes to (1).
+                objects.sort((a, b) => {
+                    const getZ = (obj) => {
+                        if (obj.isPaper) return -2;
+                        if (obj.isMargin) return -1;
+                        if (obj.isMasterClone) return 0;
+                        return 1; // Everything else
+                    };
+                    return getZ(a) - getZ(b);
+                });
+                
+                // Re-add to canvas in the correct order
+                objects.forEach(obj => {
+                    canvas.remove(obj);
+                    canvas.add(obj);
+                });
+            }
+
+            // --- DRAW PAGES & MARGINS ---
+            function drawDocumentEnvironment() {
+                // Remove old paper and margins
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin) canvas.remove(obj); });
+                
                 const pagesToDraw = isMasterMode ? 1 : totalPages;
+                
                 for (let i = 0; i < pagesToDraw; i++) {
+                    const pageTop = MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP));
+                    
+                    // 1. Draw Paper
                     const paper = new fabric.Rect({
-                        left: MARGIN_LEFT, top: MARGIN_TOP + (i * (PAGE_H + PAGE_GAP)),
-                        width: PAGE_W, height: PAGE_H, fill: '#ffffff',
+                        left: MARGIN_LEFT, top: pageTop,
+                        width: docConfig.widthPx, height: docConfig.heightPx, fill: '#ffffff',
                         selectable: false, evented: false, isPaper: true,
                         shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.5)', blur: 15, offsetX: 0, offsetY: 5 })
                     });
-                    canvas.add(paper); paper.sendToBack();
+                    canvas.add(paper);
+                    
+                    // 2. Draw Margin Guides (if toggled on)
+                    if (showMargins) {
+                        const m = docConfig.marginsPx;
+                        const marginGuide = new fabric.Rect({
+                            left: MARGIN_LEFT + m.l, top: pageTop + m.t,
+                            width: docConfig.widthPx - m.l - m.r, height: docConfig.heightPx - m.t - m.b,
+                            fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1, strokeDashArray: [5, 5],
+                            selectable: false, evented: false, isMargin: true
+                        });
+                        canvas.add(marginGuide);
+                    }
                 }
+                sortLayers();
+                canvas.requestRenderAll();
             }
-            drawPaperBackgrounds();
 
-            // --- 2. GRID & PANNING ---
-            let isDragging = false; let isSpacePressed = false; let lastPosX, lastPosY;
-            let gridEnabled = false; const gridSize = 20;
+            // Initialize App
+            drawDocumentEnvironment();
 
-            $('#toggle-grid').click(function() {
-                gridEnabled = !gridEnabled;
-                if (gridEnabled) { $(this).addClass('active-tool'); $('#grid-overlay').show(); } 
-                else { $(this).removeClass('active-tool'); $('#grid-overlay').hide(); }
+            // --- MODAL & NEW DOCUMENT UI ---
+            let marginsLinked = true;
+            $('#link-margins-btn').click(function() {
+                marginsLinked = !marginsLinked;
+                $(this).toggleClass('active');
+                if (marginsLinked) {
+                    const val = $('#mar-t').val();
+                    $('.margin-input').val(val);
+                }
             });
 
-            canvas.on('object:moving', function(options) {
-                if (!gridEnabled) return;
-                const obj = options.target;
-                obj.set({ left: Math.round(obj.left / gridSize) * gridSize, top: Math.round(obj.top / gridSize) * gridSize });
+            $('.margin-input').on('input', function() {
+                if (marginsLinked) $('.margin-input').val($(this).val());
+                $('#doc-preset').val('Custom');
+            });
+            $('#doc-w, #doc-h').on('input', function() { $('#doc-preset').val('Custom'); });
+
+            $('#doc-preset').change(function() {
+                const p = $(this).val();
+                const u = $('#doc-unit').val();
+                let w, h;
+                if (p === 'A4') { w = 210; h = 297; $('#doc-unit').val('mm'); }
+                if (p === 'A5') { w = 148; h = 210; $('#doc-unit').val('mm'); }
+                if (p === 'Letter') { w = 8.5; h = 11; $('#doc-unit').val('in'); }
+                
+                if (w && h) {
+                    $('#doc-w').val(w); $('#doc-h').val(h);
+                    if (marginsLinked) $('.margin-input').val( $('#doc-unit').val() === 'in' ? 0.5 : 15 );
+                }
             });
 
-            $(window).keydown(function(e) { if (e.code === 'Space' && !canvas.getActiveObject()?.isEditing) { isSpacePressed = true; canvas.defaultCursor = 'grab'; e.preventDefault(); } });
-            $(window).keyup(function(e) { if (e.code === 'Space') { isSpacePressed = false; canvas.defaultCursor = 'default'; } });
+            $('#menu-new').click(function() { $('#new-doc-modal').css('display', 'flex'); });
+            $('#cancel-doc-btn').click(function() { $('#new-doc-modal').hide(); });
 
+            $('#create-doc-btn').click(function() {
+                const u = $('#doc-unit').val();
+                // Convert inputs to Pixels for the engine
+                docConfig.widthPx = toPx(parseFloat($('#doc-w').val()), u);
+                docConfig.heightPx = toPx(parseFloat($('#doc-h').val()), u);
+                docConfig.marginsPx = {
+                    t: toPx(parseFloat($('#mar-t').val()), u),
+                    b: toPx(parseFloat($('#mar-b').val()), u),
+                    l: toPx(parseFloat($('#mar-l').val()), u),
+                    r: toPx(parseFloat($('#mar-r').val()), u)
+                };
+                
+                // Clear the canvas, reset pages
+                canvas.clear();
+                totalPages = 1; $('#page-count-display').text(totalPages);
+                isMasterMode = false; $('#master-banner').hide(); $('#toggle-master-btn').removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Edit Master Page');
+                canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0; // Reset camera
+                
+                drawDocumentEnvironment();
+                $('#new-doc-modal').hide();
+            });
+
+
+            // --- MENU ACTIONS & SHORTCUTS ---
+            function togglePreviewMode() {
+                showMargins = !showMargins;
+                drawDocumentEnvironment();
+            }
+            $('#menu-toggle-margins').click(togglePreviewMode);
+
+            // Hotkeys
+            $(window).keydown(function(e) { 
+                if (canvas.getActiveObject()?.isEditing) return; // Don't trigger if typing in text box
+                
+                // Space to Pan
+                if (e.code === 'Space') { canvas.defaultCursor = 'grab'; e.preventDefault(); }
+                
+                // W to Toggle Margins
+                if (e.key.toLowerCase() === 'w') { togglePreviewMode(); e.preventDefault(); }
+            });
+            $(window).keyup(function(e) { if (e.code === 'Space') { canvas.defaultCursor = 'default'; } });
+
+
+            // --- PANNING ---
+            let isDragging = false; let lastPosX, lastPosY;
             canvas.on('mouse:down', function(opt) {
                 const evt = opt.e;
-                if (isSpacePressed || evt.button === 1) {
+                if (evt.code === 'Space' || evt.button === 1 || canvas.defaultCursor === 'grab') {
                     isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing';
                     lastPosX = evt.clientX; lastPosY = evt.clientY;
                 }
             });
-
             canvas.on('mouse:move', function(opt) {
                 if (isDragging) {
                     let vpt = canvas.viewportTransform;
@@ -235,31 +383,152 @@
                     canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY;
                 }
             });
-
             canvas.on('mouse:up', function() {
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; canvas.selection = true;
-                if (!isSpacePressed) canvas.defaultCursor = 'default';
+                if (canvas.defaultCursor !== 'grab') canvas.defaultCursor = 'default';
             });
-
             canvas.on('mouse:wheel', function(opt) {
-                let vpt = canvas.viewportTransform; vpt[5] -= opt.e.deltaY;
-                canvas.requestRenderAll(); opt.e.preventDefault(); opt.e.stopPropagation();
+                canvas.viewportTransform[5] -= opt.e.deltaY; canvas.requestRenderAll(); opt.e.preventDefault(); opt.e.stopPropagation();
             });
 
-            // --- 3. SAVE / LOAD DOCUMENTS ---
-            $('#save-file-btn').click(function() {
-                if (isMasterMode) { alert("Please close the Master Page editor before saving."); return; }
+
+            // --- MASTER PAGES ENGINE (Fixed Layering) ---
+            $('#toggle-master-btn').click(function() {
+                isMasterMode = !isMasterMode; canvas.discardActiveObject();
+
+                if (isMasterMode) {
+                    $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Save & Close Master');
+                    $('#master-banner').fadeIn(); $('#add-page-btn').prop('disabled', true).css('opacity', 0.5);
+                    canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0; 
+
+                    canvas.getObjects().forEach(obj => {
+                        if (obj.isPaper || obj.isMargin) return;
+                        if (obj.isRegular) obj.set({ opacity: 0, selectable: false }); 
+                        if (obj.isMasterClone) canvas.remove(obj); 
+                        if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true }); 
+                    });
+                } else {
+                    $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Edit Master Page');
+                    $('#master-banner').fadeOut(); $('#add-page-btn').prop('disabled', false).css('opacity', 1);
+
+                    // Re-show regular content, hide master sources
+                    canvas.getObjects().forEach(obj => {
+                        if (obj.isRegular) obj.set({ opacity: 1, selectable: true });
+                        if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false });
+                    });
+
+                    // Stamp new clones
+                    const sources = canvas.getObjects().filter(o => o.isMasterSource);
+                    
+                    // We need a promise loop or a clean clone batch to ensure everything gets placed before we sort
+                    let clonesCreated = 0;
+                    if (sources.length === 0) { drawDocumentEnvironment(); }
+                    
+                    for (let p = 0; p < totalPages; p++) {
+                        sources.forEach(sourceObj => {
+                            sourceObj.clone(function(clone) {
+                                // Important: We calculate offset based on Page 0 (where master is drawn)
+                                const yOffset = p * (docConfig.heightPx + PAGE_GAP);
+                                clone.set({ 
+                                    top: clone.top + yOffset, 
+                                    selectable: false, evented: false, isMasterClone: true, opacity: 1 
+                                });
+                                canvas.add(clone);
+                                clonesCreated++;
+                                
+                                // Only sort and render once all clones are added
+                                if(clonesCreated === sources.length * totalPages) {
+                                    drawDocumentEnvironment(); // This handles paper, margins, AND layering
+                                }
+                            }, CUSTOM_PROPS);
+                        });
+                    }
+                }
+                if(sources && sources.length === 0) drawDocumentEnvironment();
+            });
+
+            // --- PAGE MANAGEMENT ---
+            $('#add-page-btn').click(function() {
+                totalPages++; $('#page-count-display').text(totalPages);
                 
-                // Package the total pages count alongside the massive canvas JSON
-                const exportData = {
-                    pages: totalPages,
-                    canvasJSON: canvas.toJSON(CUSTOM_PROPS) 
+                // Automatically stamp master objects onto the new page
+                const sources = canvas.getObjects().filter(o => o.isMasterSource);
+                sources.forEach(sourceObj => {
+                    sourceObj.clone(function(clone) {
+                        const yOffset = (totalPages - 1) * (docConfig.heightPx + PAGE_GAP);
+                        clone.set({ top: clone.top + yOffset, selectable: false, evented: false, isMasterClone: true, opacity: 1 });
+                        canvas.add(clone);
+                    }, CUSTOM_PROPS);
+                });
+                
+                drawDocumentEnvironment();
+            });
+
+
+            // --- OBJECT CREATION ---
+            function getScreenCenter() {
+                const vpt = canvas.viewportTransform;
+                return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] };
+            }
+
+            function processNewObject(obj) {
+                if (isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); }
+                canvas.add(obj); canvas.setActiveObject(obj);
+                sortLayers();
+            }
+
+            $('#add-rect').click(function() { const c = getScreenCenter(); processNewObject(new fabric.Rect({ left: c.x, top: c.y, fill: '#6c757d', width: 100, height: 100 })); });
+            $('#add-text').click(function() { const c = getScreenCenter(); processNewObject(new fabric.IText('Hridayathil ninnu...', { left: c.x, top: c.y, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24 })); });
+            $('#image-upload').on('change', function(e) {
+                if (e.target.id === 'open-file-input') return; 
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(f) {
+                    fabric.Image.fromURL(f.target.result, function(img) {
+                        const c = getScreenCenter();
+                        if (img.width > docConfig.widthPx - 50) img.scaleToWidth(docConfig.widthPx - 50);
+                        img.set({ left: c.x, top: c.y }); processNewObject(img);
+                    });
                 };
+                reader.readAsDataURL(file); $(this).val(''); 
+            });
+
+
+            // --- EXPORT & SAVE ---
+            $('#menu-print').click(async function() {
+                if (isMasterMode) { alert("Please close the Master Page editor before exporting."); return; }
+                canvas.discardActiveObject();
+                const originalVpt = [...canvas.viewportTransform];
                 
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [docConfig.widthPx, docConfig.heightPx] });
+
+                // Hide margin lines temporarily before taking the photo
+                const oldShowMargins = showMargins;
+                showMargins = false; drawDocumentEnvironment();
+
+                for (let i = 0; i < totalPages; i++) {
+                    if (i > 0) pdf.addPage();
+                    canvas.viewportTransform[4] = -MARGIN_LEFT; 
+                    canvas.viewportTransform[5] = -(MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP))); 
+                    canvas.requestRenderAll();
+                    await new Promise(r => setTimeout(r, 50));
+                    const imgData = canvas.toDataURL({ format: 'png', multiplier: 2, left: MARGIN_LEFT, top: MARGIN_TOP + (i * (docConfig.heightPx + PAGE_GAP)), width: docConfig.widthPx, height: docConfig.heightPx });
+                    pdf.addImage(imgData, 'PNG', 0, 0, docConfig.widthPx, docConfig.heightPx);
+                }
+                
+                showMargins = oldShowMargins; drawDocumentEnvironment(); // Restore margins
+                canvas.setViewportTransform(originalVpt);
+                pdf.save('Thooval_Document.pdf');
+            });
+
+            $('#menu-save').click(function() {
+                if (isMasterMode) { alert("Please close the Master Page editor before saving."); return; }
+                const exportData = { config: docConfig, pages: totalPages, canvasJSON: canvas.toJSON(CUSTOM_PROPS) };
                 const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = "layout.thooval";
+                const a = document.createElement('a'); a.href = url; a.download = "layout.thooval";
                 document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
             });
 
@@ -269,159 +538,26 @@
                 const reader = new FileReader();
                 reader.onload = function(f) {
                     try {
-                        const loadedData = JSON.parse(f.target.result);
-                        if (loadedData.canvasJSON) {
-                            totalPages = loadedData.pages;
+                        const data = JSON.parse(f.target.result);
+                        if (data.canvasJSON && data.config) {
+                            docConfig = data.config; totalPages = data.pages;
                             $('#page-count-display').text(totalPages);
-                            
-                            // Load the spatial map back
-                            canvas.loadFromJSON(loadedData.canvasJSON, function() {
-                                // Ensure background paper stays behind objects after loading
-                                canvas.getObjects().forEach(o => { if(o.isPaper) o.sendToBack(); });
-                                canvas.requestRenderAll();
-                            });
-                        } else alert("Invalid .thooval layout file.");
-                    } catch (error) { alert("Error reading the file."); console.error(error); }
+                            canvas.loadFromJSON(data.canvasJSON, function() { drawDocumentEnvironment(); });
+                        } else alert("Invalid .thooval file.");
+                    } catch (error) { alert("Error reading the file."); }
                 };
-                reader.readAsText(file);
-                $(this).val(''); 
+                reader.readAsText(file); $(this).val(''); 
             });
 
-            // --- 4. MASTER PAGES ---
-            $('#toggle-master-btn').click(function() {
-                isMasterMode = !isMasterMode; canvas.discardActiveObject();
-
-                if (isMasterMode) {
-                    $(this).addClass('master-active').html('<i class="fa-solid fa-check"></i> Save & Close Master');
-                    $('#master-banner').fadeIn(); $('#add-page-btn').prop('disabled', true).css('opacity', 0.5);
-                    canvas.viewportTransform[4] = 0; canvas.viewportTransform[5] = 0; // Reset camera
-
-                    canvas.getObjects().forEach(obj => {
-                        if (obj.isPaper) return;
-                        if (obj.isRegular) obj.set('opacity', 0).set('selectable', false); 
-                        if (obj.isMasterClone) canvas.remove(obj); 
-                        if (obj.isMasterSource) obj.set('opacity', 1).set('selectable', true).set('evented', true); 
-                    });
-                } else {
-                    $(this).removeClass('master-active').html('<i class="fa-solid fa-crown"></i> Edit Master Page');
-                    $('#master-banner').fadeOut(); $('#add-page-btn').prop('disabled', false).css('opacity', 1);
-
-                    canvas.getObjects().forEach(obj => {
-                        if (obj.isRegular) obj.set('opacity', 1).set('selectable', true);
-                        if (obj.isMasterSource) obj.set('opacity', 0).set('selectable', false).set('evented', false);
-                    });
-
-                    const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-                        sources.forEach(sourceObj => {
-                            sourceObj.clone(function(clone) {
-                                const newTop = clone.top + (pageIndex * (PAGE_H + PAGE_GAP));
-                                clone.set({ top: newTop, selectable: false, evented: false, isMasterClone: true });
-                                canvas.add(clone); clone.sendToBack(); 
-                            }, CUSTOM_PROPS); // Ensure clones keep their custom properties!
-                        });
-                    }
-                    canvas.getObjects().forEach(obj => { if(obj.isPaper) obj.sendToBack(); });
-                }
-                drawPaperBackgrounds(); canvas.requestRenderAll();
-            });
-
-            // --- 5. MULTI-PAGE MANAGEMENT ---
-            $('#add-page-btn').click(function() {
-                totalPages++; $('#page-count-display').text(totalPages);
-                drawPaperBackgrounds();
-                
-                const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                sources.forEach(sourceObj => {
-                    sourceObj.clone(function(clone) {
-                        const newTop = clone.top + ((totalPages - 1) * (PAGE_H + PAGE_GAP));
-                        clone.set({ top: newTop, selectable: false, evented: false, isMasterClone: true });
-                        canvas.add(clone); clone.sendToBack();
-                    }, CUSTOM_PROPS);
-                });
-                canvas.getObjects().forEach(obj => { if(obj.isPaper) obj.sendToBack(); });
-                canvas.requestRenderAll();
-            });
-
-            // --- 6. CREATING OBJECTS ---
-            function getScreenCenter() {
-                const vpt = canvas.viewportTransform;
-                return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] };
-            }
-
-            function processNewObject(obj) {
-                if (gridEnabled) { obj.set({ left: Math.round(obj.left/gridSize)*gridSize, top: Math.round(obj.top/gridSize)*gridSize }); }
-                if (isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); }
-                canvas.add(obj); canvas.setActiveObject(obj);
-            }
-
-            $('#add-rect').click(function() {
-                const c = getScreenCenter();
-                processNewObject(new fabric.Rect({ left: c.x, top: c.y, fill: '#6c757d', width: 100, height: 100 }));
-            });
-
-            $('#add-circle').click(function() {
-                const c = getScreenCenter();
-                processNewObject(new fabric.Circle({ left: c.x, top: c.y, fill: '#0d6efd', radius: 50 }));
-            });
-
-            $('#add-text').click(function() {
-                const c = getScreenCenter();
-                processNewObject(new fabric.IText('Hridayathil ninnu...', { left: c.x, top: c.y, fontFamily: 'sans-serif', fill: '#333333', fontSize: 24 }));
-            });
-
-            $('#image-upload').on('change', function(e) {
-                if (e.target.id === 'open-file-input') return; 
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(f) {
-                    fabric.Image.fromURL(f.target.result, function(img) {
-                        const c = getScreenCenter();
-                        if (img.width > PAGE_W - 50) img.scaleToWidth(PAGE_W - 50);
-                        img.set({ left: c.x, top: c.y }); processNewObject(img);
-                    });
-                };
-                reader.readAsDataURL(file); $(this).val(''); 
-            });
-
-            // --- 7. PDF EXPORT ---
-            $('#export-pdf-btn').click(async function() {
-                if (isMasterMode) { alert("Please close the Master Page editor before exporting."); return; }
-
-                const originalText = $(this).html();
-                $(this).html('<i class="fa-solid fa-spinner fa-spin"></i> Generating...').prop('disabled', true);
-                canvas.discardActiveObject();
-                const originalVpt = [...canvas.viewportTransform];
-                
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [PAGE_W, PAGE_H] });
-
-                for (let i = 0; i < totalPages; i++) {
-                    if (i > 0) pdf.addPage();
-                    canvas.viewportTransform[4] = -MARGIN_LEFT; 
-                    canvas.viewportTransform[5] = -(MARGIN_TOP + (i * (PAGE_H + PAGE_GAP))); 
-                    canvas.requestRenderAll();
-                    await new Promise(r => setTimeout(r, 50));
-                    const imgData = canvas.toDataURL({ format: 'png', multiplier: 2, left: MARGIN_LEFT, top: MARGIN_TOP + (i * (PAGE_H + PAGE_GAP)), width: PAGE_W, height: PAGE_H });
-                    pdf.addImage(imgData, 'PNG', 0, 0, PAGE_W, PAGE_H);
-                }
-                canvas.setViewportTransform(originalVpt);
-                pdf.save('Thooval_Document.pdf');
-                $(this).html(originalText).prop('disabled', false);
-            });
-
-            // --- 8. UI SYNC & PROPERTIES ---
+            // --- UI SYNC ---
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
             function updateUI(event) {
                 const obj = event.selected[0];
-                if (!obj) return;
+                if (!obj || obj.isPaper || obj.isMargin) return; // Prevent editing paper/guides
                 $('#no-selection').hide(); $('#properties-form').show();
                 if (obj.fill && typeof obj.fill === 'string') $('#obj-fill').val(obj.fill);
-                $('#obj-opacity').val(obj.opacity !== undefined ? obj.opacity : 1);
-
                 if (obj.type === 'i-text' || obj.type === 'text') {
                     $('#text-properties').show();
                     let font = obj.fontFamily;
@@ -434,27 +570,12 @@
 
             function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); } }
             $('#obj-fill').on('input', function() { updateObj('fill', $(this).val()); });
-            $('#obj-opacity').on('input', function() { updateObj('opacity', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
-            $('#align-left').click(function() { updateObj('textAlign', 'left'); });
-            $('#align-center').click(function() { updateObj('textAlign', 'center'); });
-            $('#align-right').click(function() { updateObj('textAlign', 'right'); });
-
-            // Layering - Special handling to keep paper at the absolute back
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } });
-            $('#send-backward').click(function() { 
-                const obj = canvas.getActiveObject(); 
-                if (obj) { 
-                    canvas.sendBackwards(obj); 
-                    canvas.getObjects().forEach(o => { if (o.isPaper) o.sendToBack(); }); // Protect the paper layer
-                    canvas.renderAll(); 
-                } 
-            });
 
             $('#delete-obj').click(deleteActive);
             $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
-            function deleteActive() { const obj = canvas.getActiveObject(); if (obj) { canvas.remove(obj); canvas.discardActiveObject(); } }
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin) { canvas.remove(obj); canvas.discardActiveObject(); } }
         });
     </script>
 </body>
