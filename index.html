@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.6</title>
+    <title>Thooval Workspace v2.7</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -144,7 +144,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.6</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.7</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -695,23 +695,29 @@
                 draggingGuideType = null;
             });
 
+            // FIXED: Math updated to prevent object caching errors during drag
             canvas.on('object:moving', function(options) {
                 if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
                 
-                // Fixed Baseline Snapping Modulo
                 if (showBaselineGrid && obj.type === 'textbox') {
                     let relativeTop = obj.top - MARGIN_TOP;
                     let remainder = ((relativeTop % baselineGridHeight) + baselineGridHeight) % baselineGridHeight;
-                    if (remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top - remainder).setCoords(); }
-                    else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top + (baselineGridHeight - remainder)).setCoords(); }
+                    if (remainder < SNAP_THRESHOLD / zoom) { obj.top -= remainder; }
+                    else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.top += (baselineGridHeight - remainder); }
                 }
                 
                 if (showGuides) {
                     const guides = canvas.getObjects().filter(o => o.isGuide);
                     guides.forEach(guide => {
-                        if (guide.lockMovementX) { if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords(); if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords(); }
-                        if (guide.lockMovementY) { if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords(); if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords(); }
+                        if (guide.lockMovementX) { 
+                            if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.top = guide.top; 
+                            if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.top = guide.top - obj.getScaledHeight(); 
+                        }
+                        if (guide.lockMovementY) { 
+                            if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.left = guide.left; 
+                            if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.left = guide.left - obj.getScaledWidth(); 
+                        }
                     });
                 }
             });
@@ -867,7 +873,7 @@
                 canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
-            // --- TOOLS & PANNING FIX ---
+            // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
@@ -877,52 +883,76 @@
             }
             $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
 
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); if(!isPreviewMode) drawRulers(); }
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
             function fitWholePage() {
                 if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
                 const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
                 canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
             }
             $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
             $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
 
-            let isPanning = false; let lastPosX, lastPosY;
+            let isDragging = false; let lastPosX, lastPosY;
             
+            // FIXED BUG: Spacebar panning isolated from native object dragging logic
             $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
+                if(!activeId || $('.modal-overlay').is(':visible')) return;
                 
-                if(e.code === 'Space' && !isSpaceDown && activeTool !== 'zoom') { 
-                    isSpaceDown = true; 
-                    canvas.defaultCursor = 'grab'; 
+                if(e.code === 'Space') { 
+                    if(!isSpaceDown && !canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
+                        isSpaceDown = true;
+                        canvas.defaultCursor = 'grab';
+                        // Do NOT kill canvas.selection or evented status here
+                    }
                     e.preventDefault(); 
                 }
+
+                if (canvas.getActiveObject()?.isEditing) return; 
                 
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'h') setTool('pan'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
             
             $(window).keyup(function(e) { 
                 if (e.code === 'Space') { 
-                    isSpaceDown = false; isPanning = false; 
+                    isSpaceDown = false; 
+                    isDragging = false; 
                     if (activeTool === 'select') canvas.defaultCursor = 'default'; 
                 } 
             });
 
+            // FIXED BUG: Only engage canvas panning if we aren't clicking an object
             canvas.on('mouse:down', function(opt) {
                 if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                
+                // Allow normal drag if target exists and space is not down
+                if (opt.target && !isSpaceDown && activeTool === 'select') return;
+
                 if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
-                    isPanning = true; 
+                    isDragging = true; 
                     canvas.defaultCursor = 'grabbing'; 
                     lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
-                    if(opt.e.button === 1) opt.e.preventDefault(); 
+                    opt.e.preventDefault();
+                    opt.e.stopPropagation();
                 }
             });
             
             canvas.on('mouse:move', function(opt) { 
-                if (isPanning) { 
+                if (isDragging) { 
                     canvas.viewportTransform[4] += opt.e.clientX - lastPosX; 
                     canvas.viewportTransform[5] += opt.e.clientY - lastPosY; 
                     canvas.requestRenderAll(); 
@@ -931,9 +961,17 @@
             });
             
             canvas.on('mouse:up', function(opt) { 
-                if (isPanning) { canvas.setViewportTransform(canvas.viewportTransform); isPanning = false; } 
-                canvas.defaultCursor = (activeTool === 'pan' || isSpaceDown) ? 'grab' : 'default'; 
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
+                if (isDragging) { 
+                    canvas.setViewportTransform(canvas.viewportTransform); 
+                    isDragging = false; 
+                } 
+                
+                canvas.defaultCursor = (activeTool === 'pan' || isSpaceDown) ? 'grab' : 'default';
+                
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { 
+                    const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; 
+                    if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } 
+                }
             });
             
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
@@ -980,6 +1018,7 @@
                     const cleanFont = obj.fontFamily.replace(/['"]/g, '').split(',')[0].trim(); $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
                     $('.p-align').removeClass('active'); if(obj.textAlign) $(`[data-palign="${obj.textAlign}"]`).addClass('active');
                     
+                    // Populate saved simulated states
                     $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
                     $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
                     $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
