@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.1</title>
+    <title>Thooval Workspace v1.9</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -12,13 +12,24 @@
     
     <style>
         :root {
-            --bg-base: #0e0e11; --bg-panel: #18181b; --bg-surface: #27272a; --bg-surface-hover: #3f3f46;
-            --border: #27272a; --border-light: #3f3f46; --text-main: #f4f4f5; --text-muted: #a1a1aa;
-            --accent: #cbfb45; --accent-hover: #bceb35; --accent-text: #1a2005; --danger: #ef4444;
+            --bg-base: #0e0e11;
+            --bg-panel: #18181b;
+            --bg-surface: #27272a;
+            --bg-surface-hover: #3f3f46;
+            --border: #27272a;
+            --border-light: #3f3f46;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            
+            --accent: #cbfb45;
+            --accent-hover: #bceb35;
+            --accent-text: #1a2005;
+            --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 11px; }
         body { display: flex; flex-direction: column; height: 100vh; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
@@ -39,6 +50,7 @@
         .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
         .shortcut { color: var(--text-muted); font-size: 11px; }
+        .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
         #open-file-input, #place-image-input { display: none; }
 
         .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
@@ -46,69 +58,80 @@
 
         .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; flex-shrink: 0; }
         .tab { background: var(--bg-surface); color: var(--text-muted); padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent; border-bottom: none; max-width: 200px; font-size: 11px; }
+        .tab:hover { background: var(--bg-surface-hover); }
         .tab.active { background: var(--bg-panel); color: var(--text-main); border-color: var(--border); border-top: 2px solid var(--accent); }
         .tab-close { opacity: 0.5; font-size: 10px; padding: 2px; border-radius: 50%; }
         .tab-close:hover { opacity: 1; color: var(--danger); background: rgba(239, 68, 68, 0.15); }
         .tab-new { background: transparent; color: var(--text-muted); border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; margin-bottom: 4px; }
+        .tab-new:hover { background: var(--bg-surface); color: var(--text-main); }
         .dirty-dot { width: 6px; height: 6px; background: var(--text-main); border-radius: 50%; display: none; }
         .tab.is-dirty .dirty-dot { display: block; }
 
         /* --- WORKSPACE --- */
-        .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; }
-        .toolbar-left { width: 100px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
+        .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
+        
+        .toolbar-left { width: 110px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
         .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
+        /* Global Palette in Left Toolbar */
         .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
-        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
         .fill-block { top: 0; left: 0; z-index: 10; background: #3f3f46; }
         .stroke-block { top: 18px; left: 18px; z-index: 5; background: transparent; border-width: 3px; }
         .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
         .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
+
+        .palette-btn-group { display: flex; gap: 6px; justify-content: center; width: 100%; margin-top: 12px; }
+        .palette-btn-group button { padding: 4px; border-radius: 4px; }
+        
         .stroke-weight-control { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; }
 
-        /* RIGHT PANEL & TABS */
-        .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
-        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-base); }
-        .sidebar-tab { flex: 1; padding: 10px 0; text-align: center; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; border-bottom: 2px solid transparent; }
-        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
-        .sidebar-pane { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
-        .sidebar-pane.active { display: flex; }
-
+        .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-        .panel-section h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; width: 100%; }
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
-        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
         input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
         .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .btn-group button:hover { background: var(--bg-surface); color: var(--text-main); }
         .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
+        
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; }
-        .doc-btn:hover { background: var(--bg-surface-hover); border-color: var(--border-light); }
+        .doc-btn:hover { background: var(--bg-surface-hover); }
+        .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
         .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; min-height: 0; }
-        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; }
+        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; flex-shrink: 0; }
         .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; min-height: 0; min-width: 0;}
-        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; cursor: col-resize; }
+        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; cursor: col-resize; flex-shrink: 0; }
         .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; min-width: 0; min-height: 0; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
         #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
+        #exit-master-btn:hover { background: #000; border-color: var(--accent); }
         
         #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center; }
         .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; margin-top: 24px; }
+        #inner-welcome h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
+        #inner-welcome p { color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
         .action-card { background: var(--bg-surface); border: 1px solid transparent; padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .action-card:hover { border-color: var(--accent); background: var(--bg-surface-hover); transform: translateY(-2px); }
+        .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
         .small-icon-btn { min-width: 18px; min-height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
@@ -121,25 +144,13 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
-
-        .format-icon-btn { padding: 6px; border-radius: 4px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; transition: 0.2s;}
-        .format-icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
-        .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
-        
-        .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
-        .layer-item:hover { border-color: var(--border-light); }
-        .layer-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; margin: 0 8px; color: var(--text-main); }
-        .layer-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 11px; padding: 2px; }
-        .layer-btn:hover { color: var(--text-main); }
-        .layer-btn.locked { color: var(--danger); }
-        .layer-btn.hidden { opacity: 0.3; }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.1</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.9</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -183,8 +194,6 @@
                         <li id="menu-toggle-guides"><span>Toggle Guides</span> <span class="shortcut">;</span></li>
                         <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">M</span></li>
                         <li id="menu-toggle-bleed"><span>Toggle Bleed</span> <span class="shortcut">B</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-toggle-baseline"><span>Toggle Baseline Grid</span> <span class="shortcut">Alt+B</span></li>
                     </ul>
                 </li>
             </ul>
@@ -204,9 +213,12 @@
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
                 <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
+                
                 <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
+                
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
+                
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
@@ -218,17 +230,17 @@
                 <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
                 <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
             </div>
-            <div style="display: flex; gap: 6px; justify-content: center; width: 100%;">
+            <div class="palette-btn-group">
                 <button class="small-icon-btn swap-fill-stroke" title="Swap (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
                 <button class="small-icon-btn apply-none" title="None (/)"><i class="fa-solid fa-slash"></i></button>
             </div>
             
             <div class="stroke-weight-control">
-                <i class="fa-solid fa-border-top-left" style="color: var(--text-muted);"></i>
+                <i class="fa-solid fa-border-top-left" title="Stroke Weight" style="color: var(--text-muted); font-size: 11px;"></i>
                 <input type="number" id="global-stroke-weight" min="0" value="0" step="1" style="width: 40px; text-align: center; height: 22px;">
             </div>
 
-            <input type="color" id="unified-color-picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
+            <input type="color" id="unified-color-picker" title="Unified Color Picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
             
             <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
@@ -239,15 +251,18 @@
                 <span><i class="fa-solid fa-crown"></i> Editing Master Template</span>
                 <button id="exit-master-btn">Done</button>
             </div>
+            
             <canvas class="ruler-h" id="ruler-h"></canvas>
+            
             <div class="editor-body">
                 <canvas class="ruler-v" id="ruler-v"></canvas>
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
+                    
                     <div id="inner-welcome">
                         <i class="fa-solid fa-feather-pointed logo-huge"></i>
                         <h1 style="color: var(--text-main);">Welcome to Thooval</h1>
-                        <p style="color: var(--text-muted);">Create a new document or open an existing layout to begin.</p>
+                        <p>Create a new document or open an existing layout to begin.</p>
                         <div class="action-grid">
                             <div class="action-card" id="welcome-new-btn"><i class="fa-regular fa-file-lines"></i><span>New Layout</span></div>
                             <label class="action-card" style="margin: 0; cursor: pointer;"><i class="fa-regular fa-folder-open"></i><span>Open File...</span><input type="file" id="welcome-open-input" accept=".thooval,.json" style="display:none;"></label>
@@ -258,118 +273,93 @@
         </div>
 
         <aside class="panel-right" id="sidebar-right">
-            <div class="sidebar-tabs">
-                <button class="sidebar-tab active" data-target="tab-properties">Props</button>
-                <button class="sidebar-tab" data-target="tab-layers">Layers</button>
-                <button class="sidebar-tab" data-target="tab-styles">Styles</button>
-            </div>
-
-            <div id="tab-properties" class="sidebar-pane active">
+            
+            <div id="panel-pages">
                 <div class="panel-section">
                     <h3>Template</h3>
                     <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Template</button>
                 </div>
+            </div>
 
-                <div id="no-selection" class="empty-state" style="padding: 20px;">
-                    <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
-                    <div style="font-size: 11px; margin-top: 8px;">Select an object to modify properties.</div>
+            <div id="no-selection" class="empty-state" style="padding: 20px;">
+                <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
+                <div style="font-size: 11px;">Select an object to modify properties.</div>
+            </div>
+            
+            <div id="properties-form" style="display: none;">
+                
+                <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
+                    <h3>Image Mask Options</h3>
+                    <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
+                </div>
+
+                <div class="panel-section" id="geometry-properties">
+                    <h3>Transform</h3>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>X</label><input type="number" id="obj-x" step="1"></div>
+                        <div class="prop-col"><label>Y</label><input type="number" id="obj-y" step="1"></div>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>W</label><input type="number" id="obj-w" step="1" min="1"></div>
+                        <div class="prop-col"><label>H</label><input type="number" id="obj-h" step="1" min="1"></div>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
+                        <div style="width: 24px;"></div> 
+                    </div>
                 </div>
                 
-                <div id="properties-form" style="display: none;">
-                    <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
-                        <h3>Image Mask Options</h3>
-                        <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
-                    </div>
-
-                    <div class="panel-section" id="align-panel" style="border-bottom: 2px solid var(--border);">
-                        <h3>Align & Distribute</h3>
-                        <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 8px;">
-                            <button class="format-icon-btn align-action" data-align="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                            <button class="format-icon-btn align-action" data-align="center" title="Horizontal Center"><i class="fa-solid fa-align-center"></i></button>
-                            <button class="format-icon-btn align-action" data-align="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                            <div style="width: 1px; background: var(--border); margin: 0 4px;"></div>
-                            <button class="format-icon-btn align-action" data-align="top" title="Align Top"><i class="fa-solid fa-square" style="transform: rotate(180deg);"></i></button>
-                            <button class="format-icon-btn align-action" data-align="middle" title="Vertical Center"><i class="fa-solid fa-square" style="transform: rotate(90deg);"></i></button>
-                            <button class="format-icon-btn align-action" data-align="bottom" title="Align Bottom"><i class="fa-solid fa-square"></i></button>
+                <div id="text-properties" style="display: none;">
+                    <div class="panel-section">
+                        <h3>Character</h3>
+                        <div class="prop-col" style="margin-bottom: 12px;">
+                            <select id="obj-font-family">
+                                </select>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center; padding: 4px; background: var(--bg-base); border-radius: 4px;">
-                            <label style="color: var(--text-muted); font-size: 11px;">Align To:</label>
-                            <select id="align-to-target" style="flex: 1; padding: 4px 8px; font-size: 11px;">
-                                <option value="selection">Selection Bounds</option>
-                                <option value="page">Page Margins</option>
-                            </select>
+                        <div class="prop-row">
+                            <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
+                            <div class="prop-col"><label>Letter Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                         </div>
                     </div>
 
-                    <div class="panel-section" id="geometry-properties">
-                        <h3>Transform</h3>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>X</label><input type="number" id="obj-x" step="1"></div>
-                            <div class="prop-col"><label>Y</label><input type="number" id="obj-y" step="1"></div>
-                        </div>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>W</label><input type="number" id="obj-w" step="1" min="1"></div>
-                            <div class="prop-col"><label>H</label><input type="number" id="obj-h" step="1" min="1"></div>
-                        </div>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
-                            <div style="width: 24px;"></div> 
-                        </div>
-                    </div>
-                    
-                    <div id="text-properties" style="display: none;">
-                        <div class="panel-section">
-                            <h3>Typography</h3>
-                            <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"></select></div>
-                            <div class="prop-row">
-                                <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                                <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
-                            </div>
-                            <div class="prop-row" style="margin-top: 12px;">
-                                <div class="prop-col">
-                                    <label>Alignment</label>
-                                    <div class="btn-group">
-                                        <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                        <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                        <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                        <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
-                                    </div>
+                    <div class="panel-section">
+                        <h3>Paragraph</h3>
+                        <div class="prop-row" style="margin-bottom: 12px;">
+                            <div class="prop-col">
+                                <label>Alignment</label>
+                                <div class="btn-group">
+                                    <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                    <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                    <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                    <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
                                 </div>
                             </div>
-                            <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
-                                <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
+                        </div>
+                        <div class="prop-row" style="margin-bottom: 12px;">
+                            <div class="prop-col" style="flex: 2;">
+                                <label>Line Spacing</label>
+                                <div style="display: flex; gap: 4px;">
+                                    <select id="obj-lh-preset" style="flex: 1;">
+                                        <option value="1">1.0</option>
+                                        <option value="1.16">1.16</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2">2.0</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    <input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16" style="flex: 1;">
+                                </div>
                             </div>
+                        </div>
+                        
+                        <div class="prop-row" style="margin-top: 16px;">
+                            <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="tab-layers" class="sidebar-pane">
-                <div class="panel-section" style="flex: 1; overflow-y: auto;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                        <h3>Page Objects</h3>
-                        <button id="refresh-layers" class="small-icon-btn" title="Refresh Layers"><i class="fa-solid fa-rotate-right"></i></button>
-                    </div>
-                    <div id="layers-list-container"></div>
-                </div>
-            </div>
-
-            <div id="tab-styles" class="sidebar-pane">
                 <div class="panel-section">
-                    <h3>Global Styles</h3>
-                    <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Save formatting to apply consistently across layout.</p>
-                    
-                    <div class="prop-col" style="margin-bottom: 16px;">
-                        <label>Select Style</label>
-                        <select id="global-style-select"><option value="">-- None --</option></select>
-                    </div>
-                    <div class="prop-row"><button class="doc-btn" id="btn-apply-style">Apply to Selection</button></div>
-                    
-                    <div style="height: 1px; background: var(--border); margin: 24px 0;"></div>
-                    
-                    <h3 style="margin-bottom: 12px;">Create New Style</h3>
-                    <div class="prop-col" style="margin-bottom: 12px;"><input type="text" id="new-style-name" placeholder="e.g. Chapter Heading"></div>
-                    <button class="doc-btn" id="btn-save-style" style="background: transparent; border-color: var(--border);">Save from Selection</button>
+                    <h3>Arrange Layer</h3>
+                    <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
                 </div>
             </div>
         </aside>
@@ -386,34 +376,66 @@
             </div>
             <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages (Spreads)</label></div>
             <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
+            
             <div class="prop-row">
                 <div class="prop-col" style="flex: 2;">
                     <label style="margin-bottom: 8px; display: block;">Margins (Inside/Outside)</label>
                     <div class="prop-row" style="position: relative;"><div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div><div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div><div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div></div>
                     <div class="prop-row"><div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div><div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div></div>
                 </div>
-                <div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;"><label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div></div>
+                <div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;">
+                    <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
+                </div>
             </div>
+            
             <div class="modal-footer" style="margin-top: 24px;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Export Document</h2>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
+            <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
     <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
     <div class="modal-overlay" id="typography-modal">
         <div class="modal" style="width: 400px;">
-            <h2>Malayalam Font Converter</h2>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Source Text</label><textarea id="typo-source-text" rows="4" style="background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea></div>
-            <div class="prop-row" style="margin-bottom: 16px;"><div class="prop-col"><label>Conversion</label><select id="typo-convert-type"><option value="uni2fml">Unicode to FML</option><option value="fml2uni">FML to Unicode</option></select></div><div class="prop-col" style="justify-content: flex-end;"><button class="btn-primary" id="btn-run-conversion" style="width: 100%; justify-content: center;"><i class="fa-solid fa-language"></i> Convert</button></div></div>
-            <div class="prop-col"><label>Output</label><textarea id="typo-output-text" rows="4" readonly style="background: var(--bg-surface); color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#typography-modal').hide()">Close</button><button class="btn-primary" id="btn-apply-text-canvas">Apply</button></div>
+            <h2>Malayalam Font Converter (Unicode ↔ FML)</h2>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Source Text</label>
+                <textarea id="typo-source-text" rows="4" style="background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
+            </div>
+            <div class="prop-row" style="margin-bottom: 16px;">
+                <div class="prop-col">
+                    <label>Conversion Type</label>
+                    <select id="typo-convert-type">
+                        <option value="uni2fml">Unicode to FML</option>
+                        <option value="fml2uni">FML to Unicode</option>
+                    </select>
+                </div>
+                <div class="prop-col" style="justify-content: flex-end;">
+                    <button class="btn-primary" id="btn-run-conversion" style="width: 100%; justify-content: center;"><i class="fa-solid fa-language"></i> Convert</button>
+                </div>
+            </div>
+            <div class="prop-col">
+                <label>Output</label>
+                <textarea id="typo-output-text" rows="4" readonly style="background: var(--bg-surface); color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#typography-modal').hide()">Close</button>
+                <button class="btn-primary" id="btn-apply-text-canvas">Apply to Selected Text</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Force FabricJS to keep vectors crisp
+        // Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
         fabric.Object.prototype.objectCaching = false;
 
         $(document).ready(function() {
@@ -426,15 +448,20 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
             
             const SNAP_THRESHOLD = 8;
-            let isHistoryProcessing = false; let isPreviewMode = false; let isSpaceDown = false;
+            let isHistoryProcessing = false;
+            let isPreviewMode = false;
+            let isSpaceDown = false;
+            
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
-            let showBaselineGrid = false; const baselineGridHeight = 15; 
             let pagesActionType = null; let isEditingDoc = false;
 
-            let globalFill = '#3f3f46'; let globalStroke = 'transparent'; let globalStrokeWeight = 0;
+            // --- PALETTE STATE ---
+            let globalFill = '#3f3f46';
+            let globalStroke = 'transparent';
+            let globalStrokeWeight = 0;
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -442,79 +469,119 @@
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
-            // --- UI TABS ---
-            $('.sidebar-tab').click(function() {
-                $('.sidebar-tab').removeClass('active'); $(this).addClass('active');
-                $('.sidebar-pane').removeClass('active'); $('#' + $(this).data('target')).addClass('active');
-                if($(this).data('target') === 'tab-layers') renderLayersPanel();
+            // --- GOOGLE FONTS INJECTION & PREVIEWS ---
+            const curatedFonts = [
+                "Inter", "Manjari", "Noto Sans Malayalam", "Roboto", "Open Sans", "Lato", "Montserrat", 
+                "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", "Merriweather", 
+                "Nunito", "Playfair Display", "Rubik", "Work Sans", "Fira Sans", "Quicksand",
+                "Poppins", "Ubuntu", "Karla", "Lora", "Mukta", "Inconsolata", "Anton", "Josefin Sans",
+                "Cabin", "Dancing Script", "Pacifico", "Bebas Neue", "Abel", "Questrial"
+            ];
+            
+            const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
+            const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap`;
+            $('head').append(`<link href="${googleFontsUrl}" rel="stylesheet">`);
+
+            const fontSelect = $('#obj-font-family');
+            curatedFonts.forEach(font => {
+                fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
             });
 
-            // --- GOOGLE FONTS INJECTION (Multi-Language Noto Sans added) ---
-            const curatedFonts = [
-                "Inter", "Manjari", "Noto Sans Malayalam", "Noto Sans Devanagari", "Noto Sans Arabic", 
-                "Noto Sans Tamil", "Noto Sans Bengali", "Roboto", "Open Sans", "Lato", "Montserrat", 
-                "Oswald", "Merriweather", "Playfair Display", "Work Sans"
+            // --- MALAYALAM FML ↔ UNICODE ENGINE ---
+            const uniToFmlDict = [
+                { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
+                { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
+                { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
+                { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
+                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sெ" } 
             ];
-            const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
-            $('head').append(`<link href="https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap" rel="stylesheet">`);
-            const fontSelect = $('#obj-font-family');
-            curatedFonts.forEach(font => { fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif;">${font}</option>`); });
+            const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
 
-            // --- FML CONVERTER ---
-            const uniToFmlDict = [{u:"ക്ക",f:"¡"},{u:"ക്ഷ",f:"£"},{u:"ൾ",f:"Ä"},{u:"ൻ",f:"³"},{u:"ക",f:"I"},{u:"ഖ",f:"J"},{u:"ഗ",f:"K"},{u:"അ",f:"A"},{u:"ആ",f:"B"},{u:"ാ",f:"m"},{u:"ി",f:"n"},{u:"ീ",f:"o"},{u:"ു",f:"p"},{u:"െ",f:"s"},{u:"േ",f:"t"},{u:"ൈ",f:"sெ"}];
-            function convertUnicodeToFml(t) { let pt = t.replace(/([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g, function(m, p1, p2, p3) { return p3 + p1 + (p2 || ""); }); uniToFmlDict.forEach(m => { pt = pt.replace(new RegExp(m.u, "g"), m.f); }); return pt; }
-            function convertFmlToUnicode(t) { let pt = t; uniToFmlDict.sort((a,b)=>b.f.length-a.f.length).forEach(m => { const esc = m.f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); pt = pt.replace(new RegExp(esc, "g"), m.u); }); pt = pt.replace(/([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g, function(m, p1, p2, p3) { return p2 + (p3 || "") + p1; }); return pt; }
+            function convertUnicodeToFml(text) {
+                let processedText = text;
+                const preBaseVowels = /([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g;
+                processedText = processedText.replace(preBaseVowels, function(match, p1, p2, p3) { return p3 + p1 + (p2 || ""); });
+                uniToFmlDict.forEach(mapping => { const regex = new RegExp(mapping.uni, "g"); processedText = processedText.replace(regex, mapping.fml); });
+                return processedText;
+            }
+            function convertFmlToUnicode(text) {
+                let processedText = text;
+                fmlToUniDict.forEach(mapping => {
+                    const escapedFml = mapping.fml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(escapedFml, "g"); processedText = processedText.replace(regex, mapping.uni);
+                });
+                const reversePreBase = /([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g;
+                processedText = processedText.replace(reversePreBase, function(match, p1, p2, p3) { return p2 + (p3 || "") + p1; });
+                return processedText;
+            }
 
             // --- HISTORY STACK ---
             function saveHistory() {
-                if (!activeId || isHistoryProcessing) return; const p = projects[activeId];
+                if (!activeId || isHistoryProcessing) return;
+                const p = projects[activeId];
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
                 if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
-                p.history.push(canvas.toJSON(CUSTOM_PROPS)); p.historyIndex++;
+                
+                p.history.push(canvas.toJSON(CUSTOM_PROPS));
+                p.historyIndex++;
                 if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
             }
+            
             function performUndo() {
                 if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex > 0) { isHistoryProcessing = true; p.historyIndex--; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
+                if (p.history && p.historyIndex > 0) {
+                    isHistoryProcessing = true; p.historyIndex--;
+                    canvas.loadFromJSON(p.history[p.historyIndex], function() { 
+                        drawDocumentEnvironment(); 
+                        maintainHairlines();
+                        canvas.renderAll(); 
+                        isHistoryProcessing = false; 
+                    });
+                }
             }
+            
             function performRedo() {
                 if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex < p.history.length - 1) { isHistoryProcessing = true; p.historyIndex++; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
+                if (p.history && p.historyIndex < p.history.length - 1) {
+                    isHistoryProcessing = true; p.historyIndex++;
+                    canvas.loadFromJSON(p.history[p.historyIndex], function() { 
+                        drawDocumentEnvironment(); 
+                        maintainHairlines();
+                        canvas.renderAll(); 
+                        isHistoryProcessing = false; 
+                    });
+                }
             }
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
             function renderTabs() {
                 $('.tab').remove(); let tabHtml = '';
-                for (const id in projects) { const p = projects[id]; const activeClass = (id === activeId) ? 'active' : ''; const dirtyClass = p.isDirty ? 'is-dirty' : ''; tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}"><div class="dirty-dot"></div><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><i class="fa-solid fa-xmark tab-close"></i></div>`; }
+                for (const id in projects) {
+                    const p = projects[id]; const activeClass = (id === activeId) ? 'active' : ''; const dirtyClass = p.isDirty ? 'is-dirty' : '';
+                    tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}"><div class="dirty-dot"></div><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><i class="fa-solid fa-xmark tab-close"></i></div>`;
+                }
                 $('#btn-new-tab').before(tabHtml);
-                if (Object.keys(projects).length === 0) { $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); } 
-                else { $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers(); }
+                
+                if (Object.keys(projects).length === 0) {
+                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide();
+                } else {
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers();
+                }
             }
 
-            // FIXED BUG: Switch Project calls all required UI updates securely
             function switchProject(id) {
                 if (activeId === id) return;
                 if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
                 activeId = id; const p = projects[id]; canvas.clear();
                 
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (!p.styles) { p.styles = {}; }
 
-                if (p.canvasData) { 
-                    canvas.loadFromJSON(p.canvasData, function() { 
-                        canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); 
-                        drawDocumentEnvironment(); maintainHairlines(); 
-                        if(showRulers && !isPreviewMode) drawRulers(); 
-                        updateStylesPanel(); renderLayersPanel();
-                    }); 
-                } else { 
-                    canvas.viewportTransform = [1,0,0,1,0,0]; 
-                    drawDocumentEnvironment(); updateStylesPanel(); renderLayersPanel();
-                }
+                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); }); } 
+                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
                 
                 $('#page-count-display').text(p.totalPages);
-                if(p.isMasterMode) $('#master-banner').css('display', 'flex'); else $('#master-banner').hide();
+                if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
                 renderTabs(); setTool('select');
             }
 
@@ -522,16 +589,16 @@
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
             $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); });
-            
+
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
-            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
+            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
             canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -560,9 +627,7 @@
                 if (isEditingDoc && activeId) {
                     projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
-                    const newId = generateId(); 
-                    // FIXED BUG: Init styles dict immediately
-                    projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: {} };
+                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
                 $('#new-doc-modal').hide();
@@ -576,14 +641,30 @@
                 return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) };
             }
             function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
-            function maintainHairlines() { if(!activeId) return; const z = canvas.getZoom(); canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isGrid) o.set('strokeWidth', 1 / z); }); }
-            function sortLayers() { const objects = canvas.getObjects(); objects.sort((a, b) => { const getZ = (o) => { if (o.isGrid) return -6; if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; }; return getZ(a) - getZ(b); }); objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); }); }
+
+            function maintainHairlines() {
+                if(!activeId) return; const z = canvas.getZoom();
+                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
+            }
+
+            function sortLayers() {
+                const objects = canvas.getObjects();
+                objects.sort((a, b) => {
+                    const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
+                    return getZ(a) - getZ(b);
+                });
+                objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
+            }
 
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
-                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask || obj.isGrid); envItems.forEach(obj => canvas.remove(obj));
+                
+                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
+                envItems.forEach(obj => canvas.remove(obj));
+                
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
-                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `; const initZoom = canvas.getZoom() || 1; 
+                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
+                const initZoom = canvas.getZoom() || 1; 
 
                 for (let i = 0; i < pagesToDraw; i++) {
                     let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
@@ -592,11 +673,6 @@
                     
                     canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
                     
-                    if (showBaselineGrid && !isPreviewMode) {
-                        for(let lineY = pos.y + conf.marginsPx.t; lineY < pos.y + conf.heightPx - conf.marginsPx.b; lineY += baselineGridHeight) {
-                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1/initZoom, selectable: false, evented: false, isGrid: true, opacity: 0.5, excludeFromExport: true }));
-                        }
-                    }
                     if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
                     if (showMargins && !isPreviewMode) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
@@ -608,9 +684,19 @@
                 sortLayers(); canvas.requestRenderAll();
             }
 
+            // --- TOGGLES & PREVIEW MODE ---
             function updateVisibilityToggles() {
-                if (isPreviewMode) { $('#ruler-h, #ruler-v').hide(); canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed || o.isGrid) o.set('opacity', 0); }); } 
-                else { if(showRulers) $('#ruler-h, #ruler-v').show(); canvas.getObjects().forEach(o => { if(o.isGuide && showGuides) o.set('opacity', 1); if(o.isMargin && showMargins) o.set('opacity', 0.8); if(o.isBleed && showBleed) o.set('opacity', 0.8); if(o.isGrid && showBaselineGrid) o.set('opacity', 0.5); }); }
+                if (isPreviewMode) {
+                    $('#ruler-h, #ruler-v').hide();
+                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                } else {
+                    if(showRulers) $('#ruler-h, #ruler-v').show();
+                    canvas.getObjects().forEach(o => {
+                       if(o.isGuide && showGuides) o.set('opacity', 1);
+                       if(o.isMargin && showMargins) o.set('opacity', 0.8);
+                       if(o.isBleed && showBleed) o.set('opacity', 0.8);
+                    });
+                }
                 canvas.requestRenderAll();
             }
 
@@ -619,8 +705,8 @@
             $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-guides').click(() => { showGuides = !showGuides; updateVisibilityToggles(); });
-            $('#menu-toggle-baseline').click(() => { showBaselineGrid = !showBaselineGrid; drawDocumentEnvironment(); updateVisibilityToggles(); });
 
+            // --- DRAGGABLE RULERS ---
             function drawRulers() {
                 if (!showRulers || !activeId || isPreviewMode) { $('#ruler-h, #ruler-v').hide(); return; }
                 $('#ruler-h, #ruler-v').show();
@@ -651,46 +737,32 @@
                 draggingGuideType = null;
             });
 
+            // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
-                if (!activeId || isPreviewMode) return;
+                if (!activeId || !showGuides || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
-                if (showBaselineGrid && obj.type === 'textbox') {
-                    const remainder = (obj.top - MARGIN_TOP) % baselineGridHeight;
-                    if (remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top - remainder).setCoords(); }
-                    else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top + (baselineGridHeight - remainder)).setCoords(); }
-                }
-                if (showGuides) {
-                    const guides = canvas.getObjects().filter(o => o.isGuide);
-                    guides.forEach(guide => {
-                        if (guide.lockMovementX) { if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords(); if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords(); }
-                        if (guide.lockMovementY) { if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords(); if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords(); }
-                    });
-                }
+                const guides = canvas.getObjects().filter(o => o.isGuide);
+                
+                guides.forEach(guide => {
+                    if (guide.lockMovementX) { 
+                        if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
+                        if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
+                    }
+                    if (guide.lockMovementY) {
+                        if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
+                        if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
+                    }
+                });
             });
 
+            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
-                    var w = obj.width * obj.scaleX; var h = obj.height * obj.scaleY;
+                    var w = obj.width * obj.scaleX;
+                    var h = obj.height * obj.scaleY;
                     obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
-                    const totalLineHeight = obj.lineHeight * obj.fontSize; const estimatedLines = obj._textLines ? obj._textLines.length : 1;
-                    if ((totalLineHeight * estimatedLines) > h) { $('#text-overflow-warning').show(); } else { $('#text-overflow-warning').hide(); }
                 }
-            });
-
-            // --- SPLIT OVERFLOW TEXT ---
-            $('#btn-split-overflow').click(function() {
-                const obj = canvas.getActiveObject(); if (!obj || obj.type !== 'textbox' || !obj._textLines) return;
-                const linesThatFit = Math.floor(obj.height / (obj.lineHeight * obj.fontSize));
-                if (linesThatFit >= obj._textLines.length) { alert("All text fits within this box."); return; }
-                let keptText = obj._textLines.slice(0, linesThatFit).join('\n'); let overflowText = obj._textLines.slice(linesThatFit).join('\n');
-                obj.set('text', keptText); $('#text-overflow-warning').hide(); canvas.requestRenderAll();
-                const p = projects[activeId]; const currentPage = Math.max(0, Math.floor((obj.top - MARGIN_TOP) / (p.config.heightPx + PAGE_GAP)));
-                if (currentPage + 1 >= p.totalPages) { p.totalPages++; $('#page-count-display').text(p.totalPages); drawDocumentEnvironment(); }
-                const nextPos = getPagePosition(currentPage + 1, p.config); const margins = p.config.marginsPx;
-                let isLeftPage = p.config.facingPages && (currentPage + 1) > 0 && ((currentPage + 1) - 1) % 2 === 0; let aL = isLeftPage ? margins.r : margins.l;
-                const newTextBox = new fabric.Textbox(overflowText, { left: nextPos.x + aL, top: nextPos.y + margins.t, width: obj.width, fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing, textAlign: obj.textAlign, fill: obj.fill, splitByGrapheme: true });
-                processNewObject(newTextBox);
             });
 
             // --- PAGES MANAGER ---
@@ -718,30 +790,49 @@
 
             // --- MASTER TEMPLATES ---
             $('#toggle-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); setTool('select'); $('#master-banner').css('display', 'flex');
+                if(!activeId) return; const p = projects[activeId];
+                p.isMasterMode = true; canvas.discardActiveObject(); setTool('select');
+                $('#master-banner').css('display', 'flex');
+                
                 const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
-                canvas.getObjects().forEach(obj => { if (obj.excludeFromExport || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                
                 drawDocumentEnvironment(); markDirty();
             });
+
             $('#exit-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); setTool('select'); $('#master-banner').hide(); 
+                if(!activeId) return; const p = projects[activeId];
+                p.isMasterMode = false; canvas.discardActiveObject(); setTool('select');
+                $('#master-banner').hide(); 
+                
                 canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
                 const sources = canvas.getObjects().filter(o => o.isMasterSource); 
                 for (let pg = 0; pg < p.totalPages; pg++) {
                     const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
                     sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
                 }
+                
                 drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- OBJECT CREATION ---
+            // --- TEXT BOX, OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
+            
             function processNewObject(obj) { 
-                if(!activeId) return; if(activeTool !== 'select') setTool('select'); 
+                if(!activeId) return; 
+                if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
-                obj.id = generateId();
-                if (obj.type !== 'image') { obj.set('fill', globalFill); if (globalStroke !== 'transparent' && globalStrokeWeight > 0) { obj.set('stroke', globalStroke); obj.set('strokeWidth', globalStrokeWeight); } }
-                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel();
+                
+                // Inherit Global Defaults
+                if (obj.type !== 'image') {
+                    obj.set('fill', globalFill);
+                    if (globalStroke !== 'transparent' && globalStrokeWeight > 0) {
+                        obj.set('stroke', globalStroke);
+                        obj.set('strokeWidth', globalStrokeWeight);
+                    }
+                }
+                
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
             }
 
             $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, width: 100, height: 100 })));
@@ -754,55 +845,61 @@
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
-            // --- IMAGE MASKING ---
+            // --- ADVANCED IMAGE MASKING ---
             $('#tool-mask-image').click(function() {
-                const sel = canvas.getActiveObject();
-                if (!sel || sel.type !== 'activeSelection' || sel.size() !== 2) { alert("Select ONE image and ONE shape."); return; }
-                const objs = sel.getObjects(); const img = objs.find(o => o.type === 'image'); const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
+                const activeSelection = canvas.getActiveObject();
+                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
+                    alert("Please select exactly ONE image and ONE shape to mask."); return;
+                }
+                
+                const objs = activeSelection.getObjects();
+                const img = objs.find(o => o.type === 'image');
+                const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
+
                 if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
-                sel.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
-                const cloneShape = fabric.util.object.clone(shape); cloneShape.set({ originX: 'center', originY: 'center', left: shape.left - img.left, top: shape.top - img.top });
-                img.set('clipPath', cloneShape); canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img); canvas.requestRenderAll(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel();
-            });
-            $('#btn-unmask').click(function() { const img = canvas.getActiveObject(); if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); } });
 
-            // --- ALIGNMENT & DISTRIBUTION ---
-            function getAlignmentTargetCoords(targetType) {
-                if (targetType === 'selection') { const obj = canvas.getActiveObject(); if(!obj) return null; return obj.getBoundingRect(); } 
-                else if (targetType === 'page') { 
-                    const p = projects[activeId]; if(!p) return null; const pageConf = p.config; const sel = canvas.getActiveObject(); if (!sel) return null;
-                    const objCenterY = sel.getBoundingRect().top + (sel.getBoundingRect().height / 2);
-                    const estimatedPage = Math.max(0, Math.floor((objCenterY - MARGIN_TOP) / (pageConf.heightPx + PAGE_GAP)));
-                    const pos = getPagePosition(estimatedPage, pageConf); const margins = pageConf.marginsPx; 
-                    let isLeftPage = pageConf.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0; let aL = isLeftPage ? margins.r : margins.l; let aR = isLeftPage ? margins.l : margins.r;
-                    return { left: pos.x + aL, top: pos.y + margins.t, width: pageConf.widthPx - aL - aR, height: pageConf.heightPx - margins.t - margins.b };
-                } return null;
-            }
-
-            $('.align-action').click(function() {
-                const alignType = $(this).data('align'); const targetType = $('#align-to-target').val();
-                let sel = canvas.getActiveObject(); if(!sel) return; let targetRect = getAlignmentTargetCoords(targetType); if(!targetRect) return;
-                let objects = sel.type === 'activeSelection' ? sel.getObjects().slice() : [sel]; canvas.discardActiveObject(); 
-                objects.forEach(obj => {
-                    let objB = obj.getBoundingRect(); let newLeft = obj.left; let newTop = obj.top;
-                    if (alignType === 'left') newLeft -= (objB.left - targetRect.left);
-                    if (alignType === 'center') newLeft -= (objB.left + objB.width/2) - (targetRect.left + targetRect.width/2);
-                    if (alignType === 'right') newLeft -= (objB.left + objB.width) - (targetRect.left + targetRect.width);
-                    if (alignType === 'top') newTop -= (objB.top - targetRect.top);
-                    if (alignType === 'middle') newTop -= (objB.top + objB.height/2) - (targetRect.top + targetRect.height/2);
-                    if (alignType === 'bottom') newTop -= (objB.top + objB.height) - (targetRect.top + targetRect.height);
-                    obj.set({ left: newLeft, top: newTop }).setCoords();
+                activeSelection.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
+                
+                const cloneShape = fabric.util.object.clone(shape);
+                cloneShape.set({
+                    originX: 'center', originY: 'center',
+                    left: shape.left - img.left,
+                    top: shape.top - img.top
                 });
-                if (objects.length > 1) { canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); } else { canvas.setActiveObject(objects[0]); }
+                
+                img.set('clipPath', cloneShape);
+                canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img);
                 canvas.requestRenderAll(); markDirty(); saveHistory();
             });
+
+            $('#btn-unmask').click(function() {
+                const img = canvas.getActiveObject();
+                if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
+            });
+
+            // --- DYNAMIC TEXT ---
+            $('#btn-insert-page-num').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
+                else { alert("Please select a text box first to turn it into a dynamic page number."); }
+            });
+            function updateDynamicText() {
+                if (!activeId) return; const p = projects[activeId];
+                canvas.getObjects().forEach(obj => {
+                    if (obj.type === 'textbox' && obj.isDynamicText) {
+                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
+                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
+                    }
+                });
+            }
 
             // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
-                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
+                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
+                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
             }
             $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
@@ -821,45 +918,104 @@
             
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
-                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
+                
+                if(e.code === 'Space') {
+                    isSpaceDown = true;
+                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
+                        canvas.defaultCursor = 'grab'; e.preventDefault();
+                    }
+                }
+
                 if (canvas.getActiveObject()?.isEditing) return; 
                 
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'h') setTool('pan'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
             
-            $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
+            $(window).keyup(function(e) { 
+                if (e.code === 'Space') { 
+                    isSpaceDown = false; isDragging = false; 
+                    if (activeTool === 'select') canvas.defaultCursor = 'default'; 
+                } 
+            });
 
             canvas.on('mouse:down', function(opt) {
                 if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
+                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+                }
             });
             canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
             canvas.on('mouse:up', function(opt) { 
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
-                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
+                else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
                 if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
             canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
 
+            // --- EXPORT & SAVE ---
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
+
+            $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
+            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
+            
+            $('#confirm-export-btn').click(async function() {
+                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
+                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
+                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
+                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
+                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                
+                let pagesToExport = [];
+                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
+
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
+                    pdf.save(`${p.name}_Export.pdf`);
+                } else {
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
+                }
+                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
+            });
+
             // --- UI PROPERTIES PANEL ---
+            let focusedColorType = 'fill'; 
+
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
             function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.excludeFromExport || obj.isMasterClone) return;
+                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
                 if (obj.type === 'textbox') { 
-                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-tracking').val(obj.charSpacing || 0);
-                    const cleanFont = obj.fontFamily.replace(/['"]/g, '').split(',')[0].trim(); $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
-                    $('.p-align').removeClass('active'); if(obj.textAlign) $(`[data-palign="${obj.textAlign}"]`).addClass('active');
+                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
+                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
+                    $('.p-align').removeClass('active');
+                    if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
+                    
                 } else { $('#text-properties').hide(); }
             }
 
@@ -872,70 +1028,111 @@
 
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                
                 globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
+
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
-                $('#unified-color-picker').val(focusedColorType === 'fill' && fillVal !== 'transparent' ? fillVal : (strokeVal !== 'transparent' ? strokeVal : '#3f3f46'));
+                
+                const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
+                if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+                
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
-            function updateObj(prop, val) { const sel = canvas.getActiveObject(); if (sel) { if (sel.type === 'activeSelection') { sel.forEachObject(o => { o.set(prop, val); }); } else { sel.set(prop, val); } canvas.renderAll(); markDirty(); saveHistory(); } }
+            function updateObj(prop, val) { 
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') {
+                        sel.forEachObject(o => { o.set(prop, val); });
+                    } else {
+                        sel.set(prop, val); 
+                    }
+                    canvas.renderAll(); markDirty(); saveHistory(); 
+                } 
+            }
             
-            $('#fill-focus, #stroke-focus').click(function() { focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke'; $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused'); const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); });
-            $('#unified-color-picker').on('input', function() { const obj = canvas.getActiveObject(); const col = $(this).val(); if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); } });
-            $('#global-stroke-weight').on('input', function() { globalStrokeWeight = parseFloat($(this).val()) || 0; const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight); });
-            $('.swap-fill-stroke').click(() => { let temp = globalFill; globalFill = globalStroke; globalStroke = temp; $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none'); const sel = canvas.getActiveObject(); if (sel) { if (sel.type === 'activeSelection') { sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); }); } else { const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); } });
-            $('.apply-none').click(() => { const obj = canvas.getActiveObject(); if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); } if(obj) { canvas.renderAll(); markDirty(); saveHistory(); } });
+            $('#fill-focus, #stroke-focus').click(function() {
+                focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
+                $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
+                const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); 
+            });
+
+            $('#unified-color-picker').on('input', function() {
+                const obj = canvas.getActiveObject(); const col = $(this).val();
+                if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
+                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
+            });
+            
+            $('#global-stroke-weight').on('input', function() {
+                globalStrokeWeight = parseFloat($(this).val()) || 0;
+                const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight);
+            });
+
+            $('.swap-fill-stroke').click(() => {
+                let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
+                $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') {
+                        sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); });
+                    } else {
+                        const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); 
+                        if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } 
+                    }
+                    canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); 
+                }
+            });
+
+            $('.apply-none').click(() => {
+                const obj = canvas.getActiveObject();
+                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
+                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
+                if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
+            });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
             $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
-            $('#obj-w, #obj-h').on('input', function() { const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; const newDim = parseFloat($(this).val()) || 1; if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim); canvas.renderAll(); markDirty(); saveHistory(); });
+            $('#obj-w, #obj-h').on('input', function() {
+                const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; 
+                const newDim = parseFloat($(this).val()) || 1;
+                if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
+                canvas.renderAll(); markDirty(); saveHistory();
+            });
+
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
-            
-            $('#obj-font-family').on('change', function() { 
-                const selectedFont = $(this).val(); const fontName = selectedFont.replace(/['"]/g, '').split(',')[0].trim();
-                document.fonts.load(`12px "${fontName}"`).then(() => { updateObj('fontFamily', selectedFont); canvas.requestRenderAll(); });
-            });
+            $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
+            $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
+            
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
+            $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
-            // --- LAYERS PANEL ---
-            $('#refresh-layers').click(renderLayersPanel);
-            function renderLayersPanel() {
-                if(!activeId) return; $('#layers-list-container').empty();
-                const objs = canvas.getObjects().filter(o => !o.excludeFromExport && !o.isMasterClone).reverse();
-                objs.forEach((obj, index) => {
-                    let icon = 'fa-square'; if(obj.type === 'circle') icon = 'fa-circle'; if(obj.type === 'image') icon = 'fa-image'; if(obj.type === 'textbox') icon = 'fa-t'; if(obj.type === 'group') icon = 'fa-layer-group';
-                    let name = obj.type.charAt(0).toUpperCase() + obj.type.slice(1); if(obj.type === 'textbox') name = obj.text.substring(0, 12) + '...';
-                    let itemHtml = `<div class="layer-item" data-id="${obj.id}"><i class="fa-solid ${icon}" style="color: var(--text-muted);"></i><span class="layer-item-name">${name}</span><div class="layer-actions"><button class="layer-btn toggle-lock ${obj.selectable ? '' : 'locked'}"><i class="fa-solid ${obj.selectable ? 'fa-lock-open' : 'fa-lock'}"></i></button><button class="layer-btn toggle-vis ${obj.visible !== false ? '' : 'hidden'}"><i class="fa-solid ${obj.visible !== false ? 'fa-eye' : 'fa-eye-slash'}"></i></button></div></div>`;
-                    $('#layers-list-container').append(itemHtml);
-                });
-            }
-            $(document).on('click', '.layer-item', function(e) { if($(e.target).closest('.layer-actions').length) return; const id = $(this).data('id'); const obj = canvas.getObjects().find(o => o.id === id); if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); } });
-            $(document).on('click', '.toggle-lock', function() { const id = $(this).closest('.layer-item').data('id'); const obj = canvas.getObjects().find(o => o.id === id); if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); renderLayersPanel(); } });
-            $(document).on('click', '.toggle-vis', function() { const id = $(this).closest('.layer-item').data('id'); const obj = canvas.getObjects().find(o => o.id === id); if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); renderLayersPanel(); } });
-
-            // --- STYLES SYSTEM ---
-            function updateStylesPanel() {
-                if(!activeId) return; const p = projects[activeId];
-                $('#global-style-select').empty().append('<option value="">-- Select Style --</option>');
-                for(let styleName in p.styles) { $('#global-style-select').append(`<option value="${styleName}">${styleName}</option>`); }
-            }
-            $('#btn-save-style').click(function() {
-                const name = $('#new-style-name').val(); const obj = canvas.getActiveObject();
-                if(!name) { alert('Enter a style name'); return; } if(!obj || obj.type !== 'textbox') { alert('Select a text box to copy its style'); return; }
-                projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, fill: obj.fill, charSpacing: obj.charSpacing, lineHeight: obj.lineHeight, textAlign: obj.textAlign };
-                updateStylesPanel(); $('#new-style-name').val(''); markDirty(); alert("Style Saved!");
+            // --- TYPOGRAPHY CONVERTER UI ---
+            $('#menu-font-tool').click(() => {
+                if(!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') { $('#typo-source-text').val(activeObj.text); } else { $('#typo-source-text').val(''); }
+                $('#typo-output-text').val('');
+                $('#typography-modal').css('display', 'flex');
             });
-            $('#btn-apply-style').click(function() {
-                const styleName = $('#global-style-select').val(); const obj = canvas.getActiveObject();
-                if(!styleName || !obj || !projects[activeId].styles[styleName]) return;
-                const style = projects[activeId].styles[styleName];
-                if(obj.type === 'activeSelection') { obj.forEachObject(o => { if(o.type === 'textbox') o.set(style); }); } else if(obj.type === 'textbox') { obj.set(style); }
-                canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [obj]});
+            $('#btn-run-conversion').click(() => {
+                const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val();
+                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source);
+                $('#typo-output-text').val(result);
             });
-
+            $('#btn-apply-text-canvas').click(() => {
+                const newText = $('#typo-output-text').val(); if (!newText) return;
+                let activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
+                else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
+                canvas.requestRenderAll(); markDirty(); saveHistory();
+                $('#typography-modal').hide();
+            });
+            
             renderTabs();
         });
     </script>
