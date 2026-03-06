@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.8 (Stable Core)</title>
+    <title>Thooval Workspace v2.9 (Stable Drag)</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -144,7 +144,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.8</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.9</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -179,6 +179,8 @@
                 </li>
                 <li class="menu-item">View
                     <ul class="dropdown">
+                        <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
+                        <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-toggle-preview"><span>Toggle Preview Mode</span> <span class="shortcut">W</span></li>
@@ -206,11 +208,13 @@
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select / Move (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
+                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
+                <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
-                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect" style="grid-column: 1 / -1;"></i></button>
+                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
             <div class="tool-divider" style="flex: 1;"></div>
@@ -474,6 +478,7 @@
             let isHistoryProcessing = false; let isPreviewMode = false;
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; 
             let showBaselineGrid = false; const baselineGridHeight = 15; 
+            let activeTool = 'select'; let isSpaceDown = false;
             let pagesActionType = null; let isEditingDoc = false;
 
             let globalFill = '#3f3f46'; let globalStroke = 'transparent'; let globalStrokeWeight = 0;
@@ -507,21 +512,26 @@
             function convertUnicodeToFml(t) { let pt = t.replace(/([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g, function(m, p1, p2, p3) { return p3 + p1 + (p2 || ""); }); uniToFmlDict.forEach(m => { pt = pt.replace(new RegExp(m.u, "g"), m.f); }); return pt; }
             function convertFmlToUnicode(t) { let pt = t; uniToFmlDict.sort((a,b)=>b.f.length-a.f.length).forEach(m => { const esc = m.f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); pt = pt.replace(new RegExp(esc, "g"), m.u); }); pt = pt.replace(/([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g, function(m, p1, p2, p3) { return p2 + (p3 || "") + p1; }); return pt; }
 
-            // --- HISTORY STACK ---
+            // --- HISTORY STACK (DEBOUNCED) ---
+            let historyTimeout = null;
             function saveHistory() {
-                if (!activeId || isHistoryProcessing) return; const p = projects[activeId];
-                if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
-                p.history.push(canvas.toJSON(CUSTOM_PROPS)); p.historyIndex++;
-                if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
+                clearTimeout(historyTimeout);
+                historyTimeout = setTimeout(() => {
+                    if (!activeId || isHistoryProcessing) return; const p = projects[activeId];
+                    if (!p.history) { p.history = []; p.historyIndex = -1; }
+                    if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
+                    p.history.push(canvas.toJSON(CUSTOM_PROPS)); p.historyIndex++;
+                    if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
+                }, 100); // Allow native drag to resolve first
             }
+            
             function performUndo() {
                 if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex > 0) { isHistoryProcessing = true; p.historyIndex--; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
+                if (p.history && p.historyIndex > 0) { isHistoryProcessing = true; p.historyIndex--; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
             }
             function performRedo() {
                 if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex < p.history.length - 1) { isHistoryProcessing = true; p.historyIndex++; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
+                if (p.history && p.historyIndex < p.history.length - 1) { isHistoryProcessing = true; p.historyIndex++; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
             }
 
             // --- TAB MANAGEMENT ---
@@ -545,7 +555,7 @@
                 if (p.canvasData) { 
                     canvas.loadFromJSON(p.canvasData, function() { 
                         canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); 
-                        drawDocumentEnvironment(); maintainHairlines(); 
+                        drawDocumentEnvironment(); 
                         if(showRulers && !isPreviewMode) drawRulers(); 
                         updateStylesPanel(); renderLayersPanel();
                     }); 
@@ -556,7 +566,7 @@
                 
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) $('#master-banner').css('display', 'flex'); else $('#master-banner').hide();
-                renderTabs();
+                renderTabs(); setTool('select');
             }
 
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
@@ -570,9 +580,9 @@
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
-            canvas.on('object:modified', () => { markDirty(); updateDynamicText(); setTimeout(saveHistory, 10); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); setTimeout(saveHistory, 10); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); setTimeout(saveHistory, 10); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
+            canvas.on('object:modified', () => { markDirty(); updateDynamicText(); saveHistory(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -616,32 +626,32 @@
                 return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) };
             }
             function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
-            function maintainHairlines() { if(!activeId) return; const z = canvas.getZoom(); canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isGrid) o.set('strokeWidth', 1 / z); }); }
+            
             function sortLayers() { const objects = canvas.getObjects(); objects.sort((a, b) => { const getZ = (o) => { if (o.isGrid) return -6; if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; }; return getZ(a) - getZ(b); }); objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); }); }
 
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask || obj.isGrid); envItems.forEach(obj => canvas.remove(obj));
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
-                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `; const initZoom = canvas.getZoom() || 1; 
+                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `; 
 
                 for (let i = 0; i < pagesToDraw; i++) {
                     let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
                     maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
                     
-                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
+                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
                     
                     if (showBaselineGrid && !isPreviewMode) {
                         for(let lineY = pos.y + conf.marginsPx.t; lineY < pos.y + conf.heightPx - conf.marginsPx.b; lineY += baselineGridHeight) {
-                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1/initZoom, selectable: false, evented: false, isGrid: true, opacity: 0.5, excludeFromExport: true }));
+                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1, selectable: false, evented: false, isGrid: true, opacity: 0.5, excludeFromExport: true }));
                         }
                     }
-                    if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
+                    if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
                     if (showMargins && !isPreviewMode) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8, excludeFromExport: true }));
+                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1, selectable: false, evented: false, isMargin: true, opacity: 0.8, excludeFromExport: true }));
                     }
                 }
                 canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
@@ -679,19 +689,85 @@
 
             let draggingGuideType = null;
             $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
-            $(window).mouseup((e) => {
-                if (draggingGuideType && activeId && !isPreviewMode) {
-                    const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-                    if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
-                        const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
-                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: '#00ffff', strokeWidth: 1, isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v', excludeFromExport: true });
-                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); saveHistory(); }
+            
+            // --- NATIVE MOUSE / DRAG LOGIC (COMPLETELY REWRITTEN FOR STABILITY) ---
+            
+            // 1. Keyboard Shortcuts Only
+            $(window).keydown(function(e) { 
+                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
+                
+                // Track spacebar for panning hand cursor
+                if(e.code === 'Space' && !isSpaceDown && activeTool !== 'zoom') {
+                    isSpaceDown = true;
+                    if(activeTool === 'select') {
+                        canvas.defaultCursor = 'grab';
+                        canvas.getObjects().forEach(o => { if(!o.excludeFromExport) o.set('evented', false); });
+                        canvas.discardActiveObject();
+                        canvas.requestRenderAll();
                     }
+                    e.preventDefault();
                 }
-                draggingGuideType = null;
+
+                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
+                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
+            });
+            
+            $(window).keyup(function(e) { 
+                if (e.code === 'Space') { 
+                    isSpaceDown = false; 
+                    if(activeTool === 'select') {
+                        canvas.defaultCursor = 'default';
+                        canvas.getObjects().forEach(o => { if(!o.excludeFromExport) o.set('evented', true); });
+                        canvas.requestRenderAll();
+                    }
+                } 
             });
 
-            // FIXED: Math updated to prevent object caching errors during drag
+            let isPanning = false; let lastPosX, lastPosY;
+            
+            // 2. Pure Panning overrides
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (isSpaceDown || activeTool === 'pan' || opt.e.button === 1) { 
+                    isPanning = true; 
+                    canvas.defaultCursor = 'grabbing'; 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+                    opt.e.preventDefault();
+                    opt.e.stopPropagation();
+                }
+            });
+            
+            canvas.on('mouse:move', function(opt) { 
+                if (isPanning) { 
+                    canvas.viewportTransform[4] += opt.e.clientX - lastPosX; 
+                    canvas.viewportTransform[5] += opt.e.clientY - lastPosY; 
+                    canvas.requestRenderAll(); 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+                } 
+            });
+            
+            canvas.on('mouse:up', function(opt) { 
+                // ONLY touch selection state if we were actively panning
+                if (isPanning) { 
+                    canvas.setViewportTransform(canvas.viewportTransform); 
+                    isPanning = false; 
+                } 
+                
+                canvas.defaultCursor = (activeTool === 'pan' || isSpaceDown) ? 'grab' : 'default';
+                
+                // Guide Creation
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { 
+                    const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; 
+                    if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } 
+                }
+            });
+            
+            // 3. Zoom via wheel
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+
+            // 4. Object movement and safe snapping
             canvas.on('object:moving', function(options) {
                 if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
@@ -727,6 +803,7 @@
                     if ((totalLineHeight * estimatedLines) > h) { $('#text-overflow-warning').show(); } else { $('#text-overflow-warning').hide(); }
                 }
             });
+
 
             // --- SPLIT OVERFLOW TEXT ---
             $('#btn-split-overflow').click(function() {
@@ -768,13 +845,13 @@
 
             // --- MASTER TEMPLATES ---
             $('#toggle-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); $('#master-banner').css('display', 'flex');
+                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); setTool('select'); $('#master-banner').css('display', 'flex');
                 const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
                 canvas.getObjects().forEach(obj => { if (obj.excludeFromExport || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 drawDocumentEnvironment(); markDirty();
             });
             $('#exit-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); $('#master-banner').hide(); 
+                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); setTool('select'); $('#master-banner').hide(); 
                 canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
                 const sources = canvas.getObjects().filter(o => o.isMasterSource); 
                 for (let pg = 0; pg < p.totalPages; pg++) {
@@ -787,7 +864,7 @@
             // --- OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             function processNewObject(obj) { 
-                if(!activeId) return; 
+                if(!activeId) return; if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 obj.id = generateId();
                 if (obj.type !== 'image') { obj.set('fill', globalFill); if (globalStroke !== 'transparent' && globalStrokeWeight > 0) { obj.set('stroke', globalStroke); obj.set('strokeWidth', globalStrokeWeight); } }
@@ -869,39 +946,15 @@
                 canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
-            // --- NATIVE ZOOM LOGIC ONLY ---
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
-            function fitWholePage() {
-                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
-                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
-                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+            function setTool(tool) {
+                activeTool = tool; $('.tool-btn').removeClass('active-state');
+                if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
+                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
+                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', true); }); canvas.defaultCursor = 'default'; }
+                canvas.discardActiveObject(); canvas.requestRenderAll();
             }
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
+            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
 
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
-                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
-            });
-
-            // Native mouse wheel override ONLY for Zoom & Pan
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
-                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
-                opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); 
-            });
-            
-            // Clean up guides dropping natively
-            canvas.on('mouse:up', function(opt) { 
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
-            });
 
             // --- EXPORT & SAVE ---
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
