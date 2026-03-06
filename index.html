@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.2</title>
+    <title>Thooval Workspace v2.3</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -128,7 +128,6 @@
         
         .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
         
-        /* New Formatting & Alignment Reskins */
         .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
         .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
         .num-label { font-size: 10px; color: var(--text-muted); }
@@ -146,7 +145,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.2</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.3</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -332,50 +331,19 @@
                                 <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                                 <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                             </div>
-                        </div>
-
-                        <div class="panel-section">
-                            <h3>Paragraph</h3>
-                            
-                            <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 12px;">
-                                <button id="align-left" class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                <button id="align-center" class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                <button id="align-right" class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                <button id="align-justify" class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                            <div class="prop-row" style="margin-top: 12px;">
+                                <div class="prop-col">
+                                    <label>Alignment</label>
+                                    <div class="btn-group">
+                                        <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                        <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                        <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                        <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div class="numeric-row" style="margin-bottom: 8px;">
-                                <div class="num-col"><span class="num-label">Left Indent (px)</span><input type="number" id="obj-indent-left" min="0" value="0" step="1"></div>
-                                <div class="num-col"><span class="num-label">Right Indent (px)</span><input type="number" id="obj-indent-right" min="0" value="0" step="1"></div>
-                            </div>
-                            
-                            <div class="numeric-row" style="margin-bottom: 12px;">
-                                <div class="num-col"><span class="num-label">First Line Left (px)</span><input type="number" id="obj-indent-first" value="0" step="1"></div>
-                                <div class="num-col"><span class="num-label">Last Line Right (px)</span><input type="number" id="obj-indent-last" value="0" step="1"></div>
-                            </div>
-
-                            <div class="numeric-row" style="margin-bottom: 12px;">
-                                <div class="num-col"><span class="num-label">Space Before (px)</span><input type="number" id="obj-space-before" min="0" value="0" step="1"></div>
-                                <div class="num-col"><span class="num-label">Space After (px)</span><input type="number" id="obj-space-after" min="0" value="0" step="1"></div>
-                            </div>
-                            
-                            <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
-                            
-                            <div class="numeric-row" style="margin-bottom: 12px;">
-                                <div class="num-col"><span class="num-label">Drop Cap lines</span><input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1"></div>
-                                <div class="num-col"><span class="num-label">Drop Cap chars</span><input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1"></div>
-                            </div>
-                            
-                            <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
-                                <input type="checkbox" id="obj-hyphenate">
-                                <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
-                            </div>
-
                             <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
                                 <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
-                            </div>
-                            <div class="prop-row" style="margin-top: 8px;">
-                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
                             </div>
                         </div>
                     </div>
@@ -437,9 +405,7 @@
     </div>
 
     <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
-    
     <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
-    
     <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
     <div class="modal-overlay" id="typography-modal">
@@ -466,7 +432,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
+            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false; let isPreviewMode = false; let isSpaceDown = false;
@@ -489,7 +455,7 @@
                 if($(this).data('target') === 'tab-layers') renderLayersPanel();
             });
 
-            // --- GOOGLE FONTS INJECTION (Multi-Language Noto Sans added) ---
+            // --- GOOGLE FONTS INJECTION ---
             const curatedFonts = [
                 "Inter", "Manjari", "Noto Sans Malayalam", "Noto Sans Devanagari", "Noto Sans Arabic", 
                 "Noto Sans Tamil", "Noto Sans Bengali", "Roboto", "Open Sans", "Lato", "Montserrat", 
@@ -689,14 +655,19 @@
                 draggingGuideType = null;
             });
 
+            // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
                 if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
+                
+                // Fixed Baseline Modulo to Handle Negative Top Bounds Safely
                 if (showBaselineGrid && obj.type === 'textbox') {
-                    const remainder = (obj.top - MARGIN_TOP) % baselineGridHeight;
+                    let relativeTop = obj.top - MARGIN_TOP;
+                    let remainder = ((relativeTop % baselineGridHeight) + baselineGridHeight) % baselineGridHeight;
                     if (remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top - remainder).setCoords(); }
                     else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top + (baselineGridHeight - remainder)).setCoords(); }
                 }
+                
                 if (showGuides) {
                     const guides = canvas.getObjects().filter(o => o.isGuide);
                     guides.forEach(guide => {
@@ -706,6 +677,7 @@
                 }
             });
 
+            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -799,8 +771,10 @@
                 const objs = sel.getObjects(); const img = objs.find(o => o.type === 'image'); const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
                 if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
                 sel.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
-                const cloneShape = fabric.util.object.clone(shape); cloneShape.set({ originX: 'center', originY: 'center', left: shape.left - img.left, top: shape.top - img.top });
-                img.set('clipPath', cloneShape); canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img); canvas.requestRenderAll(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel();
+                shape.clone(function(cloneShape) {
+                    cloneShape.set({ originX: 'center', originY: 'center', left: shape.left - img.left, top: shape.top - img.top });
+                    img.set('clipPath', cloneShape); canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img); canvas.requestRenderAll(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel();
+                });
             });
             $('#btn-unmask').click(function() { const img = canvas.getActiveObject(); if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); } });
 
@@ -877,31 +851,80 @@
 
             let isDragging = false; let lastPosX, lastPosY;
             
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
+                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY;
+                    if (opt.target) { canvas.discardActiveObject(); }
+                    opt.e.preventDefault(); opt.e.stopPropagation();
+                }
+            });
+            
+            canvas.on('mouse:move', function(opt) { 
+                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
+            });
+            
+            // FIXED BUG: ONLY reset ViewportTransform if we were actually panning
+            canvas.on('mouse:up', function(opt) { 
+                if (isDragging) { canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; }
+                
+                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
+                else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
+            });
+            
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
-                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
+                
+                if(e.code === 'Space') { 
+                    isSpaceDown = true; 
+                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } 
+                }
                 if (canvas.getActiveObject()?.isEditing) return; 
+                
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
                 if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
             });
             
-            $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
+            $(window).keyup(function(e) { 
+                if (e.code === 'Space') { 
+                    isSpaceDown = false; isDragging = false; 
+                    if (activeTool === 'select') canvas.defaultCursor = 'default'; 
+                } 
+            });
 
-            canvas.on('mouse:down', function(opt) {
-                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; }
+            // --- EXPORT ---
+            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
+            $('#confirm-export-btn').click(async function() {
+                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
+                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
+                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
+                
+                const oldGuides = showGuides; const oldBleed = showBleed; const oldGrid = showBaselineGrid;
+                showGuides = false; showBleed = false; showBaselineGrid = false; updateVisibilityToggles();
+                
+                let pagesToExport = [];
+                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
+
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
+                    pdf.save(`${p.name}_Export.pdf`);
+                } else {
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
+                }
+                showGuides = oldGuides; showBleed = oldBleed; showBaselineGrid = oldGrid; updateVisibilityToggles(); canvas.setViewportTransform(originalVpt);
             });
-            canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
-            canvas.on('mouse:up', function(opt) { 
-                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
-                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
-            });
-            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
 
             // --- UI PROPERTIES PANEL ---
+            let focusedColorType = 'fill'; 
+
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
