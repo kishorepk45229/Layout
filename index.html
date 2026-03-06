@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.1</title>
+    <title>Thooval Workspace v2.2</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -84,7 +84,7 @@
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
-        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
         input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
@@ -126,6 +126,13 @@
         .format-icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
         .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
         
+        .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
+        
+        /* New Formatting & Alignment Reskins */
+        .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
+        .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
+        .num-label { font-size: 10px; color: var(--text-muted); }
+
         .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
         .layer-item:hover { border-color: var(--border-light); }
         .layer-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; margin: 0 8px; color: var(--text-main); }
@@ -139,7 +146,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.1</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.2</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -228,7 +235,7 @@
                 <input type="number" id="global-stroke-weight" min="0" value="0" step="1" style="width: 40px; text-align: center; height: 22px;">
             </div>
 
-            <input type="color" id="unified-color-picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
+            <input type="color" id="unified-color-picker" title="Unified Color Picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
             
             <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
@@ -325,19 +332,50 @@
                                 <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                                 <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                             </div>
-                            <div class="prop-row" style="margin-top: 12px;">
-                                <div class="prop-col">
-                                    <label>Alignment</label>
-                                    <div class="btn-group">
-                                        <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                        <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                        <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                        <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
-                                    </div>
-                                </div>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3>Paragraph</h3>
+                            
+                            <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 12px;">
+                                <button id="align-left" class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                <button id="align-center" class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                <button id="align-right" class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                <button id="align-justify" class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
                             </div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 8px;">
+                                <div class="num-col"><span class="num-label">Left Indent (px)</span><input type="number" id="obj-indent-left" min="0" value="0" step="1"></div>
+                                <div class="num-col"><span class="num-label">Right Indent (px)</span><input type="number" id="obj-indent-right" min="0" value="0" step="1"></div>
+                            </div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col"><span class="num-label">First Line Left (px)</span><input type="number" id="obj-indent-first" value="0" step="1"></div>
+                                <div class="num-col"><span class="num-label">Last Line Right (px)</span><input type="number" id="obj-indent-last" value="0" step="1"></div>
+                            </div>
+
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col"><span class="num-label">Space Before (px)</span><input type="number" id="obj-space-before" min="0" value="0" step="1"></div>
+                                <div class="num-col"><span class="num-label">Space After (px)</span><input type="number" id="obj-space-after" min="0" value="0" step="1"></div>
+                            </div>
+                            
+                            <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col"><span class="num-label">Drop Cap lines</span><input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1"></div>
+                                <div class="num-col"><span class="num-label">Drop Cap chars</span><input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1"></div>
+                            </div>
+                            
+                            <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
+                                <input type="checkbox" id="obj-hyphenate">
+                                <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
+                            </div>
+
                             <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
                                 <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
+                            </div>
+                            <div class="prop-row" style="margin-top: 8px;">
+                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
                             </div>
                         </div>
                     </div>
@@ -398,8 +436,10 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
+    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
+    
+    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
+    
     <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
     <div class="modal-overlay" id="typography-modal">
@@ -426,7 +466,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
+            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false; let isPreviewMode = false; let isSpaceDown = false;
@@ -492,7 +532,6 @@
                 else { $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers(); }
             }
 
-            // FIXED BUG: Switch Project calls all required UI updates securely
             function switchProject(id) {
                 if (activeId === id) return;
                 if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
@@ -561,7 +600,6 @@
                     projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
                     const newId = generateId(); 
-                    // FIXED BUG: Init styles dict immediately
                     projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: {} };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
@@ -797,6 +835,26 @@
                 canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
+            $('.distribute-action').click(function() {
+                const distType = $(this).data('dist'); let sel = canvas.getActiveObject();
+                if (!sel || sel.type !== 'activeSelection' || sel.size() < 3) { alert("Please select at least 3 objects to distribute spacing."); return; }
+                let objects = sel.getObjects().slice(); canvas.discardActiveObject(); 
+                if (distType[0] === 'v') {
+                    objects.sort((a,b) => a.getBoundingRect().top - b.getBoundingRect().top);
+                    const availableSpace = objects[objects.length - 1].getBoundingRect().top - objects[0].getBoundingRect().bottom; const objectsToMove = objects.slice(1, -1);
+                    const totalItemsToMoveHeight = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().height, 0); const gap = (availableSpace - totalItemsToMoveHeight) / (objectsToMove.length + 1);
+                    let currentY = objects[0].getBoundingRect().bottom;
+                    objectsToMove.forEach(obj => { let newTop = obj.top + (currentY + gap - obj.getBoundingRect().top); obj.set('top', newTop).setCoords(); currentY = obj.getBoundingRect().bottom; });
+                } else {
+                    objects.sort((a,b) => a.getBoundingRect().left - b.getBoundingRect().left);
+                    const availableSpace = objects[objects.length - 1].getBoundingRect().left - objects[0].getBoundingRect().right; const objectsToMove = objects.slice(1, -1);
+                    const totalItemsToMoveWidth = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().width, 0); const gap = (availableSpace - totalItemsToMoveWidth) / (objectsToMove.length + 1);
+                    let currentX = objects[0].getBoundingRect().right;
+                    objectsToMove.forEach(obj => { let newLeft = obj.left + (currentX + gap - obj.getBoundingRect().left); obj.set('left', newLeft).setCoords(); currentX = obj.getBoundingRect().right; });
+                }
+                canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); canvas.requestRenderAll(); markDirty(); saveHistory();
+            });
+
             // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
@@ -823,7 +881,6 @@
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
                 if (canvas.getActiveObject()?.isEditing) return; 
-                
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
