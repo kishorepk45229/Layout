@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.3</title>
+    <title>Thooval Workspace v2.4</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -127,7 +127,6 @@
         .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
         
         .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
-        
         .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
         .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
         .num-label { font-size: 10px; color: var(--text-muted); }
@@ -145,7 +144,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.3</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.4</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -331,19 +330,63 @@
                                 <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                                 <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                             </div>
-                            <div class="prop-row" style="margin-top: 12px;">
-                                <div class="prop-col">
-                                    <label>Alignment</label>
-                                    <div class="btn-group">
-                                        <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                        <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                        <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                        <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3>Paragraph</h3>
+                            <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 12px;">
+                                <button id="align-left" class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                <button id="align-center" class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                <button id="align-right" class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                <button id="align-justify" class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                            </div>
+                            
+                            <div class="prop-row" style="margin-bottom: 12px;">
+                                <div class="prop-col" style="flex: 2;">
+                                    <label>Line Spacing</label>
+                                    <div style="display: flex; gap: 4px;">
+                                        <select id="obj-lh-preset" style="flex: 1;">
+                                            <option value="1">1.0</option>
+                                            <option value="1.16">1.16</option>
+                                            <option value="1.5">1.5</option>
+                                            <option value="2">2.0</option>
+                                            <option value="custom">Custom</option>
+                                        </select>
+                                        <input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16" style="flex: 1;">
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 8px;">
+                                <div class="num-col"><span class="num-label">Left Indent (px)</span><input type="number" id="obj-indent-left" min="0" value="0" step="1"></div>
+                                <div class="num-col"><span class="num-label">Right Indent (px)</span><input type="number" id="obj-indent-right" min="0" value="0" step="1"></div>
+                            </div>
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col"><span class="num-label">First Line Left (px)</span><input type="number" id="obj-indent-first" value="0" step="1"></div>
+                                <div class="num-col"><span class="num-label">Last Line Right (px)</span><input type="number" id="obj-indent-last" value="0" step="1"></div>
+                            </div>
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col"><span class="num-label">Space Before (px)</span><input type="number" id="obj-space-before" min="0" value="0" step="1"></div>
+                                <div class="num-col"><span class="num-label">Space After (px)</span><input type="number" id="obj-space-after" min="0" value="0" step="1"></div>
+                            </div>
+                            
+                            <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col"><span class="num-label">Drop Cap lines</span><input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1"></div>
+                                <div class="num-col"><span class="num-label">Drop Cap chars</span><input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1"></div>
+                            </div>
+                            
+                            <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
+                                <input type="checkbox" id="obj-hyphenate">
+                                <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
+                            </div>
+
                             <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
                                 <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
+                            </div>
+                            <div class="prop-row" style="margin-top: 8px;">
+                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
                             </div>
                         </div>
                     </div>
@@ -419,9 +462,6 @@
     </div>
 
     <script>
-        // Force FabricJS to keep vectors crisp
-        fabric.Object.prototype.objectCaching = false;
-
         $(document).ready(function() {
             
             // --- CORE STATE ---
@@ -432,7 +472,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
+            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false; let isPreviewMode = false; let isSpaceDown = false;
@@ -655,12 +695,11 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
                 if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
                 
-                // Fixed Baseline Modulo to Handle Negative Top Bounds Safely
+                // Fixed Baseline Snapping Modulo
                 if (showBaselineGrid && obj.type === 'textbox') {
                     let relativeTop = obj.top - MARGIN_TOP;
                     let remainder = ((relativeTop % baselineGridHeight) + baselineGridHeight) % baselineGridHeight;
@@ -677,7 +716,6 @@
                 }
             });
 
-            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -851,56 +889,97 @@
 
             let isDragging = false; let lastPosX, lastPosY;
             
-            canvas.on('mouse:down', function(opt) {
-                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
-                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; 
-                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY;
-                    if (opt.target) { canvas.discardActiveObject(); }
-                    opt.e.preventDefault(); opt.e.stopPropagation();
-                }
-            });
-            
-            canvas.on('mouse:move', function(opt) { 
-                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
-            });
-            
-            // FIXED BUG: ONLY reset ViewportTransform if we were actually panning
-            canvas.on('mouse:up', function(opt) { 
-                if (isDragging) { canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; }
-                
-                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
-                else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
-                
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
-            });
-            
-            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
-
+            // KEYBOARD & SHORTCUT HANDLERS (Sticky Drag Fixed Here)
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 
                 if(e.code === 'Space') { 
-                    isSpaceDown = true; 
-                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } 
+                    if(!isSpaceDown && !canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
+                        isSpaceDown = true;
+                        canvas.defaultCursor = 'grab';
+                        canvas.selection = false;
+                        canvas.getObjects().forEach(o => o.set('evented', false));
+                        canvas.discardActiveObject();
+                        canvas.requestRenderAll();
+                    }
+                    e.preventDefault(); 
                 }
+
                 if (canvas.getActiveObject()?.isEditing) return; 
                 
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'h') setTool('pan'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
             
             $(window).keyup(function(e) { 
                 if (e.code === 'Space') { 
-                    isSpaceDown = false; isDragging = false; 
-                    if (activeTool === 'select') canvas.defaultCursor = 'default'; 
+                    isSpaceDown = false; 
+                    isDragging = false; 
+                    if (activeTool === 'select') { 
+                        canvas.defaultCursor = 'default'; 
+                        canvas.selection = true;
+                        canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', true); });
+                    } 
+                    canvas.requestRenderAll();
                 } 
             });
 
-            // --- EXPORT ---
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
+                    isDragging = true; 
+                    canvas.defaultCursor = 'grabbing'; 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+                    opt.e.preventDefault();
+                    opt.e.stopPropagation();
+                }
+            });
+            
+            canvas.on('mouse:move', function(opt) { 
+                if (isDragging) { 
+                    canvas.viewportTransform[4] += opt.e.clientX - lastPosX; 
+                    canvas.viewportTransform[5] += opt.e.clientY - lastPosY; 
+                    canvas.requestRenderAll(); 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+                } 
+            });
+            
+            canvas.on('mouse:up', function(opt) { 
+                if (isDragging) { 
+                    canvas.setViewportTransform(canvas.viewportTransform); 
+                    isDragging = false; 
+                } 
+                
+                canvas.defaultCursor = (activeTool === 'pan' || isSpaceDown) ? 'grab' : 'default';
+                
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { 
+                    const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; 
+                    if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } 
+                }
+            });
+            
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+
+            // --- EXPORT & SAVE ---
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: data.styles || {} }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
+
+            $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
+            
             $('#confirm-export-btn').click(async function() {
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
@@ -940,6 +1019,13 @@
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-tracking').val(obj.charSpacing || 0);
                     const cleanFont = obj.fontFamily.replace(/['"]/g, '').split(',')[0].trim(); $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
                     $('.p-align').removeClass('active'); if(obj.textAlign) $(`[data-palign="${obj.textAlign}"]`).addClass('active');
+                    
+                    // Populate saved simulated states
+                    $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
+                    $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
+                    $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
+                    $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
+                    $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
                 } else { $('#text-properties').hide(); }
             }
 
@@ -979,6 +1065,15 @@
                 document.fonts.load(`12px "${fontName}"`).then(() => { updateObj('fontFamily', selectedFont); canvas.requestRenderAll(); });
             });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
+
+            $('#obj-space-before').on('input', function() { updateObj('spaceBefore', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-right').on('input', function() { updateObj('indentRight', parseFloat($(this).val()) || 0); });
+            $('#obj-space-after').on('input', function() { updateObj('spaceAfter', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-left').on('input', function() { updateObj('indentLeft', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-first').on('input', function() { updateObj('textIndent', parseFloat($(this).val()) || 0); });
+            $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
+            $('#obj-drop-cap-lines').on('input', function() { updateObj('dropCapLines', parseInt($(this).val()) || 0); });
+            $('#obj-drop-cap-chars').on('input', function() { updateObj('dropCapChars', parseInt($(this).val()) || 0); });
 
             // --- LAYERS PANEL ---
             $('#refresh-layers').click(renderLayersPanel);
