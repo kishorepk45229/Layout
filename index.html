@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.8.9</title>
+    <title>Thooval Workspace v1.9</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -144,26 +144,13 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
-        
-        /* New Formatting & Alignment Reskins */
-        .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; justify-items: center;}
-        .icon-row { display: flex; width: 100%; gap: 6px; justify-content: center;}
-        .format-icon-btn { padding: 6px; border-radius: 4px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; transition: 0.2s;}
-        .format-icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
-        .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
-        
-        .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
-        .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
-        .num-label { font-size: 10px; color: var(--text-muted); }
-        
-        .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.8.9</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.9</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -189,7 +176,6 @@
                         <li id="menu-font-tool"><span>Malayalam Font Tools...</span></li>
                     </ul>
                 </li>
-                
                 <li class="menu-item">Pages
                     <ul class="dropdown">
                         <li class="menu-page-action" data-action="insert"><span>Insert Pages...</span></li>
@@ -197,7 +183,6 @@
                         <li class="menu-page-action" data-action="goto"><span>Go to Page...</span></li>
                     </ul>
                 </li>
-
                 <li class="menu-item">View
                     <ul class="dropdown">
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
@@ -308,40 +293,6 @@
                     <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
                 </div>
 
-                <div class="panel-section" id="align-panel" style="border-bottom: 2px solid var(--border);">
-                    <h3>Align Objects</h3>
-                    <div class="icon-row" style="margin-bottom: 8px;">
-                        <button class="format-icon-btn align-action" data-align="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                        <button class="format-icon-btn align-action" data-align="center" title="Horizontal Center"><i class="fa-solid fa-align-center"></i></button>
-                        <button class="format-icon-btn align-action" data-align="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                    </div>
-                    <div class="icon-row" style="margin-bottom: 12px;">
-                        <button class="format-icon-btn align-action" data-align="top" title="Align Top"><i class="fa-solid fa-square" style="transform: rotate(180deg);"></i></button>
-                        <button class="format-icon-btn align-action" data-align="middle" title="Vertical Center"><i class="fa-solid fa-square" style="transform: rotate(90deg);"></i></button>
-                        <button class="format-icon-btn align-action" data-align="bottom" title="Align Bottom"><i class="fa-solid fa-square"></i></button>
-                    </div>
-
-                    <h3 style="margin-top: 16px;">Distribute Objects</h3>
-                    <div class="icon-row" style="margin-bottom: 8px;">
-                        <button class="format-icon-btn distribute-action" data-dist="vtop" title="Vertical Top"><i class="fa-solid fa-distribute-spacing-vertical" style="transform: rotate(180deg);"></i></button>
-                        <button class="format-icon-btn distribute-action" data-dist="vmid" title="Vertical Center"><i class="fa-solid fa-distribute-spacing-vertical"></i></button>
-                        <button class="format-icon-btn distribute-action" data-dist="vbot" title="Vertical Bottom"><i class="fa-solid fa-distribute-spacing-vertical" style="transform: rotate(-180deg);"></i></button>
-                    </div>
-                    <div class="icon-row" style="margin-bottom: 12px;">
-                        <button class="format-icon-btn distribute-action" data-dist="hleft" title="Horizontal Left"><i class="fa-solid fa-distribute-spacing-horizontal"></i></button>
-                        <button class="format-icon-btn distribute-action" data-dist="hmid" title="Horizontal Center"><i class="fa-solid fa-distribute-spacing-horizontal" style="transform: rotate(180deg);"></i></button>
-                        <button class="format-icon-btn distribute-action" data-dist="hright" title="Horizontal Right"><i class="fa-solid fa-distribute-spacing-horizontal" style="transform: rotate(180deg);"></i></button>
-                    </div>
-                    
-                    <div class="align-option-row">
-                        <label style="color: var(--text-muted); font-size: 11px;">Align To:</label>
-                        <select id="align-to-target" style="flex: 1; padding: 4px 8px; font-size: 11px;">
-                            <option value="selection">Selection Bounds</option>
-                            <option value="page">Page Margins (Active Page)</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="panel-section" id="geometry-properties">
                     <h3>Transform</h3>
                     <div class="prop-row">
@@ -354,7 +305,8 @@
                     </div>
                     <div class="prop-row">
                         <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
-                        <div style="width: 24px;"></div> </div>
+                        <div style="width: 24px;"></div> 
+                    </div>
                 </div>
                 
                 <div id="text-properties" style="display: none;">
@@ -368,7 +320,22 @@
                             <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                             <div class="prop-col"><label>Letter Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                         </div>
-                        <div class="prop-row">
+                    </div>
+
+                    <div class="panel-section">
+                        <h3>Paragraph</h3>
+                        <div class="prop-row" style="margin-bottom: 12px;">
+                            <div class="prop-col">
+                                <label>Alignment</label>
+                                <div class="btn-group">
+                                    <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                    <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                    <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                    <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="prop-row" style="margin-bottom: 12px;">
                             <div class="prop-col" style="flex: 2;">
                                 <label>Line Spacing</label>
                                 <div style="display: flex; gap: 4px;">
@@ -383,71 +350,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="panel-section">
-                        <h3>Paragraph</h3>
-                        
-                        <div class="icon-row" style="margin-bottom: 12px;">
-                            <button class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                            <button class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                            <button class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                            <button class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
-                        </div>
-                        
-                        <div class="numeric-row" style="margin-bottom: 8px;">
-                            <div class="num-col">
-                                <span class="num-label">Left Indent (px)</span>
-                                <input type="number" id="obj-indent-left" min="0" value="0" step="1">
-                            </div>
-                            <div class="num-col">
-                                <span class="num-label">Right Indent (px)</span>
-                                <input type="number" id="obj-indent-right" min="0" value="0" step="1">
-                            </div>
-                        </div>
-                        
-                        <div class="numeric-row" style="margin-bottom: 12px;">
-                            <div class="num-col">
-                                <span class="num-label">First Line Left (px)</span>
-                                <input type="number" id="obj-indent-first" value="0" step="1">
-                            </div>
-                            <div class="num-col">
-                                <span class="num-label">Last Line Right (px)</span>
-                                <input type="number" id="obj-indent-last" value="0" step="1">
-                            </div>
-                        </div>
-
-                        <div class="numeric-row" style="margin-bottom: 12px;">
-                            <div class="num-col">
-                                <span class="num-label">Space Before (px)</span>
-                                <input type="number" id="obj-space-before" min="0" value="0" step="1">
-                            </div>
-                            <div class="num-col">
-                                <span class="num-label">Space After (px)</span>
-                                <input type="number" id="obj-space-after" min="0" value="0" step="1">
-                            </div>
-                        </div>
-                        
-                        <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
-                        
-                        <div class="numeric-row" style="margin-bottom: 12px;">
-                            <div class="num-col">
-                                <span class="num-label">Drop Cap lines</span>
-                                <input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1">
-                            </div>
-                            <div class="num-col">
-                                <span class="num-label">Drop Cap chars</span>
-                                <input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1">
-                            </div>
-                        </div>
-                        
-                        <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
-                            <input type="checkbox" id="obj-hyphenate">
-                            <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
-                        </div>
                         
                         <div class="prop-row" style="margin-top: 16px;">
-                            <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Dynamic Page Number</button>
+                            <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
                         </div>
                     </div>
                 </div>
@@ -543,8 +448,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            // Added explicit custom variables to save the simulated paragraph options
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -919,6 +823,7 @@
                 if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 
+                // Inherit Global Defaults
                 if (obj.type !== 'image') {
                     obj.set('fill', globalFill);
                     if (globalStroke !== 'transparent' && globalStrokeWeight > 0) {
@@ -988,96 +893,6 @@
                     }
                 });
             }
-
-            // --- ALIGNMENT & DISTRIBUTION ---
-            function getAlignmentTargetCoords(targetType) {
-                if (targetType === 'selection') { 
-                    const obj = canvas.getActiveObject(); if(!obj) return null; return obj.getBoundingRect(); 
-                } 
-                else if (targetType === 'page') { 
-                    const p = projects[activeId]; if(!p) return null; const pageConf = p.config;
-                    const sel = canvas.getActiveObject(); if (!sel) return null;
-                    
-                    const objCenterY = sel.getBoundingRect().top + (sel.getBoundingRect().height / 2);
-                    const estimatedPage = Math.max(0, Math.floor((objCenterY - MARGIN_TOP) / (pageConf.heightPx + PAGE_GAP)));
-                    const pos = getPagePosition(estimatedPage, pageConf); const margins = pageConf.marginsPx; 
-                    let isLeftPage = pageConf.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0;
-                    let aL = isLeftPage ? margins.r : margins.l; let aR = isLeftPage ? margins.l : margins.r;
-                    
-                    return { left: pos.x + aL, top: pos.y + margins.t, width: pageConf.widthPx - aL - aR, height: pageConf.heightPx - margins.t - margins.b };
-                }
-                return null;
-            }
-
-            $('.align-action').click(function() {
-                const alignType = $(this).data('align'); const targetType = $('#align-to-target').val();
-                let sel = canvas.getActiveObject(); if(!sel) return;
-                let targetRect = getAlignmentTargetCoords(targetType); if(!targetRect) return;
-
-                // Fixed: Deselect group, move items absolutely, reselect.
-                let objects = sel.type === 'activeSelection' ? sel.getObjects().slice() : [sel];
-                canvas.discardActiveObject(); 
-
-                objects.forEach(obj => {
-                    let objB = obj.getBoundingRect();
-                    let newLeft = obj.left; let newTop = obj.top;
-
-                    if (alignType === 'left') newLeft -= (objB.left - targetRect.left);
-                    if (alignType === 'center') newLeft -= (objB.left + objB.width/2) - (targetRect.left + targetRect.width/2);
-                    if (alignType === 'right') newLeft -= (objB.left + objB.width) - (targetRect.left + targetRect.width);
-                    if (alignType === 'top') newTop -= (objB.top - targetRect.top);
-                    if (alignType === 'middle') newTop -= (objB.top + objB.height/2) - (targetRect.top + targetRect.height/2);
-                    if (alignType === 'bottom') newTop -= (objB.top + objB.height) - (targetRect.top + targetRect.height);
-
-                    obj.set({ left: newLeft, top: newTop }).setCoords();
-                });
-
-                if (objects.length > 1) { canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); } 
-                else { canvas.setActiveObject(objects[0]); }
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-
-            $('.distribute-action').click(function() {
-                const distType = $(this).data('dist');
-                let sel = canvas.getActiveObject();
-                if (!sel || sel.type !== 'activeSelection' || sel.size() < 3) {
-                    alert("Please select at least 3 objects to distribute spacing."); return;
-                }
-
-                let objects = sel.getObjects().slice();
-                canvas.discardActiveObject(); 
-
-                if (distType[0] === 'v') {
-                    objects.sort((a,b) => a.getBoundingRect().top - b.getBoundingRect().top);
-                    const availableSpace = objects[objects.length - 1].getBoundingRect().top - objects[0].getBoundingRect().bottom;
-                    const objectsToMove = objects.slice(1, -1);
-                    const totalItemsToMoveHeight = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().height, 0);
-                    const gap = (availableSpace - totalItemsToMoveHeight) / (objectsToMove.length + 1);
-
-                    let currentY = objects[0].getBoundingRect().bottom;
-                    objectsToMove.forEach(obj => {
-                        let newTop = obj.top + (currentY + gap - obj.getBoundingRect().top);
-                        obj.set('top', newTop).setCoords();
-                        currentY = obj.getBoundingRect().bottom;
-                    });
-                } else {
-                    objects.sort((a,b) => a.getBoundingRect().left - b.getBoundingRect().left);
-                    const availableSpace = objects[objects.length - 1].getBoundingRect().left - objects[0].getBoundingRect().right;
-                    const objectsToMove = objects.slice(1, -1);
-                    const totalItemsToMoveWidth = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().width, 0);
-                    const gap = (availableSpace - totalItemsToMoveWidth) / (objectsToMove.length + 1);
-
-                    let currentX = objects[0].getBoundingRect().right;
-                    objectsToMove.forEach(obj => {
-                        let newLeft = obj.left + (currentX + gap - obj.getBoundingRect().left);
-                        obj.set('left', newLeft).setCoords();
-                        currentX = obj.getBoundingRect().right;
-                    });
-                }
-
-                canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas }));
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
 
             // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
@@ -1201,12 +1016,6 @@
                     $('.p-align').removeClass('active');
                     if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
                     
-                    // Populate saved simulated states
-                    $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
-                    $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
-                    $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
-                    $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
-                    $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
                 } else { $('#text-properties').hide(); }
             }
 
@@ -1232,7 +1041,6 @@
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
-            // Upgrade updateObj to map across ActiveSelections
             function updateObj(prop, val) { 
                 const sel = canvas.getActiveObject(); 
                 if (sel) { 
@@ -1299,33 +1107,9 @@
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
-            // Map the layout inputs to save data directly into object bounds safely
-            $('#obj-space-before').on('input', function() { updateObj('spaceBefore', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-right').on('input', function() { updateObj('indentRight', parseFloat($(this).val()) || 0); });
-            $('#obj-space-after').on('input', function() { updateObj('spaceAfter', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-left').on('input', function() { updateObj('indentLeft', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-first').on('input', function() { updateObj('textIndent', parseFloat($(this).val()) || 0); }); // Only property natively respected sometimes by Fabric Textbox
-            $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
-            $('#obj-drop-cap-lines').on('input', function() { updateObj('dropCapLines', parseInt($(this).val()) || 0); });
-            $('#obj-drop-cap-chars').on('input', function() { updateObj('dropCapChars', parseInt($(this).val()) || 0); });
-            
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
-
-            // --- GROUPING & UNGROUPING LOGIC ---
-            $('#menu-group').click(function() {
-                if (!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'activeSelection') { alert("Please select multiple objects to group."); return; }
-                activeObj.toGroup(); canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-            $('#menu-ungroup').click(function() {
-                if (!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'group') { alert("Please select a grouped object to ungroup."); return; }
-                activeObj.toActiveSelection(); canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
 
             // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
