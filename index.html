@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.9 (Stable Drag)</title>
+    <title>Thooval Workspace v2.9 (Stable Engine)</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -138,6 +138,9 @@
         .layer-btn:hover { color: var(--text-main); }
         .layer-btn.locked { color: var(--danger); }
         .layer-btn.hidden { opacity: 0.3; }
+        
+        /* Edit Mask Overlay Alert */
+        .mask-edit-banner { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: #3f3f46; color: #fff; padding: 8px 16px; border-radius: 24px; font-weight: 600; z-index: 500; display: none; align-items: center; gap: 12px; border: 1px solid var(--accent); }
     </style>
 </head>
 <body>
@@ -244,6 +247,12 @@
                 <span><i class="fa-solid fa-crown"></i> Editing Master Template</span>
                 <button id="exit-master-btn">Done</button>
             </div>
+            
+            <div class="mask-edit-banner" id="mask-edit-banner">
+                <span><i class="fa-solid fa-crop-simple"></i> Edit Mask Content</span>
+                <button class="btn-primary" id="btn-apply-mask-edit" style="padding: 4px 12px; font-size: 11px;">Apply</button>
+            </div>
+            
             <canvas class="ruler-h" id="ruler-h"></canvas>
             <div class="editor-body">
                 <canvas class="ruler-v" id="ruler-v"></canvas>
@@ -283,7 +292,10 @@
                 <div id="properties-form" style="display: none;">
                     <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
                         <h3>Image Mask Options</h3>
-                        <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="doc-btn" id="btn-edit-mask" style="color: var(--accent); border-color: var(--accent); flex: 1;"><i class="fa-solid fa-crop-simple"></i> Edit Content</button>
+                            <button class="doc-btn" id="btn-unmask" style="color: var(--danger); flex: 1;"><i class="fa-solid fa-link-slash"></i> Release</button>
+                        </div>
                     </div>
 
                     <div class="panel-section" id="align-panel" style="border-bottom: 2px solid var(--border);">
@@ -385,9 +397,6 @@
                             <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
                                 <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
                             </div>
-                            <div class="prop-row" style="margin-top: 8px;">
-                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -447,7 +456,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
+    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="prop-row" style="margin-top: 8px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="export-marks" checked> Include Bleed & Crop Marks</label></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
     <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
     <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
@@ -475,10 +484,10 @@
             const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
             
             const SNAP_THRESHOLD = 8;
-            let isHistoryProcessing = false; let isPreviewMode = false;
+            let isHistoryProcessing = false; let isPreviewMode = false; let isSpaceDown = false;
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; 
             let showBaselineGrid = false; const baselineGridHeight = 15; 
-            let activeTool = 'select'; let isSpaceDown = false;
+            let activeTool = 'select'; 
             let pagesActionType = null; let isEditingDoc = false;
 
             let globalFill = '#3f3f46'; let globalStroke = 'transparent'; let globalStrokeWeight = 0;
@@ -522,7 +531,7 @@
                     if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
                     p.history.push(canvas.toJSON(CUSTOM_PROPS)); p.historyIndex++;
                     if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
-                }, 100); // Allow native drag to resolve first
+                }, 150);
             }
             
             function performUndo() {
@@ -690,52 +699,18 @@
             let draggingGuideType = null;
             $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
             
-            // --- NATIVE MOUSE / DRAG LOGIC (COMPLETELY REWRITTEN FOR STABILITY) ---
+            // --- NATIVE MOUSE / DRAG LOGIC (100% ISOLATED FOR STABILITY) ---
             
-            // 1. Keyboard Shortcuts Only
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
-                
-                // Track spacebar for panning hand cursor
-                if(e.code === 'Space' && !isSpaceDown && activeTool !== 'zoom') {
-                    isSpaceDown = true;
-                    if(activeTool === 'select') {
-                        canvas.defaultCursor = 'grab';
-                        canvas.getObjects().forEach(o => { if(!o.excludeFromExport) o.set('evented', false); });
-                        canvas.discardActiveObject();
-                        canvas.requestRenderAll();
-                    }
-                    e.preventDefault();
-                }
-
-                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
-            });
-            
-            $(window).keyup(function(e) { 
-                if (e.code === 'Space') { 
-                    isSpaceDown = false; 
-                    if(activeTool === 'select') {
-                        canvas.defaultCursor = 'default';
-                        canvas.getObjects().forEach(o => { if(!o.excludeFromExport) o.set('evented', true); });
-                        canvas.requestRenderAll();
-                    }
-                } 
-            });
-
             let isPanning = false; let lastPosX, lastPosY;
             
-            // 2. Pure Panning overrides
             canvas.on('mouse:down', function(opt) {
                 if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || activeTool === 'pan' || opt.e.button === 1) { 
+                
+                // ONLY engage pan override if actively panning. Leave everything else native.
+                if (activeTool === 'pan' || isSpaceDown || opt.e.button === 1) { 
                     isPanning = true; 
                     canvas.defaultCursor = 'grabbing'; 
                     lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
-                    opt.e.preventDefault();
-                    opt.e.stopPropagation();
                 }
             });
             
@@ -749,7 +724,6 @@
             });
             
             canvas.on('mouse:up', function(opt) { 
-                // ONLY touch selection state if we were actively panning
                 if (isPanning) { 
                     canvas.setViewportTransform(canvas.viewportTransform); 
                     isPanning = false; 
@@ -757,17 +731,54 @@
                 
                 canvas.defaultCursor = (activeTool === 'pan' || isSpaceDown) ? 'grab' : 'default';
                 
-                // Guide Creation
+                // Native object dragging is never interrupted, but Guide drop check happens here safely
                 if(opt.target && opt.target.isGuide && !isPreviewMode) { 
                     const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; 
                     if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } 
                 }
             });
             
-            // 3. Zoom via wheel
-            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+            canvas.on('mouse:wheel', function(opt) { 
+                if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
+                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
+                opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); 
+            });
 
-            // 4. Object movement and safe snapping
+            $(window).keydown(function(e) { 
+                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
+                
+                if(e.code === 'Space' && !isSpaceDown && activeTool !== 'zoom') { 
+                    isSpaceDown = true; 
+                    canvas.defaultCursor = 'grab'; 
+                    // We DO NOT cancel canvas selection here anymore to avoid breaking drop physics
+                    e.preventDefault(); 
+                }
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
+                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'h') setTool('pan'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            });
+            
+            $(window).keyup(function(e) { 
+                if (e.code === 'Space') { 
+                    isSpaceDown = false; 
+                    if (activeTool === 'select') canvas.defaultCursor = 'default'; 
+                } 
+            });
+
+            // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
                 if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
@@ -803,7 +814,6 @@
                     if ((totalLineHeight * estimatedLines) > h) { $('#text-overflow-warning').show(); } else { $('#text-overflow-warning').hide(); }
                 }
             });
-
 
             // --- SPLIT OVERFLOW TEXT ---
             $('#btn-split-overflow').click(function() {
@@ -881,7 +891,7 @@
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
-            // --- IMAGE MASKING ---
+            // --- ADVANCED IMAGE MASKING ---
             $('#tool-mask-image').click(function() {
                 const sel = canvas.getActiveObject();
                 if (!sel || sel.type !== 'activeSelection' || sel.size() !== 2) { alert("Select ONE image and ONE shape."); return; }
@@ -894,6 +904,43 @@
                 });
             });
             $('#btn-unmask').click(function() { const img = canvas.getActiveObject(); if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); } });
+            
+            // EDIT MASK LOGIC
+            let activeMaskEditImg = null;
+            $('#btn-edit-mask').click(function() {
+                const img = canvas.getActiveObject(); if (!img || !img.clipPath) return;
+                activeMaskEditImg = img;
+                
+                // Save and remove clip path to allow editing
+                img.savedClipPath = img.clipPath;
+                img.set('clipPath', null); img.set('opacity', 0.5);
+                
+                // Draw overlay bounds
+                img.savedClipPath.clone(function(overlay) {
+                    overlay.set({ left: img.left + img.savedClipPath.left, top: img.top + img.savedClipPath.top, fill: 'transparent', stroke: 'var(--accent)', strokeDashArray: [5, 5], selectable: false, evented: false, isMaskOverlay: true, excludeFromExport: true });
+                    canvas.add(overlay); canvas.requestRenderAll();
+                });
+                
+                $('#mask-edit-banner').css('display', 'flex'); $('#btn-edit-mask').hide();
+            });
+            
+            $('#btn-apply-mask-edit').click(function() {
+                if(!activeMaskEditImg) return;
+                const img = activeMaskEditImg;
+                
+                // Remove overlay
+                const overlays = canvas.getObjects().filter(o => o.isMaskOverlay);
+                overlays.forEach(o => canvas.remove(o));
+                
+                // Reapply the bounds
+                if (img.savedClipPath) {
+                    img.savedClipPath.set({ left: img.savedClipPath.left - img.left + overlays[0].left, top: img.savedClipPath.top - img.top + overlays[0].top });
+                    img.set('clipPath', img.savedClipPath);
+                }
+                
+                img.set('opacity', 1); activeMaskEditImg = null;
+                $('#mask-edit-banner').hide(); $('#btn-edit-mask').show(); canvas.requestRenderAll(); saveHistory();
+            });
 
             // --- ALIGNMENT & DISTRIBUTION ---
             function getAlignmentTargetCoords(targetType) {
@@ -946,21 +993,36 @@
                 canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
+            // --- TOOLS & PANNING ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
-                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', true); }); canvas.defaultCursor = 'default'; }
+                
+                if (tool !== 'select') { 
+                    canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; 
+                } else { 
+                    canvas.defaultCursor = 'default'; 
+                }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
             }
             $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
 
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
+            function fitWholePage() {
+                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
+                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
+                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
+                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+            }
+            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
+            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
 
-            // --- EXPORT & SAVE ---
+            // --- EXPORT WITH CROP MARKS & BLEED ---
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
             $('#confirm-export-btn').click(async function() {
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
+                const withMarks = $('#export-marks').is(':checked');
                 canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
                 
                 const oldGuides = showGuides; const oldBleed = showBleed; const oldGrid = showBaselineGrid;
@@ -969,12 +1031,31 @@
                 let pagesToExport = [];
                 if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
 
+                let exportW = p.config.widthPx; let exportH = p.config.heightPx; let b = p.config.bleedPx;
+                let cX = 0; let cY = 0;
+                if (withMarks) { exportW += (b*2) + 40; exportH += (b*2) + 40; cX = b + 20; cY = b + 20; }
+
                 if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [exportW, exportH] });
+                    for (let i = 0; i < pagesToExport.length; i++) { 
+                        const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); 
+                        const pos = getPagePosition(pg, p.config); 
+                        canvas.viewportTransform = [1, 0, 0, 1, -pos.x + cX, -pos.y + cY]; 
+                        canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); 
+                        
+                        pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: -cX, top: -cY, width: exportW, height: exportH }), 'PNG', 0, 0, exportW, exportH); 
+                        
+                        if (withMarks) {
+                            pdf.setDrawColor(0); pdf.setLineWidth(0.5);
+                            pdf.line(10, cY, cX - 5, cY); pdf.line(cX, 10, cX, cY - 5); // TL
+                            pdf.line(exportW - 10, cY, exportW - cX + 5, cY); pdf.line(exportW - cX, 10, exportW - cX, cY - 5); // TR
+                            pdf.line(10, exportH - cY, cX - 5, exportH - cY); pdf.line(cX, exportH - 10, cX, exportH - cY + 5); // BL
+                            pdf.line(exportW - 10, exportH - cY, exportW - cX + 5, exportH - cY); pdf.line(exportW - cX, exportH - 10, exportW - cX, exportH - cY + 5); // BR
+                        }
+                    }
                     pdf.save(`${p.name}_Export.pdf`);
                 } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x + cX, -pos.y + cY]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: -cX, top: -cY, width: exportW, height: exportH }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
                 }
                 showGuides = oldGuides; showBleed = oldBleed; showBaselineGrid = oldGrid; updateVisibilityToggles(); canvas.setViewportTransform(originalVpt);
             });
@@ -991,7 +1072,7 @@
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
-                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
+                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); $('#btn-edit-mask').show(); } else { $('#image-mask-tools').hide(); }
 
                 if (obj.type === 'textbox') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-tracking').val(obj.charSpacing || 0);
