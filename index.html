@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.9</title>
+    <title>Thooval Workspace v2.0</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -24,6 +25,13 @@
             --accent: #cbfb45;
             --accent-hover: #bceb35;
             --accent-text: #1a2005;
+            
+            /* Exact Print Guide Colors */
+            --guide-margin: #ff00ff; /* Magenta */
+            --guide-bleed: #ff0000;  /* Red */
+            --guide-edge: #000000;   /* Black */
+            --guide-cyan: #00ffff;   /* Draggable Guides */
+            
             --danger: #ef4444;
         }
 
@@ -70,49 +78,44 @@
         /* --- WORKSPACE --- */
         .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
         
-        .toolbar-left { width: 110px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
+        /* TWO COLUMN TOOLBOX FIXED ALIGNMENT */
+        .toolbar-left { width: 88px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; }
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
         .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
-        .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
+        .tool-divider { grid-column: 1 / -1; width: 100%; height: 1px; background: var(--border); margin: 4px 0; }
         
-        /* Global Palette in Left Toolbar */
-        .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
-        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
-        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
-        .fill-block { top: 0; left: 0; z-index: 10; background: #3f3f46; }
-        .stroke-block { top: 18px; left: 18px; z-index: 5; background: transparent; border-width: 3px; }
-        .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
-        .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
-
-        .palette-btn-group { display: flex; gap: 6px; justify-content: center; width: 100%; margin-top: 12px; }
-        .palette-btn-group button { padding: 4px; border-radius: 4px; }
+        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
         
-        .stroke-weight-control { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; }
-
-        .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        /* NEW: Sidebar Tabs CSS */
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg-base); }
+        .sidebar-tab { flex: 1; padding: 10px 0; text-align: center; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .sidebar-tab:hover { color: var(--text-main); background: var(--bg-panel); }
+        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
+        .sidebar-pane { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+        .sidebar-pane.active { display: block; }
+        
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; width: 100%; }
+        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
+        .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         
-        input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
-        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
+        input[type="text"], input[type="number"], select { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
+        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
+        input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
-        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .btn-group button:hover { background: var(--bg-surface); color: var(--text-main); }
+        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; }
         .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
-        
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; }
         .doc-btn:hover { background: var(--bg-surface-hover); }
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
+        /* Rulers & Canvas Area */
         .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; min-height: 0; }
         .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; flex-shrink: 0; }
         .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; min-height: 0; min-width: 0;}
@@ -120,10 +123,12 @@
         .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; min-width: 0; min-height: 0; }
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         
+        /* THE FIXED MASTER BANNER */
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
         #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
         #exit-master-btn:hover { background: #000; border-color: var(--accent); }
         
+        /* --- EMPTY STATE --- */
         #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center; }
         .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; }
         #inner-welcome h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
@@ -134,9 +139,33 @@
         .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
-        .small-icon-btn { min-width: 18px; min-height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
+        /* Color Control Block */
+        .complex-color-block { position: relative; width: 60px; height: 60px; margin-right: 12px; flex-shrink: 0;}
+        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
+        .fill-block { top: 0; left: 0; z-index: 10; background: #ffffff; }
+        .stroke-block { top: 18px; left: 18px; z-index: 5; background: #cccccc; border-width: 3px; }
+        .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
+        .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
+
+        .small-icon-btn { width: 18px; height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
         .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
 
+        .formatting-wrapper { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .affect-container-icon, .affect-text-icon { position: absolute; width: 28px; height: 28px; background: transparent; border: 1px solid transparent; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 16px; font-family: 'Times New Roman', serif !important; }
+        .affect-container-icon:hover, .affect-text-icon:hover { color: var(--text-main); background: var(--bg-surface); }
+        .affect-container-icon { z-index: 5; border-color: var(--border); color: #fff; font-size: 10px !important; line-height: 10px; width: 24px; height: 24px; top: 0; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .affect-text-icon { z-index: 10; top: 8px; left: 8px; font-size: 24px !important; color: transparent; -webkit-text-stroke: 1px #888; text-shadow: 0 0 transparent; }
+        .affect-text-icon.visible { color: #fff; -webkit-text-stroke: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        .affect-container-icon.visible { border-color: var(--accent); color: var(--accent); }
+
+        /* NEW: Layer Items */
+        .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: var(--bg-surface); margin-bottom: 6px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
+        .layer-item:hover { border-color: var(--border-light); }
+        .layer-item.active { border-color: var(--accent); background: var(--bg-panel); }
+        .layer-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; font-size: 11px; }
+        .layer-btn:hover { color: var(--text-main); }
+        
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -150,7 +179,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.9</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v3.0</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -159,21 +188,11 @@
                         <li class="divider-li"></li>
                         <li id="menu-save"><span>Save Document</span> <span class="shortcut">Ctrl+S</span></li>
                         <li id="menu-doc-setup"><span>Document Setup...</span> <span class="shortcut">Alt+Ctrl+P</span></li>
+                        <li id="menu-live-preview-setup"><span>Live Preview Setup...</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-place-image"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Place Image...</span> <input type="file" id="place-image-input" accept="image/*"><span class="shortcut">Ctrl+I</span></label></li>
                         <li class="divider-li"></li>
                         <li id="menu-export"><span>Export to PDF/Images...</span> <span class="shortcut">Ctrl+E</span></li>
-                    </ul>
-                </li>
-                <li class="menu-item">Edit
-                    <ul class="dropdown">
-                        <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
-                        <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
-                        <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-font-tool"><span>Malayalam Font Tools...</span></li>
                     </ul>
                 </li>
                 <li class="menu-item">Pages
@@ -189,11 +208,12 @@
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
                         <li class="divider-li"></li>
-                        <li id="menu-toggle-preview"><span>Toggle Preview Mode</span> <span class="shortcut">W</span></li>
                         <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
                         <li id="menu-toggle-guides"><span>Toggle Guides</span> <span class="shortcut">;</span></li>
                         <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">M</span></li>
                         <li id="menu-toggle-bleed"><span>Toggle Bleed</span> <span class="shortcut">B</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-toggle-baseline"><span>Toggle Baseline Grid</span> <span class="shortcut">Alt+B</span></li>
                     </ul>
                 </li>
             </ul>
@@ -208,41 +228,21 @@
     </div>
 
     <div class="workspace-container">
-        
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
-                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
+                <button class="tool-btn" id="tool-pan" title="Pan (H)"><i class="fa-regular fa-hand"></i></button>
                 
                 <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
                 
-                <div class="tool-divider" style="grid-column: 1 / -1;"></div>
+                <div class="tool-divider"></div>
                 
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
-                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
-            <div class="tool-divider" style="flex: 1;"></div>
-            
-            <div class="global-palette-block">
-                <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
-                <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
-            </div>
-            <div class="palette-btn-group">
-                <button class="small-icon-btn swap-fill-stroke" title="Swap (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
-                <button class="small-icon-btn apply-none" title="None (/)"><i class="fa-solid fa-slash"></i></button>
-            </div>
-            
-            <div class="stroke-weight-control">
-                <i class="fa-solid fa-border-top-left" title="Stroke Weight" style="color: var(--text-muted); font-size: 11px;"></i>
-                <input type="number" id="global-stroke-weight" min="0" value="0" step="1" style="width: 40px; text-align: center; height: 22px;">
-            </div>
-
-            <input type="color" id="unified-color-picker" title="Unified Color Picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
-            
-            <div class="tool-divider"></div>
+            <div style="flex: 1;"></div> <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
 
@@ -274,94 +274,132 @@
 
         <aside class="panel-right" id="sidebar-right">
             
-            <div id="panel-pages">
-                <div class="panel-section">
-                    <h3>Template</h3>
-                    <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Template</button>
-                </div>
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-target="tab-properties">Props</button>
+                <button class="sidebar-tab" data-target="tab-layers">Layers</button>
+                <button class="sidebar-tab" data-target="tab-styles">Styles</button>
             </div>
 
-            <div id="no-selection" class="empty-state" style="padding: 20px;">
-                <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
-                <div style="font-size: 11px;">Select an object to modify properties.</div>
-            </div>
-            
-            <div id="properties-form" style="display: none;">
-                
-                <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
-                    <h3>Image Mask Options</h3>
-                    <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
-                </div>
-
-                <div class="panel-section" id="geometry-properties">
-                    <h3>Transform</h3>
-                    <div class="prop-row">
-                        <div class="prop-col"><label>X</label><input type="number" id="obj-x" step="1"></div>
-                        <div class="prop-col"><label>Y</label><input type="number" id="obj-y" step="1"></div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-col"><label>W</label><input type="number" id="obj-w" step="1" min="1"></div>
-                        <div class="prop-col"><label>H</label><input type="number" id="obj-h" step="1" min="1"></div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
-                        <div style="width: 24px;"></div> 
-                    </div>
-                </div>
-                
-                <div id="text-properties" style="display: none;">
+            <div id="tab-properties" class="sidebar-pane active">
+                <div id="panel-pages">
                     <div class="panel-section">
-                        <h3>Character</h3>
-                        <div class="prop-col" style="margin-bottom: 12px;">
-                            <select id="obj-font-family">
-                                </select>
+                        <h3>Template</h3>
+                        <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Template</button>
+                    </div>
+                </div>
+
+                <div id="no-selection" class="empty-state" style="padding: 20px;">
+                    <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
+                    <div style="font-size: 11px;">Select an object to modify properties.</div>
+                </div>
+                
+                <div id="properties-form" style="display: none;">
+                    
+                    <div class="panel-section">
+                        <h3>Integrated Palette</h3>
+                        <div class="prop-row" style="position: relative; align-items: flex-start;">
+                            <div class="complex-color-block">
+                                <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
+                                <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
+                            </div>
+                            <div class="prop-col" style="gap: 6px;">
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="small-icon-btn" id="swap-fill-stroke" title="Swap Fill and Stroke (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
+                                    <button class="small-icon-btn" id="default-fill-stroke" title="Default Fill and Stroke (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                                    <button class="small-icon-btn none-btn" id="apply-none" title="Apply None (/)"><i class="fa-solid fa-slash"></i></button>
+                                </div>
+                                <div style="height: 1px; background: var(--border-light); width: 100%;"></div>
+                                <div class="formatting-wrapper">
+                                    <div class="affect-container-icon visible" id="affect-container" title="Formatting affects container (J)"><i class="fa-regular fa-square"></i></div>
+                                    <div class="affect-text-icon" id="affect-text" title="Formatting affects text">T</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="prop-row"><input type="color" id="unified-color-picker" style="width:100%; height:32px;"></div>
+                    </div>
+
+                    <div class="panel-section" id="geometry-properties">
+                        <h3>Transform</h3>
+                        <div class="prop-row">
+                            <div class="prop-col"><label>X</label><input type="number" id="obj-x" step="1"></div>
+                            <div class="prop-col"><label>Y</label><input type="number" id="obj-y" step="1"></div>
                         </div>
                         <div class="prop-row">
-                            <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                            <div class="prop-col"><label>Letter Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
+                            <div class="prop-col"><label>W</label><input type="number" id="obj-w" step="1" min="1"></div>
+                            <div class="prop-col"><label>H</label><input type="number" id="obj-h" step="1" min="1"></div>
+                        </div>
+                        <div class="prop-row">
+                            <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
+                            <div style="width: 24px;"></div> </div>
+                    </div>
+                    
+                    <div id="text-properties" style="display: none;">
+                        <div class="panel-section">
+                            <h3>Character</h3>
+                            <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"><option value="'Inter', sans-serif">Inter</option><option value="'Manjari', sans-serif">Manjari</option><option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option></select></div>
+                            <div class="prop-row">
+                                <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
+                                <div class="prop-col"></div>
+                            </div>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3>Paragraph</h3>
+                            <div class="prop-row" style="margin-bottom: 12px;">
+                                <div class="prop-col">
+                                    <label>Alignment</label>
+                                    <div class="btn-group">
+                                        <button id="align-left"><i class="fa-solid fa-align-left"></i></button>
+                                        <button id="align-center"><i class="fa-solid fa-align-center"></i></button>
+                                        <button id="align-right"><i class="fa-solid fa-align-right"></i></button>
+                                        <button id="align-justify"><i class="fa-solid fa-align-justify"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="prop-row">
+                                <div class="prop-col"><label>Line Height</label><input type="number" id="obj-line-height" min="0.5" max="3" step="0.1" value="1.16"></div>
+                            </div>
+                            
+                            <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
+                                <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent);"><i class="fa-solid fa-arrow-down-up-across-line"></i> Split Overflow to Next Page</button>
+                            </div>
                         </div>
                     </div>
 
                     <div class="panel-section">
-                        <h3>Paragraph</h3>
-                        <div class="prop-row" style="margin-bottom: 12px;">
-                            <div class="prop-col">
-                                <label>Alignment</label>
-                                <div class="btn-group">
-                                    <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                    <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                    <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                    <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="prop-row" style="margin-bottom: 12px;">
-                            <div class="prop-col" style="flex: 2;">
-                                <label>Line Spacing</label>
-                                <div style="display: flex; gap: 4px;">
-                                    <select id="obj-lh-preset" style="flex: 1;">
-                                        <option value="1">1.0</option>
-                                        <option value="1.16">1.16</option>
-                                        <option value="1.5">1.5</option>
-                                        <option value="2">2.0</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
-                                    <input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16" style="flex: 1;">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="prop-row" style="margin-top: 16px;">
-                            <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
-                        </div>
+                        <h3>Arrange Layer</h3>
+                        <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
                     </div>
                 </div>
+            </div>
 
-                <div class="panel-section">
-                    <h3>Arrange Layer</h3>
-                    <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
+            <div id="tab-layers" class="sidebar-pane">
+                <div class="panel-section" style="border-bottom: none;">
+                    <h3>Page Objects</h3>
+                    <div id="layers-list" style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
+                        </div>
                 </div>
             </div>
+
+            <div id="tab-styles" class="sidebar-pane">
+                <div class="panel-section">
+                    <h3>Global Styles</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Save a text box's format to apply it elsewhere.</p>
+                    <div class="prop-col" style="margin-bottom: 12px;">
+                        <input type="text" id="style-name" placeholder="New Style Name (e.g. Heading 1)">
+                        <button class="doc-btn" id="btn-save-style" style="margin-top: 4px;">Save from Selection</button>
+                    </div>
+                    <div style="height: 1px; background: var(--border); margin: 16px 0;"></div>
+                    <div class="prop-col">
+                        <label>Apply Style</label>
+                        <select id="style-select">
+                            <option value="">-- Choose Style --</option>
+                        </select>
+                        <button class="doc-btn" id="btn-apply-style" style="margin-top: 4px;">Apply to Selection</button>
+                    </div>
+                </div>
+            </div>
+
         </aside>
     </div>
 
@@ -388,7 +426,20 @@
                 </div>
             </div>
             
-            <div class="modal-footer" style="margin-top: 24px;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
+            <div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;">
+                <label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer; visibility: visible;">
+                    <input type="checkbox" id="doc-live-preview" checked> Live Preview
+                </label>
+                <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="live-preview-modal">
+        <div class="modal" style="width: 300px;">
+            <h2>Live Preview Setup</h2>
+            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide(); alert('Preference saved.');">Save</button></div>
         </div>
     </div>
 
@@ -401,43 +452,16 @@
             <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
         </div>
     </div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
-    <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
-    
-    <div class="modal-overlay" id="typography-modal">
-        <div class="modal" style="width: 400px;">
-            <h2>Malayalam Font Converter (Unicode ↔ FML)</h2>
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>Source Text</label>
-                <textarea id="typo-source-text" rows="4" style="background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
-            </div>
-            <div class="prop-row" style="margin-bottom: 16px;">
-                <div class="prop-col">
-                    <label>Conversion Type</label>
-                    <select id="typo-convert-type">
-                        <option value="uni2fml">Unicode to FML</option>
-                        <option value="fml2uni">FML to Unicode</option>
-                    </select>
-                </div>
-                <div class="prop-col" style="justify-content: flex-end;">
-                    <button class="btn-primary" id="btn-run-conversion" style="width: 100%; justify-content: center;"><i class="fa-solid fa-language"></i> Convert</button>
-                </div>
-            </div>
-            <div class="prop-col">
-                <label>Output</label>
-                <textarea id="typo-output-text" rows="4" readonly style="background: var(--bg-surface); color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#typography-modal').hide()">Close</button>
-                <button class="btn-primary" id="btn-apply-text-canvas">Apply to Selected Text</button>
-            </div>
-        </div>
+
+    <div class="modal-overlay" id="pages-modal">
+        <div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div>
+    </div>
+
+    <div class="modal-overlay" id="unsaved-modal">
+        <div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div>
     </div>
 
     <script>
-        // Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
-        fabric.Object.prototype.objectCaching = false;
-
         $(document).ready(function() {
             
             // --- CORE STATE ---
@@ -448,110 +472,27 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
-            
-            const SNAP_THRESHOLD = 8;
-            let isHistoryProcessing = false;
-            let isPreviewMode = false;
-            let isSpaceDown = false;
+            const CUSTOM_PROPS = ['id', 'isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular', 'isGuide', 'isGrid'];
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
+            let showBaselineGrid = false; const baselineGridHeight = 15;
             let pagesActionType = null; let isEditingDoc = false;
-
-            // --- PALETTE STATE ---
-            let globalFill = '#3f3f46';
-            let globalStroke = 'transparent';
-            let globalStrokeWeight = 0;
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
             
-            $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
+            $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId) drawRulers(); });
+
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
-            // --- GOOGLE FONTS INJECTION & PREVIEWS ---
-            const curatedFonts = [
-                "Inter", "Manjari", "Noto Sans Malayalam", "Roboto", "Open Sans", "Lato", "Montserrat", 
-                "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", "Merriweather", 
-                "Nunito", "Playfair Display", "Rubik", "Work Sans", "Fira Sans", "Quicksand",
-                "Poppins", "Ubuntu", "Karla", "Lora", "Mukta", "Inconsolata", "Anton", "Josefin Sans",
-                "Cabin", "Dancing Script", "Pacifico", "Bebas Neue", "Abel", "Questrial"
-            ];
-            
-            const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
-            const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap`;
-            $('head').append(`<link href="${googleFontsUrl}" rel="stylesheet">`);
-
-            const fontSelect = $('#obj-font-family');
-            curatedFonts.forEach(font => {
-                fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
+            // --- UI TABS ---
+            $('.sidebar-tab').click(function() {
+                $('.sidebar-tab').removeClass('active');
+                $(this).addClass('active');
+                $('.sidebar-pane').removeClass('active');
+                $('#' + $(this).data('target')).addClass('active');
+                if($(this).data('target') === 'tab-layers') renderLayers();
             });
-
-            // --- MALAYALAM FML ↔ UNICODE ENGINE ---
-            const uniToFmlDict = [
-                { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
-                { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
-                { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
-                { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
-                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sெ" } 
-            ];
-            const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
-
-            function convertUnicodeToFml(text) {
-                let processedText = text;
-                const preBaseVowels = /([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g;
-                processedText = processedText.replace(preBaseVowels, function(match, p1, p2, p3) { return p3 + p1 + (p2 || ""); });
-                uniToFmlDict.forEach(mapping => { const regex = new RegExp(mapping.uni, "g"); processedText = processedText.replace(regex, mapping.fml); });
-                return processedText;
-            }
-            function convertFmlToUnicode(text) {
-                let processedText = text;
-                fmlToUniDict.forEach(mapping => {
-                    const escapedFml = mapping.fml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(escapedFml, "g"); processedText = processedText.replace(regex, mapping.uni);
-                });
-                const reversePreBase = /([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g;
-                processedText = processedText.replace(reversePreBase, function(match, p1, p2, p3) { return p2 + (p3 || "") + p1; });
-                return processedText;
-            }
-
-            // --- HISTORY STACK ---
-            function saveHistory() {
-                if (!activeId || isHistoryProcessing) return;
-                const p = projects[activeId];
-                if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
-                
-                p.history.push(canvas.toJSON(CUSTOM_PROPS));
-                p.historyIndex++;
-                if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
-            }
-            
-            function performUndo() {
-                if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex > 0) {
-                    isHistoryProcessing = true; p.historyIndex--;
-                    canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); 
-                        maintainHairlines();
-                        canvas.renderAll(); 
-                        isHistoryProcessing = false; 
-                    });
-                }
-            }
-            
-            function performRedo() {
-                if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex < p.history.length - 1) {
-                    isHistoryProcessing = true; p.historyIndex++;
-                    canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); 
-                        maintainHairlines();
-                        canvas.renderAll(); 
-                        isHistoryProcessing = false; 
-                    });
-                }
-            }
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -566,7 +507,7 @@
                 if (Object.keys(projects).length === 0) {
                     $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide();
                 } else {
-                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers();
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers) drawRulers();
                 }
             }
 
@@ -575,12 +516,13 @@
                 if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
                 activeId = id; const p = projects[id]; canvas.clear();
                 
-                if (!p.history) { p.history = []; p.historyIndex = -1; }
+                if (!p.styles) p.styles = {};
 
-                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); }); } 
-                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
+                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers) drawRulers(); renderLayers(); updateStyleList(); }); } 
+                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); updateStyleList(); renderLayers(); }
                 
                 $('#page-count-display').text(p.totalPages);
+                
                 if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
                 renderTabs(); setTool('select');
             }
@@ -588,17 +530,17 @@
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
-            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); });
+            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); $('#live-preview-checkbox-wrapper').css('visibility', 'visible'); });
 
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
-            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
+            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
-            
-            canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
+            canvas.on('object:modified', () => { markDirty(); renderLayers(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide && !e.target.isGrid) { markDirty(); renderLayers(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide && !e.target.isGrid) { markDirty(); renderLayers(); } });
+
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -613,8 +555,11 @@
                 $('#mar-t').val(+(fromPx(conf.marginsPx.t, conf.unit).toFixed(2))); $('#mar-b').val(+(fromPx(conf.marginsPx.b, conf.unit).toFixed(2)));
                 $('#mar-l').val(+(fromPx(conf.marginsPx.l, conf.unit).toFixed(2))); $('#mar-r').val(+(fromPx(conf.marginsPx.r, conf.unit).toFixed(2)));
                 $('#doc-bleed').val(+(fromPx(conf.bleedPx, conf.unit).toFixed(2))); $('#doc-facing').prop('checked', conf.facingPages);
+                $('#live-preview-checkbox-wrapper').css('visibility', 'hidden'); 
                 $('#new-doc-modal').css('display', 'flex');
             });
+
+            $('#menu-live-preview-setup').click(() => $('#live-preview-modal').css('display', 'flex'));
 
             $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
             $('#create-doc-btn').click(function() {
@@ -625,15 +570,26 @@
                 };
 
                 if (isEditingDoc && activeId) {
-                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
+                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty();
                 } else {
-                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 };
-                    switchProject(newId); fitWholePage(); saveHistory();
+                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], styles: {} };
+                    switchProject(newId); fitWholePage();
                 }
                 $('#new-doc-modal').hide();
             });
 
-            // --- SPATIAL MATH & ENVIRONMENT ---
+            function updatePreview() {
+                if (!activeId || !$('#doc-live-preview').is(':checked')) return; 
+                const u = $('#doc-unit').val(); const p = projects[activeId];
+                p.config.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); p.config.heightPx = toPx(parseFloat($('#doc-h').val()||0), u);
+                p.config.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) };
+                p.config.bleedPx = toPx(parseFloat($('#doc-bleed').val()||0), u); p.config.facingPages = $('#doc-facing').is(':checked');
+                drawDocumentEnvironment();
+            }
+            $('.margin-input, #doc-w, #doc-h, #doc-facing, #doc-bleed').on('input change', function() { if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); updatePreview(); });
+
+
+            // --- SPATIAL MATH & MASKING ---
             function getPagePosition(index, pConf) {
                 if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) };
                 if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
@@ -644,13 +600,13 @@
 
             function maintainHairlines() {
                 if(!activeId) return; const z = canvas.getZoom();
-                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
+                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isGrid) o.set('strokeWidth', 1 / z); });
             }
 
             function sortLayers() {
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
-                    const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
+                    const getZ = (o) => { if (o.isGrid) return -6; if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
                     return getZ(a) - getZ(b);
                 });
                 objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
@@ -659,56 +615,43 @@
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 
-                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
-                envItems.forEach(obj => canvas.remove(obj));
+                // Safe deletion loop
+                const envObjs = canvas.getObjects().filter(o => o.isPaper || o.isMargin || o.isBleed || o.isMask || o.isGrid);
+                envObjs.forEach(o => canvas.remove(o));
                 
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
                 let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
-                const initZoom = canvas.getZoom() || 1; 
+                
+                const initZoom = canvas.getZoom();
 
                 for (let i = 0; i < pagesToDraw; i++) {
                     let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
                     maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
                     
-                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
+                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
                     
-                    if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
-                    if (showMargins && !isPreviewMode) {
+                    // BASELINE GRID
+                    if (showBaselineGrid) {
+                        for(let lineY = pos.y + conf.marginsPx.t; lineY < pos.y + conf.heightPx - conf.marginsPx.b; lineY += baselineGridHeight) {
+                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1/initZoom, selectable: false, evented: false, isGrid: true, opacity: 0.5 }));
+                        }
+                    }
+
+                    if (showBleed && conf.bleedPx > 0) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
+                    if (showMargins) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8, excludeFromExport: true }));
+                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--guide-margin)', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
                     }
                 }
-                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
+                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false }));
                 sortLayers(); canvas.requestRenderAll();
             }
 
-            // --- TOGGLES & PREVIEW MODE ---
-            function updateVisibilityToggles() {
-                if (isPreviewMode) {
-                    $('#ruler-h, #ruler-v').hide();
-                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
-                } else {
-                    if(showRulers) $('#ruler-h, #ruler-v').show();
-                    canvas.getObjects().forEach(o => {
-                       if(o.isGuide && showGuides) o.set('opacity', 1);
-                       if(o.isMargin && showMargins) o.set('opacity', 0.8);
-                       if(o.isBleed && showBleed) o.set('opacity', 0.8);
-                    });
-                }
-                canvas.requestRenderAll();
-            }
-
-            $('#menu-toggle-preview').click(() => { isPreviewMode = !isPreviewMode; updateVisibilityToggles(); });
-            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; if(!isPreviewMode) drawRulers(); updateVisibilityToggles(); });
-            $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); updateVisibilityToggles(); });
-            $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); updateVisibilityToggles(); });
-            $('#menu-toggle-guides').click(() => { showGuides = !showGuides; updateVisibilityToggles(); });
-
             // --- DRAGGABLE RULERS ---
             function drawRulers() {
-                if (!showRulers || !activeId || isPreviewMode) { $('#ruler-h, #ruler-v').hide(); return; }
+                if (!showRulers || !activeId) { $('#ruler-h, #ruler-v').hide(); return; }
                 $('#ruler-h, #ruler-v').show();
                 const cV = document.getElementById('ruler-v'); const cH = document.getElementById('ruler-h');
                 cV.width = 20; cV.height = wrapper.height(); cH.width = wrapper.width(); cH.height = 20;
@@ -726,44 +669,23 @@
             let draggingGuideType = null;
             $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
             $(window).mouseup((e) => {
-                if (draggingGuideType && activeId && !isPreviewMode) {
+                if (draggingGuideType && activeId) {
                     const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
                     if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
                         const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
-                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: '#00ffff', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v', excludeFromExport: true });
-                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); saveHistory(); }
+                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: 'var(--guide-cyan)', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' });
+                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
                     }
                 }
                 draggingGuideType = null;
             });
 
-            // --- SMART GUIDES SNAPPING ---
-            canvas.on('object:moving', function(options) {
-                if (!activeId || !showGuides || isPreviewMode) return;
-                const obj = options.target; const zoom = canvas.getZoom();
-                const guides = canvas.getObjects().filter(o => o.isGuide);
-                
-                guides.forEach(guide => {
-                    if (guide.lockMovementX) { 
-                        if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
-                        if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
-                    }
-                    if (guide.lockMovementY) {
-                        if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
-                        if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
-                    }
-                });
-            });
-
-            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
-            canvas.on('object:scaling', function(e) {
-                var obj = e.target;
-                if (obj.type === 'textbox') {
-                    var w = obj.width * obj.scaleX;
-                    var h = obj.height * obj.scaleY;
-                    obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
-                }
-            });
+            // --- VIEW TOGGLES ---
+            $('#menu-toggle-baseline').click(() => { showBaselineGrid = !showBaselineGrid; drawDocumentEnvironment(); });
+            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); });
+            $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); });
+            $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); });
+            $('#menu-toggle-guides').click(() => { showGuides = !showGuides; canvas.getObjects().forEach(o => { if(o.isGuide) o.set('opacity', showGuides ? 1 : 0); }); canvas.requestRenderAll(); });
 
             // --- PAGES MANAGER ---
             $('.menu-page-action').click(function() {
@@ -781,9 +703,9 @@
                         const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
                         sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
                     }
-                    drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText();
+                    drawDocumentEnvironment(); markDirty();
                 } 
-                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText(); }
+                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); }
                 else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
                 $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
             });
@@ -791,18 +713,18 @@
             // --- MASTER TEMPLATES ---
             $('#toggle-master-btn').click(function() {
                 if(!activeId) return; const p = projects[activeId];
-                p.isMasterMode = true; canvas.discardActiveObject(); setTool('select');
+                p.isMasterMode = true; canvas.discardActiveObject();
                 $('#master-banner').css('display', 'flex');
                 
                 const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isGrid) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 
                 drawDocumentEnvironment(); markDirty();
             });
 
             $('#exit-master-btn').click(function() {
                 if(!activeId) return; const p = projects[activeId];
-                p.isMasterMode = false; canvas.discardActiveObject(); setTool('select');
+                p.isMasterMode = false; canvas.discardActiveObject();
                 $('#master-banner').hide(); 
                 
                 canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
@@ -812,165 +734,130 @@
                     sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
                 }
                 
-                drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
+                drawDocumentEnvironment(); fitWholePage(); markDirty();
             });
 
-            // --- TEXT BOX, OBJECT CREATION ---
+            // --- TEXT BOX & OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            
             function processNewObject(obj) { 
                 if(!activeId) return; 
-                if(activeTool !== 'select') setTool('select'); 
+                obj.id = generateId(); // Ensure unique ID for layers
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
-                
-                // Inherit Global Defaults
-                if (obj.type !== 'image') {
-                    obj.set('fill', globalFill);
-                    if (globalStroke !== 'transparent' && globalStrokeWeight > 0) {
-                        obj.set('stroke', globalStroke);
-                        obj.set('strokeWidth', globalStrokeWeight);
-                    }
-                }
-                
-                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); 
             }
 
-            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, width: 100, height: 100 })));
-            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, radius: 50 })));
-            $('#add-text').click(() => processNewObject(new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true })));
+            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
+            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
+            
+            $('#add-text').click(() => {
+                const text = new fabric.Textbox('Double-click to edit.\nWraps text perfectly.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true }); 
+                processNewObject(text);
+            });
             
             function handleImageInsert(file) {
                 if (!file || !activeId) return; const reader = new FileReader();
                 reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
             }
-            $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
-            // --- ADVANCED IMAGE MASKING ---
-            $('#tool-mask-image').click(function() {
-                const activeSelection = canvas.getActiveObject();
-                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
-                    alert("Please select exactly ONE image and ONE shape to mask."); return;
+            // --- TEXT OVERFLOW SPLITTER ---
+            function checkTextOverflow(obj) {
+                if (obj && obj.type === 'textbox') {
+                    let totalHeight = obj.lineHeight * obj.fontSize * (obj._textLines ? obj._textLines.length : 1);
+                    if (totalHeight > obj.getScaledHeight()) { $('#text-overflow-warning').show(); } else { $('#text-overflow-warning').hide(); }
                 }
-                
-                const objs = activeSelection.getObjects();
-                const img = objs.find(o => o.type === 'image');
-                const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
-
-                if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
-
-                activeSelection.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
-                
-                const cloneShape = fabric.util.object.clone(shape);
-                cloneShape.set({
-                    originX: 'center', originY: 'center',
-                    left: shape.left - img.left,
-                    top: shape.top - img.top
-                });
-                
-                img.set('clipPath', cloneShape);
-                canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img);
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-
-            $('#btn-unmask').click(function() {
-                const img = canvas.getActiveObject();
-                if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
-            });
-
-            // --- DYNAMIC TEXT ---
-            $('#btn-insert-page-num').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
-                else { alert("Please select a text box first to turn it into a dynamic page number."); }
-            });
-            function updateDynamicText() {
-                if (!activeId) return; const p = projects[activeId];
-                canvas.getObjects().forEach(obj => {
-                    if (obj.type === 'textbox' && obj.isDynamicText) {
-                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
-                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
-                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
-                    }
-                });
             }
+            canvas.on('object:scaling', e => checkTextOverflow(e.target));
+            canvas.on('text:changed', e => checkTextOverflow(e.target));
 
-            // --- TOOLS, PAN & ZOOM ---
-            function setTool(tool) {
-                activeTool = tool; $('.tool-btn').removeClass('active-state');
-                if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
-                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
-                canvas.discardActiveObject(); canvas.requestRenderAll();
-            }
-            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
+            $('#btn-split-overflow').click(() => {
+                let obj = canvas.getActiveObject();
+                if(!obj || obj.type !== 'textbox') return;
+                let linesThatFit = Math.floor(obj.getScaledHeight() / (obj.lineHeight * obj.fontSize));
+                if(linesThatFit >= obj._textLines.length || linesThatFit <= 0) return;
 
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
+                let kept = obj._textLines.slice(0, linesThatFit).join('\n');
+                let overflow = obj._textLines.slice(linesThatFit).join('\n');
+
+                obj.set('text', kept);
+                checkTextOverflow(obj);
+
+                let p = projects[activeId];
+                let currentPage = Math.max(0, Math.floor((obj.top - MARGIN_TOP) / (p.config.heightPx + PAGE_GAP)));
+                if (currentPage + 1 >= p.totalPages) {
+                    p.totalPages++; $('#page-count-display').text(p.totalPages);
+                    drawDocumentEnvironment();
+                }
+                let nextPos = getPagePosition(currentPage + 1, p.config);
+                let isLeftPage = p.config.facingPages && (currentPage + 1) > 0 && ((currentPage + 1) - 1) % 2 === 0;
+                let aL = isLeftPage ? p.config.marginsPx.r : p.config.marginsPx.l;
+
+                let newBox = new fabric.Textbox(overflow, {
+                    left: nextPos.x + aL,
+                    top: nextPos.y + p.config.marginsPx.t,
+                    width: obj.width,
+                    fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing, fill: obj.fill,
+                    splitByGrapheme: true,
+                    isRegular: true,
+                    id: generateId()
+                });
+                canvas.add(newBox); sortLayers(); canvas.requestRenderAll(); markDirty();
+            });
+
+            // --- NATIVE ZOOM & PAN LOGIC ---
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); drawRulers(); }
             function fitWholePage() {
                 if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
                 const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
                 canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+                maintainHairlines(); canvas.requestRenderAll(); drawRulers();
             }
             $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
+            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
 
             let isDragging = false; let lastPosX, lastPosY;
             
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible')) return;
-                
-                if(e.code === 'Space') {
-                    isSpaceDown = true;
-                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
-                        canvas.defaultCursor = 'grab'; e.preventDefault();
-                    }
-                }
-
-                if (canvas.getActiveObject()?.isEditing) return; 
-                
-                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
-
-                if (e.key.toLowerCase() === 'v') setTool('select'); 
-                if (e.key.toLowerCase() === 'h') setTool('pan'); 
-                if (e.key.toLowerCase() === 'z') setTool('zoom');
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            // STRICTLY BASELINE NATIVE DRAGGING
+            canvas.on('mouse:down', function(opt) {
+                // Remove Pan and Space overrides completely. Let Fabric do its job.
+            });
+            canvas.on('mouse:move', function(opt) { 
+                // Removed
+            });
+            canvas.on('mouse:up', function(opt) { 
+                // Removed overrides. Just handle guide deletion.
+                if(opt.target && opt.target.isGuide) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); } }
             });
             
-            $(window).keyup(function(e) { 
-                if (e.code === 'Space') { 
-                    isSpaceDown = false; isDragging = false; 
-                    if (activeTool === 'select') canvas.defaultCursor = 'default'; 
-                } 
+            // Allow zoom and pan exclusively via mouse wheel
+            canvas.on('mouse:wheel', function(opt) { 
+                if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
+                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
+                opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers(); 
             });
-
-            canvas.on('mouse:down', function(opt) {
-                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
-                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; 
-                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+            
+            // Safe Baseline Grid Snapping during drag
+            canvas.on('object:moving', function(e) {
+                if (showBaselineGrid && e.target.type === 'textbox') {
+                    const zoom = canvas.getZoom();
+                    let relativeTop = e.target.top - MARGIN_TOP;
+                    let remainder = ((relativeTop % baselineGridHeight) + baselineGridHeight) % baselineGridHeight;
+                    if (remainder < 4 / zoom) { e.target.top -= remainder; }
+                    else if (baselineGridHeight - remainder < 4 / zoom) { e.target.top += (baselineGridHeight - remainder); }
                 }
             });
-            canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
-            canvas.on('mouse:up', function(opt) { 
-                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
-                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
-                else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
+            
+            $(window).keydown(function(e) { 
+                if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
+                if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
+                if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); } if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
-            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
 
-            // --- EXPORT & SAVE ---
-            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            // --- LOAD, SAVE & EXPORT ---
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
             $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
 
             $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
@@ -1000,27 +887,25 @@
             let focusedColorType = 'fill'; 
 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
-            canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
             function updateUI(event) {
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
-
-                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
+                checkTextOverflow(obj);
 
                 if (obj.type === 'textbox') { 
-                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
-                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
-                    $('.p-align').removeClass('active');
-                    if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
-                    
+                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight);
+                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
+                    $('.btn-group button').removeClass('active');
+                    if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
                 } else { $('#text-properties').hide(); }
             }
 
             function updateTransformUI(e) {
                 const obj = e.target;
+                if(!obj) return;
                 $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top));
                 $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight()));
                 $('#obj-rotation').val(Math.round(obj.angle % 360));
@@ -1028,111 +913,110 @@
 
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
-                
-                globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
-
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
                 
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
-                
-                $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
-            function updateObj(prop, val) { 
-                const sel = canvas.getActiveObject(); 
-                if (sel) { 
-                    if (sel.type === 'activeSelection') {
-                        sel.forEachObject(o => { o.set(prop, val); });
-                    } else {
-                        sel.set(prop, val); 
-                    }
-                    canvas.renderAll(); markDirty(); saveHistory(); 
-                } 
-            }
+            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
             
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
                 $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
-                const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); 
+                updateColorsUI(canvas.getActiveObject()); 
             });
 
             $('#unified-color-picker').on('input', function() {
-                const obj = canvas.getActiveObject(); const col = $(this).val();
-                if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
-                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
-            });
-            
-            $('#global-stroke-weight').on('input', function() {
-                globalStrokeWeight = parseFloat($(this).val()) || 0;
-                const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight);
+                const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val();
+                if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
+                updateColorsUI(obj);
             });
 
-            $('.swap-fill-stroke').click(() => {
-                let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
-                $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
-                const sel = canvas.getActiveObject(); 
-                if (sel) { 
-                    if (sel.type === 'activeSelection') {
-                        sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); });
-                    } else {
-                        const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); 
-                        if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } 
-                    }
-                    canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); 
-                }
+            $('#swap-fill-stroke').click(() => {
+                const obj = canvas.getActiveObject(); if (!obj) return;
+                const oldFill = obj.fill; const oldStroke = obj.stroke;
+                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
+                if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
+                canvas.renderAll(); updateColorsUI(obj); markDirty();
             });
 
-            $('.apply-none').click(() => {
-                const obj = canvas.getActiveObject();
-                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
-                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
-                if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
+            $('#apply-none').click(() => {
+                const obj = canvas.getActiveObject(); if (!obj) return;
+                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
+                canvas.renderAll(); updateColorsUI(obj); markDirty();
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
             $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
             $('#obj-w, #obj-h').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; 
-                const newDim = parseFloat($(this).val()) || 1;
+                const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1;
                 if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
-                canvas.renderAll(); markDirty(); saveHistory();
+                canvas.renderAll(); markDirty();
             });
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
-            $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
             $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
-            $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
+            $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+            $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+            $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
+            $('#align-justify').click(function() { updateObj('textAlign', 'justify'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
-            $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
-            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); } });
+            
+            // --- LAYERS PANEL ---
+            function renderLayers() {
+                if (!activeId || !$('#tab-layers').hasClass('active')) return;
+                $('#layers-list').empty();
+                const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide);
+                [...objs].reverse().forEach(obj => {
+                    let name = obj.type; if (obj.type==='textbox') name = obj.text.substring(0,10)+'...';
+                    $('#layers-list').append(`
+                        <div class="layer-item" data-id="${obj.id}">
+                            <span>${name}</span>
+                            <div>
+                                <button class="layer-btn btn-lock"><i class="fa-solid ${obj.selectable ? 'fa-lock-open' : 'fa-lock'}"></i></button>
+                                <button class="layer-btn btn-vis"><i class="fa-solid ${obj.visible === false ? 'fa-eye-slash' : 'fa-eye'}"></i></button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+            $(document).on('click', '.layer-item', function(e) {
+                if($(e.target).closest('.layer-btn').length) return;
+                const id = $(this).data('id'); const obj = canvas.getObjects().find(o => o.id === id);
+                if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); }
+            });
+            $(document).on('click', '.btn-lock', function() {
+                const id = $(this).closest('.layer-item').data('id'); const obj = canvas.getObjects().find(o => o.id === id);
+                if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); renderLayers(); }
+            });
+            $(document).on('click', '.btn-vis', function() {
+                const id = $(this).closest('.layer-item').data('id'); const obj = canvas.getObjects().find(o => o.id === id);
+                if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); renderLayers(); }
+            });
 
-            // --- TYPOGRAPHY CONVERTER UI ---
-            $('#menu-font-tool').click(() => {
+            // --- STYLES SYSTEM ---
+            function updateStyleList() {
                 if(!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { $('#typo-source-text').val(activeObj.text); } else { $('#typo-source-text').val(''); }
-                $('#typo-output-text').val('');
-                $('#typography-modal').css('display', 'flex');
+                $('#style-select').empty().append('<option value="">-- Choose Style --</option>');
+                Object.keys(projects[activeId].styles).forEach(s => $('#style-select').append(`<option value="${s}">${s}</option>`));
+            }
+            $('#btn-save-style').click(() => {
+                let name = $('#style-name').val(); let obj = canvas.getActiveObject();
+                if (name && obj && obj.type === 'textbox') {
+                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing || 0, textAlign: obj.textAlign, fill: obj.fill };
+                    updateStyleList(); $('#style-name').val(''); alert('Style Saved!');
+                } else { alert("Select a text box and enter a name."); }
             });
-            $('#btn-run-conversion').click(() => {
-                const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val();
-                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source);
-                $('#typo-output-text').val(result);
+            $('#btn-apply-style').click(() => {
+                let name = $('#style-select').val(); let obj = canvas.getActiveObject();
+                if (name && obj && obj.type === 'textbox') { obj.set(projects[activeId].styles[name]); canvas.requestRenderAll(); markDirty(); }
             });
-            $('#btn-apply-text-canvas').click(() => {
-                const newText = $('#typo-output-text').val(); if (!newText) return;
-                let activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
-                else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-                $('#typography-modal').hide();
-            });
-            
+
             renderTabs();
         });
     </script>
