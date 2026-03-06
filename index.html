@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v3.0 (Native Core Engine)</title>
+    <title>Thooval Workspace v2.1</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -84,7 +84,7 @@
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
-        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
         input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
@@ -126,11 +126,6 @@
         .format-icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
         .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
         
-        .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
-        .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
-        .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
-        .num-label { font-size: 10px; color: var(--text-muted); }
-
         .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
         .layer-item:hover { border-color: var(--border-light); }
         .layer-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; margin: 0 8px; color: var(--text-main); }
@@ -138,16 +133,13 @@
         .layer-btn:hover { color: var(--text-main); }
         .layer-btn.locked { color: var(--danger); }
         .layer-btn.hidden { opacity: 0.3; }
-        
-        /* Edit Mask Overlay Alert */
-        .mask-edit-banner { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: #3f3f46; color: #fff; padding: 8px 16px; border-radius: 24px; font-weight: 600; z-index: 500; display: none; align-items: center; gap: 12px; border: 1px solid var(--accent); }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v3.0</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.1</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -182,6 +174,8 @@
                 </li>
                 <li class="menu-item">View
                     <ul class="dropdown">
+                        <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
+                        <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-toggle-preview"><span>Toggle Preview Mode</span> <span class="shortcut">W</span></li>
@@ -208,12 +202,14 @@
         
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
-                <button class="tool-btn" id="tool-zoom" title="Toggle Zoom Tool (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
+                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
+                <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
-                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect" style="grid-column: 1 / -1;"></i></button>
+                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
             <div class="tool-divider" style="flex: 1;"></div>
@@ -232,7 +228,7 @@
                 <input type="number" id="global-stroke-weight" min="0" value="0" step="1" style="width: 40px; text-align: center; height: 22px;">
             </div>
 
-            <input type="color" id="unified-color-picker" title="Unified Color Picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
+            <input type="color" id="unified-color-picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
             
             <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
@@ -243,12 +239,6 @@
                 <span><i class="fa-solid fa-crown"></i> Editing Master Template</span>
                 <button id="exit-master-btn">Done</button>
             </div>
-            
-            <div class="mask-edit-banner" id="mask-edit-banner">
-                <span><i class="fa-solid fa-crop-simple"></i> Edit Mask Content</span>
-                <button class="btn-primary" id="btn-apply-mask-edit" style="padding: 4px 12px; font-size: 11px;">Apply</button>
-            </div>
-            
             <canvas class="ruler-h" id="ruler-h"></canvas>
             <div class="editor-body">
                 <canvas class="ruler-v" id="ruler-v"></canvas>
@@ -288,10 +278,7 @@
                 <div id="properties-form" style="display: none;">
                     <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
                         <h3>Image Mask Options</h3>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="doc-btn" id="btn-edit-mask" style="color: var(--accent); border-color: var(--accent); flex: 1;"><i class="fa-solid fa-crop-simple"></i> Edit Content</button>
-                            <button class="doc-btn" id="btn-unmask" style="color: var(--danger); flex: 1;"><i class="fa-solid fa-link-slash"></i> Release</button>
-                        </div>
+                        <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
                     </div>
 
                     <div class="panel-section" id="align-panel" style="border-bottom: 2px solid var(--border);">
@@ -338,58 +325,17 @@
                                 <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                                 <div class="prop-col"><label>Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                             </div>
-                        </div>
-
-                        <div class="panel-section">
-                            <h3>Paragraph</h3>
-                            <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 12px;">
-                                <button id="align-left" class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                <button id="align-center" class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                <button id="align-right" class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                <button id="align-justify" class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
-                            </div>
-                            
-                            <div class="prop-row" style="margin-bottom: 12px;">
-                                <div class="prop-col" style="flex: 2;">
-                                    <label>Line Spacing</label>
-                                    <div style="display: flex; gap: 4px;">
-                                        <select id="obj-lh-preset" style="flex: 1;">
-                                            <option value="1">1.0</option>
-                                            <option value="1.16">1.16</option>
-                                            <option value="1.5">1.5</option>
-                                            <option value="2">2.0</option>
-                                            <option value="custom">Custom</option>
-                                        </select>
-                                        <input type="number" id="obj-line-height" min="0.5" max="5" step="0.1" value="1.16" style="flex: 1;">
+                            <div class="prop-row" style="margin-top: 12px;">
+                                <div class="prop-col">
+                                    <label>Alignment</label>
+                                    <div class="btn-group">
+                                        <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                        <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                        <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                        <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="numeric-row" style="margin-bottom: 8px;">
-                                <div class="num-col"><span class="num-label">Left Indent (px)</span><input type="number" id="obj-indent-left" min="0" value="0" step="1"></div>
-                                <div class="num-col"><span class="num-label">Right Indent (px)</span><input type="number" id="obj-indent-right" min="0" value="0" step="1"></div>
-                            </div>
-                            <div class="numeric-row" style="margin-bottom: 12px;">
-                                <div class="num-col"><span class="num-label">First Line Left (px)</span><input type="number" id="obj-indent-first" value="0" step="1"></div>
-                                <div class="num-col"><span class="num-label">Last Line Right (px)</span><input type="number" id="obj-indent-last" value="0" step="1"></div>
-                            </div>
-                            <div class="numeric-row" style="margin-bottom: 12px;">
-                                <div class="num-col"><span class="num-label">Space Before (px)</span><input type="number" id="obj-space-before" min="0" value="0" step="1"></div>
-                                <div class="num-col"><span class="num-label">Space After (px)</span><input type="number" id="obj-space-after" min="0" value="0" step="1"></div>
-                            </div>
-                            
-                            <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
-                            
-                            <div class="numeric-row" style="margin-bottom: 12px;">
-                                <div class="num-col"><span class="num-label">Drop Cap lines</span><input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1"></div>
-                                <div class="num-col"><span class="num-label">Drop Cap chars</span><input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1"></div>
-                            </div>
-                            
-                            <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
-                                <input type="checkbox" id="obj-hyphenate">
-                                <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
-                            </div>
-
                             <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
                                 <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
                             </div>
@@ -452,8 +398,8 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="prop-row" style="margin-top: 8px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="export-marks" checked> Include Bleed & Crop Marks</label></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
+    <div class="modal-overlay" id="export-modal"><div class="modal" style="width: 350px;"><h2>Export Document</h2><div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div><div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div></div></div>
+    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
     <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
     <div class="modal-overlay" id="typography-modal">
@@ -467,6 +413,9 @@
     </div>
 
     <script>
+        // Force FabricJS to keep vectors crisp
+        fabric.Object.prototype.objectCaching = false;
+
         $(document).ready(function() {
             
             // --- CORE STATE ---
@@ -477,20 +426,18 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
+            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
             
             const SNAP_THRESHOLD = 8;
-            let isHistoryProcessing = false; let isPreviewMode = false;
-            let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; 
+            let isHistoryProcessing = false; let isPreviewMode = false; let isSpaceDown = false;
+            let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let showBaselineGrid = false; const baselineGridHeight = 15; 
             let pagesActionType = null; let isEditingDoc = false;
 
-            let isZoomMode = false;
             let globalFill = '#3f3f46'; let globalStroke = 'transparent'; let globalStrokeWeight = 0;
 
             const wrapper = $('#workspace-wrapper');
-            // Allow native HTML5 canvas selections
-            const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true });
+            const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
             
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
@@ -502,7 +449,7 @@
                 if($(this).data('target') === 'tab-layers') renderLayersPanel();
             });
 
-            // --- GOOGLE FONTS INJECTION ---
+            // --- GOOGLE FONTS INJECTION (Multi-Language Noto Sans added) ---
             const curatedFonts = [
                 "Inter", "Manjari", "Noto Sans Malayalam", "Noto Sans Devanagari", "Noto Sans Arabic", 
                 "Noto Sans Tamil", "Noto Sans Bengali", "Roboto", "Open Sans", "Lato", "Montserrat", 
@@ -519,25 +466,20 @@
             function convertFmlToUnicode(t) { let pt = t; uniToFmlDict.sort((a,b)=>b.f.length-a.f.length).forEach(m => { const esc = m.f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); pt = pt.replace(new RegExp(esc, "g"), m.u); }); pt = pt.replace(/([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g, function(m, p1, p2, p3) { return p2 + (p3 || "") + p1; }); return pt; }
 
             // --- HISTORY STACK ---
-            let historyTimeout = null;
             function saveHistory() {
-                clearTimeout(historyTimeout);
-                historyTimeout = setTimeout(() => {
-                    if (!activeId || isHistoryProcessing) return; const p = projects[activeId];
-                    if (!p.history) { p.history = []; p.historyIndex = -1; }
-                    if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
-                    p.history.push(canvas.toJSON(CUSTOM_PROPS)); p.historyIndex++;
-                    if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
-                }, 100); 
+                if (!activeId || isHistoryProcessing) return; const p = projects[activeId];
+                if (!p.history) { p.history = []; p.historyIndex = -1; }
+                if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
+                p.history.push(canvas.toJSON(CUSTOM_PROPS)); p.historyIndex++;
+                if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
             }
-            
             function performUndo() {
                 if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex > 0) { isHistoryProcessing = true; p.historyIndex--; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
+                if (p.history && p.historyIndex > 0) { isHistoryProcessing = true; p.historyIndex--; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
             }
             function performRedo() {
                 if (!activeId) return; const p = projects[activeId];
-                if (p.history && p.historyIndex < p.history.length - 1) { isHistoryProcessing = true; p.historyIndex++; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
+                if (p.history && p.historyIndex < p.history.length - 1) { isHistoryProcessing = true; p.historyIndex++; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; renderLayersPanel(); }); }
             }
 
             // --- TAB MANAGEMENT ---
@@ -550,6 +492,7 @@
                 else { $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers(); }
             }
 
+            // FIXED BUG: Switch Project calls all required UI updates securely
             function switchProject(id) {
                 if (activeId === id) return;
                 if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
@@ -561,7 +504,7 @@
                 if (p.canvasData) { 
                     canvas.loadFromJSON(p.canvasData, function() { 
                         canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); 
-                        drawDocumentEnvironment(); 
+                        drawDocumentEnvironment(); maintainHairlines(); 
                         if(showRulers && !isPreviewMode) drawRulers(); 
                         updateStylesPanel(); renderLayersPanel();
                     }); 
@@ -572,7 +515,7 @@
                 
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) $('#master-banner').css('display', 'flex'); else $('#master-banner').hide();
-                renderTabs(); disableZoom();
+                renderTabs(); setTool('select');
             }
 
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
@@ -586,14 +529,7 @@
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
-            // Only save history when an object finishes modifying
-            canvas.on('object:modified', (opt) => { 
-                if(opt.target && opt.target.isGuide && !isPreviewMode) {
-                    const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; 
-                    if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); }
-                }
-                markDirty(); updateDynamicText(); saveHistory(); 
-            }); 
+            canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
             canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
             canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel(); } });
 
@@ -625,6 +561,7 @@
                     projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
                     const newId = generateId(); 
+                    // FIXED BUG: Init styles dict immediately
                     projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: {} };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
@@ -714,29 +651,19 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
                 if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
-                
                 if (showBaselineGrid && obj.type === 'textbox') {
-                    let relativeTop = obj.top - MARGIN_TOP;
-                    let remainder = ((relativeTop % baselineGridHeight) + baselineGridHeight) % baselineGridHeight;
-                    if (remainder < SNAP_THRESHOLD / zoom) { obj.set({ top: obj.top - remainder }); }
-                    else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.set({ top: obj.top + (baselineGridHeight - remainder) }); }
+                    const remainder = (obj.top - MARGIN_TOP) % baselineGridHeight;
+                    if (remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top - remainder).setCoords(); }
+                    else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top + (baselineGridHeight - remainder)).setCoords(); }
                 }
-                
                 if (showGuides) {
                     const guides = canvas.getObjects().filter(o => o.isGuide);
                     guides.forEach(guide => {
-                        if (guide.lockMovementX) { 
-                            if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set({ top: guide.top }); 
-                            if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set({ top: guide.top - obj.getScaledHeight() }); 
-                        }
-                        if (guide.lockMovementY) { 
-                            if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set({ left: guide.left }); 
-                            if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set({ left: guide.left - obj.getScaledWidth() }); 
-                        }
+                        if (guide.lockMovementX) { if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords(); if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords(); }
+                        if (guide.lockMovementY) { if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords(); if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords(); }
                     });
                 }
             });
@@ -791,13 +718,13 @@
 
             // --- MASTER TEMPLATES ---
             $('#toggle-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); $('#master-banner').css('display', 'flex'); disableZoom();
+                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = true; canvas.discardActiveObject(); setTool('select'); $('#master-banner').css('display', 'flex');
                 const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
                 canvas.getObjects().forEach(obj => { if (obj.excludeFromExport || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 drawDocumentEnvironment(); markDirty();
             });
             $('#exit-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); $('#master-banner').hide(); disableZoom();
+                if(!activeId) return; const p = projects[activeId]; p.isMasterMode = false; canvas.discardActiveObject(); setTool('select'); $('#master-banner').hide(); 
                 canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
                 const sources = canvas.getObjects().filter(o => o.isMasterSource); 
                 for (let pg = 0; pg < p.totalPages; pg++) {
@@ -810,7 +737,7 @@
             // --- OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             function processNewObject(obj) { 
-                if(!activeId) return; disableZoom(); 
+                if(!activeId) return; if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 obj.id = generateId();
                 if (obj.type !== 'image') { obj.set('fill', globalFill); if (globalStroke !== 'transparent' && globalStrokeWeight > 0) { obj.set('stroke', globalStroke); obj.set('strokeWidth', globalStrokeWeight); } }
@@ -834,36 +761,10 @@
                 const objs = sel.getObjects(); const img = objs.find(o => o.type === 'image'); const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
                 if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
                 sel.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
-                shape.clone(function(cloneShape) {
-                    cloneShape.set({ originX: 'center', originY: 'center', left: shape.left - img.left, top: shape.top - img.top });
-                    img.set('clipPath', cloneShape); canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img); canvas.requestRenderAll(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel();
-                });
+                const cloneShape = fabric.util.object.clone(shape); cloneShape.set({ originX: 'center', originY: 'center', left: shape.left - img.left, top: shape.top - img.top });
+                img.set('clipPath', cloneShape); canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img); canvas.requestRenderAll(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) renderLayersPanel();
             });
             $('#btn-unmask').click(function() { const img = canvas.getActiveObject(); if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); } });
-            
-            // EDIT MASK LOGIC
-            let activeMaskEditImg = null;
-            $('#btn-edit-mask').click(function() {
-                const img = canvas.getActiveObject(); if (!img || !img.clipPath) return;
-                activeMaskEditImg = img;
-                img.savedClipPath = img.clipPath; img.set('clipPath', null); img.set('opacity', 0.5);
-                img.savedClipPath.clone(function(overlay) {
-                    overlay.set({ left: img.left + img.savedClipPath.left, top: img.top + img.savedClipPath.top, fill: 'transparent', stroke: 'var(--accent)', strokeDashArray: [5, 5], selectable: false, evented: false, isMaskOverlay: true, excludeFromExport: true });
-                    canvas.add(overlay); canvas.requestRenderAll();
-                });
-                $('#mask-edit-banner').css('display', 'flex'); $('#btn-edit-mask').hide();
-            });
-            
-            $('#btn-apply-mask-edit').click(function() {
-                if(!activeMaskEditImg) return; const img = activeMaskEditImg;
-                const overlays = canvas.getObjects().filter(o => o.isMaskOverlay); overlays.forEach(o => canvas.remove(o));
-                if (img.savedClipPath) {
-                    img.savedClipPath.set({ left: img.savedClipPath.left - img.left + overlays[0].left, top: img.savedClipPath.top - img.top + overlays[0].top });
-                    img.set('clipPath', img.savedClipPath);
-                }
-                img.set('opacity', 1); activeMaskEditImg = null;
-                $('#mask-edit-banner').hide(); $('#btn-edit-mask').show(); canvas.requestRenderAll(); saveHistory();
-            });
 
             // --- ALIGNMENT & DISTRIBUTION ---
             function getAlignmentTargetCoords(targetType) {
@@ -896,41 +797,15 @@
                 canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
-            $('.distribute-action').click(function() {
-                const distType = $(this).data('dist'); let sel = canvas.getActiveObject();
-                if (!sel || sel.type !== 'activeSelection' || sel.size() < 3) { alert("Please select at least 3 objects to distribute spacing."); return; }
-                let objects = sel.getObjects().slice(); canvas.discardActiveObject(); 
-                if (distType[0] === 'v') {
-                    objects.sort((a,b) => a.getBoundingRect().top - b.getBoundingRect().top);
-                    const availableSpace = objects[objects.length - 1].getBoundingRect().top - objects[0].getBoundingRect().bottom; const objectsToMove = objects.slice(1, -1);
-                    const totalItemsToMoveHeight = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().height, 0); const gap = (availableSpace - totalItemsToMoveHeight) / (objectsToMove.length + 1);
-                    let currentY = objects[0].getBoundingRect().bottom;
-                    objectsToMove.forEach(obj => { let newTop = obj.top + (currentY + gap - obj.getBoundingRect().top); obj.set('top', newTop).setCoords(); currentY = obj.getBoundingRect().bottom; });
-                } else {
-                    objects.sort((a,b) => a.getBoundingRect().left - b.getBoundingRect().left);
-                    const availableSpace = objects[objects.length - 1].getBoundingRect().left - objects[0].getBoundingRect().right; const objectsToMove = objects.slice(1, -1);
-                    const totalItemsToMoveWidth = objectsToMove.reduce((sum, o) => sum + o.getBoundingRect().width, 0); const gap = (availableSpace - totalItemsToMoveWidth) / (objectsToMove.length + 1);
-                    let currentX = objects[0].getBoundingRect().right;
-                    objectsToMove.forEach(obj => { let newLeft = obj.left + (currentX + gap - obj.getBoundingRect().left); obj.set('left', newLeft).setCoords(); currentX = obj.getBoundingRect().right; });
-                }
-                canvas.setActiveObject(new fabric.ActiveSelection(objects, { canvas: canvas })); canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-
-            // --- NATIVE ZOOM LOGIC ONLY ---
-            function disableZoom() {
-                if(isZoomMode) {
-                    isZoomMode = false; $('#tool-zoom').removeClass('active-state'); canvas.defaultCursor = 'default';
-                    canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', true); });
-                    canvas.requestRenderAll();
-                }
-            }
-
-            $('#tool-zoom').click(function() {
-                isZoomMode = !isZoomMode; $(this).toggleClass('active-state', isZoomMode);
-                canvas.defaultCursor = isZoomMode ? 'zoom-in' : 'default'; canvas.selection = !isZoomMode;
-                canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('evented', !isZoomMode); });
+            // --- TOOLS, PAN & ZOOM ---
+            function setTool(tool) {
+                activeTool = tool; $('.tool-btn').removeClass('active-state');
+                if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
+                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
+                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
-            });
+            }
+            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
 
             function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
             function fitWholePage() {
@@ -940,84 +815,36 @@
                 maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
             }
             $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
+            $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
 
-            canvas.on('mouse:down', function(opt) {
-                if(isZoomMode) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); }
-            });
-
+            let isDragging = false; let lastPosX, lastPosY;
+            
             $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
+                if(!activeId || $('.modal-overlay').is(':visible')) return;
+                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
+                if (canvas.getActiveObject()?.isEditing) return; 
                 
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
-
-                if (e.key.toLowerCase() === 'z') $('#tool-zoom').click();
-                if (e.key.toLowerCase() === 'v' || e.key === 'Escape') disableZoom(); 
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+                if (e.key.toLowerCase() === 'v') setTool('select'); if (e.key.toLowerCase() === 'h') setTool('pan'); if (e.key.toLowerCase() === 'z') setTool('zoom');
             });
+            
+            $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
 
-            // Native mouse wheel override ONLY for Zoom & Pan
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey || opt.e.altKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
-                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
-                opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); 
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; }
             });
-
-            // --- EXPORT WITH CROP MARKS & BLEED ---
-            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
-            $('#confirm-export-btn').click(async function() {
-                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
-                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
-                const withMarks = $('#export-marks').is(':checked');
-                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                
-                const oldGuides = showGuides; const oldBleed = showBleed; const oldGrid = showBaselineGrid;
-                showGuides = false; showBleed = false; showBaselineGrid = false; updateVisibilityToggles();
-                
-                let pagesToExport = [];
-                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
-
-                let exportW = p.config.widthPx; let exportH = p.config.heightPx; let b = p.config.bleedPx;
-                let cX = 0; let cY = 0;
-                if (withMarks) { exportW += (b*2) + 40; exportH += (b*2) + 40; cX = b + 20; cY = b + 20; }
-
-                if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [exportW, exportH] });
-                    for (let i = 0; i < pagesToExport.length; i++) { 
-                        const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); 
-                        const pos = getPagePosition(pg, p.config); 
-                        canvas.viewportTransform = [1, 0, 0, 1, -pos.x + cX, -pos.y + cY]; 
-                        canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); 
-                        
-                        pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: -cX, top: -cY, width: exportW, height: exportH }), 'PNG', 0, 0, exportW, exportH); 
-                        
-                        if (withMarks) {
-                            pdf.setDrawColor(0); pdf.setLineWidth(0.5);
-                            pdf.line(10, cY, cX - 5, cY); pdf.line(cX, 10, cX, cY - 5); // TL
-                            pdf.line(exportW - 10, cY, exportW - cX + 5, cY); pdf.line(exportW - cX, 10, exportW - cX, cY - 5); // TR
-                            pdf.line(10, exportH - cY, cX - 5, exportH - cY); pdf.line(cX, exportH - 10, cX, exportH - cY + 5); // BL
-                            pdf.line(exportW - 10, exportH - cY, exportW - cX + 5, exportH - cY); pdf.line(exportW - cX, exportH - 10, exportW - cX, exportH - cY + 5); // BR
-                        }
-                    }
-                    pdf.save(`${p.name}_Export.pdf`);
-                } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x + cX, -pos.y + cY]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: -cX, top: -cY, width: exportW, height: exportH }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
-                }
-                showGuides = oldGuides; showBleed = oldBleed; showBaselineGrid = oldGrid; updateVisibilityToggles(); canvas.setViewportTransform(originalVpt);
+            canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
+            canvas.on('mouse:up', function(opt) { 
+                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
+                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
 
             // --- UI PROPERTIES PANEL ---
-            let focusedColorType = 'fill'; 
-
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
@@ -1027,18 +854,12 @@
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
-                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); $('#btn-edit-mask').show(); } else { $('#image-mask-tools').hide(); }
+                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
                 if (obj.type === 'textbox') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-tracking').val(obj.charSpacing || 0);
                     const cleanFont = obj.fontFamily.replace(/['"]/g, '').split(',')[0].trim(); $('#obj-font-family').val(`'${cleanFont}', sans-serif`);
                     $('.p-align').removeClass('active'); if(obj.textAlign) $(`[data-palign="${obj.textAlign}"]`).addClass('active');
-                    
-                    $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
-                    $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
-                    $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
-                    $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
-                    $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
                 } else { $('#text-properties').hide(); }
             }
 
@@ -1078,15 +899,6 @@
                 document.fonts.load(`12px "${fontName}"`).then(() => { updateObj('fontFamily', selectedFont); canvas.requestRenderAll(); });
             });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
-
-            $('#obj-space-before').on('input', function() { updateObj('spaceBefore', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-right').on('input', function() { updateObj('indentRight', parseFloat($(this).val()) || 0); });
-            $('#obj-space-after').on('input', function() { updateObj('spaceAfter', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-left').on('input', function() { updateObj('indentLeft', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-first').on('input', function() { updateObj('textIndent', parseFloat($(this).val()) || 0); });
-            $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
-            $('#obj-drop-cap-lines').on('input', function() { updateObj('dropCapLines', parseInt($(this).val()) || 0); });
-            $('#obj-drop-cap-chars').on('input', function() { updateObj('dropCapChars', parseInt($(this).val()) || 0); });
 
             // --- LAYERS PANEL ---
             $('#refresh-layers').click(renderLayersPanel);
