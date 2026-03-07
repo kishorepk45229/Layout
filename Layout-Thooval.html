@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.8</title>
+    <title>Thooval Workspace v5.9</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
@@ -46,7 +46,7 @@
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
         
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
@@ -102,9 +102,6 @@
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
         input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
@@ -117,6 +114,7 @@
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
         /* SWATCHES & LAYERS PANEL UI */
+        .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18px, 1fr)); gap: 4px; }
         .swatch-box { width: 100%; aspect-ratio: 1; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); transition: 0.1s; }
         .swatch-box:hover { transform: scale(1.15); box-shadow: 0 0 0 1px var(--accent); z-index: 2; position: relative;}
         
@@ -166,6 +164,18 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
+
+        /* ADVANCED COLOR PICKER MODAL UI */
+        #advanced-color-modal .modal { max-width: 550px; }
+        .picker-layout { display: flex; gap: 24px; align-items: stretch; }
+        .picker-visuals { display: flex; gap: 12px; }
+        .picker-controls { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .color-preview-area { display: flex; height: 60px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+        .color-preview-box { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .color-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .color-input-group { display: flex; align-items: center; gap: 8px; }
+        .color-input-group label { width: 12px; color: var(--text-muted); font-weight: 600; }
+        .color-input-group input { width: 100%; }
     </style>
 </head>
 <body>
@@ -258,21 +268,21 @@
             <div class="tool-divider" style="flex: 1;"></div>
             
             <div class="global-palette-block">
-                <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
-                <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
+                <div class="fill-block focused" id="fill-focus" title="Fill (Double Click for Picker)"></div>
+                <div class="stroke-block" id="stroke-focus" title="Stroke (Double Click for Picker)"></div>
             </div>
             <div class="palette-btn-group">
                 <button class="small-icon-btn swap-fill-stroke" title="Swap (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
                 <button class="small-icon-btn apply-none" title="None (/)"><i class="fa-solid fa-slash"></i></button>
             </div>
             
+            <button class="doc-btn" id="btn-open-advanced-picker" style="margin-top: 12px; font-size: 10px; padding: 4px; width: 100%;"><i class="fa-solid fa-palette"></i> Custom Color</button>
+            
             <div class="stroke-weight-control">
                 <i class="fa-solid fa-border-top-left" title="Stroke Weight" style="color: var(--text-muted); font-size: 11px;"></i>
                 <input type="number" id="global-stroke-weight" min="0" value="0" step="1" style="width: 40px; text-align: center; height: 22px;">
             </div>
 
-            <input type="color" id="unified-color-picker" title="Unified Color Picker" style="width: 100%; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; margin-top: 12px;" value="#3f3f46">
-            
             <div class="tool-divider"></div>
             <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
@@ -322,12 +332,15 @@
                     <h3>Swatches</h3>
                     <span id="doc-mode-badge" style="font-size:9px; font-weight:600; background:var(--bg-surface-hover); color:var(--text-main); padding:2px 6px; border-radius:10px;">RGB</span>
                 </div>
-                <div class="btn-group" style="margin-bottom: 8px;">
-                    <button class="swatch-tab active" data-mode="RGB">RGB</button>
-                    <button class="swatch-tab" data-mode="CMYK">CMYK</button>
-                </div>
-                <div class="swatch-grid" id="swatch-grid-rgb" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;"></div>
-                <div class="swatch-grid" id="swatch-grid-cmyk" style="display: none; grid-template-columns: repeat(6, 1fr); gap: 4px;"></div>
+                <select id="swatch-category" style="margin-bottom: 12px;">
+                    <option value="Basic RGB">Basic RGB (Web)</option>
+                    <option value="Basic CMYK">Basic CMYK (Print)</option>
+                    <option value="Garden">Garden Palette</option>
+                    <option value="Ocean">Ocean Palette</option>
+                    <option value="Sunset">Sunset Palette</option>
+                    <option value="Vintage">Vintage Palette</option>
+                </select>
+                <div class="swatch-grid" id="swatch-grid-container"></div>
             </div>
 
             <div class="panel-section" id="panel-layers">
@@ -430,6 +443,42 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <div class="modal-overlay" id="advanced-color-modal">
+        <div class="modal">
+            <h2>Color Picker</h2>
+            <div class="picker-layout">
+                <div class="picker-visuals">
+                    <div id="iro-picker-container"></div>
+                </div>
+                <div class="picker-controls">
+                    <div class="color-preview-area">
+                        <div class="color-preview-box" id="picker-old-color" style="background: #000;">Current</div>
+                        <div class="color-preview-box" id="picker-new-color" style="background: #ff0000;">New</div>
+                    </div>
+                    
+                    <div class="color-input-grid" style="margin-top: 8px;">
+                        <div class="color-input-group"><label>R</label><input type="number" id="picker-r" min="0" max="255"></div>
+                        <div class="color-input-group"><label>C</label><input type="number" id="picker-c" min="0" max="100"></div>
+                        
+                        <div class="color-input-group"><label>G</label><input type="number" id="picker-g" min="0" max="255"></div>
+                        <div class="color-input-group"><label>M</label><input type="number" id="picker-m" min="0" max="100"></div>
+                        
+                        <div class="color-input-group"><label>B</label><input type="number" id="picker-b" min="0" max="255"></div>
+                        <div class="color-input-group"><label>Y</label><input type="number" id="picker-y" min="0" max="100"></div>
+                        
+                        <div class="color-input-group" style="grid-column: 1 / -1;"><label>#</label><input type="text" id="picker-hex" style="text-transform: uppercase;"></div>
+                        <div class="color-input-group" style="grid-column: 2; margin-top: -34px;"><label>K</label><input type="number" id="picker-k" min="0" max="100"></div>
+                    </div>
+                    
+                    <div class="modal-footer" style="margin-top: auto;">
+                        <button class="btn-cancel" onclick="$('#advanced-color-modal').hide()">Cancel</button>
+                        <button class="btn-primary" id="btn-apply-color">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="new-doc-modal">
@@ -554,31 +603,95 @@
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
-            // --- SWATCHES INITIALIZATION ---
-            const rgbSwatches = ['#ffffff', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#cccccc', '#666666', '#990000', '#009900', '#000099', '#999900', '#009999', '#990099', '#ff6600', '#ff0066', '#66ff00', '#00ff66', '#0066ff', '#6600ff', '#ff9900', '#0099ff'];
-            const cmykSwatches = ['#ffffff', '#231f20', '#00aeef', '#ec008c', '#fff200', '#ed1c24', '#00a651', '#2e3192', '#e6e7e8', '#808285', '#c1272d', '#8cc63f', '#1b1464', '#f7931e', '#8c6239', '#0072bc', '#f15a24', '#c1272d', '#009245', '#0071bc', '#29abe2', '#9e005d', '#d9e021', '#c69c6d'];
+            // --- COLOR MATH UTILS (RGB <-> CMYK) ---
+            function rgb2cmyk(r, g, b) {
+                let c = 1 - (r / 255); let m = 1 - (g / 255); let y = 1 - (b / 255);
+                let k = Math.min(c, Math.min(m, y));
+                if (k === 1) { return { c: 0, m: 0, y: 0, k: 100 }; }
+                return { c: Math.round(((c - k) / (1 - k)) * 100), m: Math.round(((m - k) / (1 - k)) * 100), y: Math.round(((y - k) / (1 - k)) * 100), k: Math.round(k * 100) };
+            }
+            function cmyk2rgb(c, m, y, k) {
+                c = c / 100; m = m / 100; y = y / 100; k = k / 100;
+                let r = 255 * (1 - c) * (1 - k); let g = 255 * (1 - m) * (1 - k); let b = 255 * (1 - y) * (1 - k);
+                return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+            }
 
-            rgbSwatches.forEach(c => $('#swatch-grid-rgb').append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
-            cmykSwatches.forEach(c => $('#swatch-grid-cmyk').append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
-
-            $('.swatch-tab').click(function() {
-                $('.swatch-tab').removeClass('active'); $(this).addClass('active');
-                $('.swatch-grid').hide();
-                $(`#swatch-grid-${$(this).data('mode').toLowerCase()}`).show();
+            // --- IRO.JS ADVANCED COLOR PICKER ---
+            const colorPicker = new iro.ColorPicker("#iro-picker-container", {
+                width: 200,
+                color: "#ff0000",
+                layoutDirection: "horizontal",
+                layout: [ { component: iro.ui.Box }, { component: iro.ui.Slider, options: { sliderType: 'hue' } } ]
             });
+
+            function syncInputsWithPicker(color) {
+                $('#picker-hex').val(color.hexString.replace('#', ''));
+                $('#picker-r').val(color.rgb.r); $('#picker-g').val(color.rgb.g); $('#picker-b').val(color.rgb.b);
+                const cmyk = rgb2cmyk(color.rgb.r, color.rgb.g, color.rgb.b);
+                $('#picker-c').val(cmyk.c); $('#picker-m').val(cmyk.m); $('#picker-y').val(cmyk.y); $('#picker-k').val(cmyk.k);
+                $('#picker-new-color').css('background-color', color.hexString);
+            }
+
+            colorPicker.on('color:change', syncInputsWithPicker);
+
+            $('.color-input-grid input').on('change', function() {
+                const id = $(this).attr('id');
+                if (id === 'picker-hex') { colorPicker.color.hexString = '#' + $(this).val(); } 
+                else if (['picker-r', 'picker-g', 'picker-b'].includes(id)) { colorPicker.color.rgb = { r: $('#picker-r').val(), g: $('#picker-g').val(), b: $('#picker-b').val() }; } 
+                else if (['picker-c', 'picker-m', 'picker-y', 'picker-k'].includes(id)) {
+                    const rgb = cmyk2rgb($('#picker-c').val(), $('#picker-m').val(), $('#picker-y').val(), $('#picker-k').val());
+                    colorPicker.color.rgb = rgb;
+                }
+            });
+
+            function openAdvancedPicker() {
+                const currentColor = focusedColorType === 'fill' ? globalFill : globalStroke;
+                if (currentColor !== 'transparent') { colorPicker.color.hexString = currentColor; }
+                $('#picker-old-color').css('background-color', currentColor);
+                $('#advanced-color-modal').css('display', 'flex');
+            }
+
+            $('#fill-focus, #stroke-focus').dblclick(openAdvancedPicker);
+            $('#btn-open-advanced-picker').click(openAdvancedPicker);
+
+            $('#btn-apply-color').click(() => {
+                const col = colorPicker.color.hexString;
+                if(focusedColorType === 'fill') {
+                    globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
+                } else {
+                    globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
+                    const obj = canvas.getActiveObject();
+                    if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); }
+                }
+                $('#advanced-color-modal').hide();
+            });
+
+            // --- SWATCHES INITIALIZATION ---
+            const palettes = {
+                'Basic RGB': ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff', '#000000', '#888888', '#cccccc', '#990000', '#009900', '#000099', '#999900', '#009999', '#990099', '#ff6600', '#ff0066', '#66ff00', '#00ff66', '#0066ff', '#6600ff', '#ff9900', '#0099ff'],
+                'Basic CMYK': ['#00aeef', '#ec008c', '#fff200', '#231f20', '#ed1c24', '#00a651', '#2e3192', '#e6e7e8', '#808285', '#c1272d', '#8cc63f', '#1b1464', '#f7931e', '#8c6239', '#0072bc', '#f15a24', '#c1272d', '#009245', '#0071bc', '#29abe2', '#9e005d', '#d9e021', '#c69c6d', '#ffffff'],
+                'Garden': ['#2d5a27', '#8e9a22', '#cbce91', '#e8f0c3', '#f2aaaa', '#e16552', '#c72e45', '#8f1d2c', '#4b7f52', '#7dd181', '#96e8bc', '#b6f9c9', '#f9a03f', '#f7d08a', '#f4f4f4'],
+                'Ocean': ['#03045e', '#023e8a', '#0077b6', '#0096c7', '#00b4d8', '#48cae4', '#90e0ef', '#ade8f4', '#caf0f8', '#007ea7', '#00a8e8', '#118ab2', '#06d6a0', '#073b4c'],
+                'Sunset': ['#ff7b54', '#ffb26b', '#ffd56b', '#939b62', '#e05d5d', '#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#f4a261', '#e76f51', '#d62828', '#264653'],
+                'Vintage': ['#cb997e', '#eddcd2', '#fff1e6', '#f0efeb', '#ddbea9', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189']
+            };
+
+            function loadSwatchCategory(category) {
+                const grid = $('#swatch-grid-container');
+                grid.empty();
+                if (palettes[category]) {
+                    palettes[category].forEach(c => grid.append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
+                }
+            }
+
+            $('#swatch-category').change(function() { loadSwatchCategory($(this).val()); });
 
             $(document).on('click', '.swatch-box', function() {
                 const col = $(this).data('color');
                 if(focusedColorType === 'fill') {
-                    globalFill = col;
-                    $('#fill-focus').css('background', col).removeClass('none');
-                    updateObj('fill', col);
-                    $('#unified-color-picker').val(col);
+                    globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
                 } else {
-                    globalStroke = col;
-                    $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none');
-                    updateObj('stroke', col);
-                    $('#unified-color-picker').val(col);
+                    globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
                     const obj = canvas.getActiveObject();
                     if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') {
                         globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight);
@@ -699,7 +812,8 @@
 
                 if (p.config.colorMode) {
                     $('#doc-mode-badge').text(p.config.colorMode);
-                    $(`.swatch-tab[data-mode="${p.config.colorMode}"]`).click();
+                    if (p.config.colorMode === 'CMYK') { $('#swatch-category').val('Basic CMYK').change(); } 
+                    else { $('#swatch-category').val('Basic RGB').change(); }
                 }
 
                 if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); }); } 
@@ -718,7 +832,7 @@
                 isEditingDoc = false; 
                 $('#doc-modal-title').text('New Document Setup'); 
                 $('#doc-name-group').show(); 
-                $('#doc-init-group').show(); // Show pages and color mode for New Doc
+                $('#doc-init-group').show(); 
                 $('#create-doc-btn').text('Create Project'); 
                 $('#new-doc-modal').css('display', 'flex'); 
             });
@@ -742,7 +856,7 @@
                 if(!activeId) return; isEditingDoc = true; const conf = projects[activeId].config;
                 $('#doc-modal-title').text('Edit Document Setup'); 
                 $('#doc-name-group').hide(); 
-                $('#doc-init-group').hide(); // Hide init options on edit
+                $('#doc-init-group').hide(); 
                 $('#create-doc-btn').text('Apply Changes');
                 $('#doc-unit').val(conf.unit); $('#doc-preset').val('Custom');
                 $('#doc-w').val(+(fromPx(conf.widthPx, conf.unit).toFixed(2))); $('#doc-h').val(+(fromPx(conf.heightPx, conf.unit).toFixed(2)));
@@ -763,12 +877,10 @@
                 };
 
                 if (isEditingDoc && activeId) {
-                    // Retain original color mode if editing
                     confData.colorMode = projects[activeId].config.colorMode || 'RGB';
                     projects[activeId].config = confData; 
                     drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
-                    // New Doc Setup
                     const docPages = parseInt($('#doc-pages').val()) || 1;
                     confData.colorMode = $('#doc-color-mode').val();
                     
@@ -1700,7 +1812,7 @@
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); updateLayersPanel(); } }); 
-            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
+            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); updateLayersPanel(); } });
 
             // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
