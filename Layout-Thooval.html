@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.7</title>
+    <title>Thooval Workspace v5.8</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -46,7 +46,7 @@
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
         
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
@@ -116,8 +116,11 @@
         .doc-btn:hover { background: var(--bg-surface-hover); }
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
-        /* LAYERS PANEL UI */
-        .layer-list { list-style: none; margin-top: 8px; max-height: 250px; overflow-y: auto; background: var(--bg-base); border-radius: 6px; padding: 4px; }
+        /* SWATCHES & LAYERS PANEL UI */
+        .swatch-box { width: 100%; aspect-ratio: 1; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); transition: 0.1s; }
+        .swatch-box:hover { transform: scale(1.15); box-shadow: 0 0 0 1px var(--accent); z-index: 2; position: relative;}
+        
+        .layer-list { list-style: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: var(--bg-base); border-radius: 6px; padding: 4px; }
         .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 2px; border-radius: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .layer-item:hover { background: var(--bg-surface-hover); }
         .layer-item.active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
@@ -314,6 +317,19 @@
                 </div>
             </div>
 
+            <div class="panel-section" id="panel-swatches" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3>Swatches</h3>
+                    <span id="doc-mode-badge" style="font-size:9px; font-weight:600; background:var(--bg-surface-hover); color:var(--text-main); padding:2px 6px; border-radius:10px;">RGB</span>
+                </div>
+                <div class="btn-group" style="margin-bottom: 8px;">
+                    <button class="swatch-tab active" data-mode="RGB">RGB</button>
+                    <button class="swatch-tab" data-mode="CMYK">CMYK</button>
+                </div>
+                <div class="swatch-grid" id="swatch-grid-rgb" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;"></div>
+                <div class="swatch-grid" id="swatch-grid-cmyk" style="display: none; grid-template-columns: repeat(6, 1fr); gap: 4px;"></div>
+            </div>
+
             <div class="panel-section" id="panel-layers">
                 <h3>Layers</h3>
                 <ul id="layer-list" class="layer-list"></ul>
@@ -420,6 +436,12 @@
         <div class="modal">
             <h2 id="doc-modal-title">New Document Setup</h2>
             <div class="prop-col" id="doc-name-group" style="margin-bottom: 16px;"><label>File Name</label><input type="text" id="doc-name" value="Untitled Project"></div>
+            
+            <div class="prop-row" id="doc-init-group" style="margin-bottom: 16px;">
+                <div class="prop-col"><label>Pages</label><input type="number" id="doc-pages" value="1" min="1"></div>
+                <div class="prop-col"><label>Color Mode</label><select id="doc-color-mode"><option value="CMYK">CMYK (Print)</option><option value="RGB" selected>RGB (Web)</option></select></div>
+            </div>
+
             <div class="prop-col" style="margin-bottom: 16px;"><label>Preset</label><select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select></div>
             <div class="prop-row">
                 <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div><div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
@@ -498,7 +520,6 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            // ADDED 'locked' property to CUSTOM_PROPS for saving state
             const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked']; 
             
             const SNAP_THRESHOLD = 8;
@@ -532,6 +553,38 @@
             
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
+
+            // --- SWATCHES INITIALIZATION ---
+            const rgbSwatches = ['#ffffff', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#cccccc', '#666666', '#990000', '#009900', '#000099', '#999900', '#009999', '#990099', '#ff6600', '#ff0066', '#66ff00', '#00ff66', '#0066ff', '#6600ff', '#ff9900', '#0099ff'];
+            const cmykSwatches = ['#ffffff', '#231f20', '#00aeef', '#ec008c', '#fff200', '#ed1c24', '#00a651', '#2e3192', '#e6e7e8', '#808285', '#c1272d', '#8cc63f', '#1b1464', '#f7931e', '#8c6239', '#0072bc', '#f15a24', '#c1272d', '#009245', '#0071bc', '#29abe2', '#9e005d', '#d9e021', '#c69c6d'];
+
+            rgbSwatches.forEach(c => $('#swatch-grid-rgb').append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
+            cmykSwatches.forEach(c => $('#swatch-grid-cmyk').append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
+
+            $('.swatch-tab').click(function() {
+                $('.swatch-tab').removeClass('active'); $(this).addClass('active');
+                $('.swatch-grid').hide();
+                $(`#swatch-grid-${$(this).data('mode').toLowerCase()}`).show();
+            });
+
+            $(document).on('click', '.swatch-box', function() {
+                const col = $(this).data('color');
+                if(focusedColorType === 'fill') {
+                    globalFill = col;
+                    $('#fill-focus').css('background', col).removeClass('none');
+                    updateObj('fill', col);
+                    $('#unified-color-picker').val(col);
+                } else {
+                    globalStroke = col;
+                    $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none');
+                    updateObj('stroke', col);
+                    $('#unified-color-picker').val(col);
+                    const obj = canvas.getActiveObject();
+                    if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') {
+                        globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight);
+                    }
+                }
+            });
 
             // --- GOOGLE FONTS INJECTION ---
             const curatedFonts = [
@@ -602,7 +655,7 @@
                 if (p.history && p.historyIndex > 0) {
                     isHistoryProcessing = true; p.historyIndex--;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; 
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel();
                     });
                 }
             }
@@ -612,7 +665,7 @@
                 if (p.history && p.historyIndex < p.history.length - 1) {
                     isHistoryProcessing = true; p.historyIndex++;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; 
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel();
                     });
                 }
             }
@@ -631,9 +684,9 @@
                 $('#btn-new-tab').before(tabHtml);
                 
                 if (Object.keys(projects).length === 0) {
-                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide();
+                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches').hide();
                 } else {
-                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
                 }
             }
 
@@ -643,6 +696,11 @@
                 activeId = id; const p = projects[id]; canvas.clear();
                 
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
+
+                if (p.config.colorMode) {
+                    $('#doc-mode-badge').text(p.config.colorMode);
+                    $(`.swatch-tab[data-mode="${p.config.colorMode}"]`).click();
+                }
 
                 if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); }); } 
                 else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
@@ -655,7 +713,15 @@
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
-            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); });
+            
+            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { 
+                isEditingDoc = false; 
+                $('#doc-modal-title').text('New Document Setup'); 
+                $('#doc-name-group').show(); 
+                $('#doc-init-group').show(); // Show pages and color mode for New Doc
+                $('#create-doc-btn').text('Create Project'); 
+                $('#new-doc-modal').css('display', 'flex'); 
+            });
 
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
@@ -674,7 +740,10 @@
             
             $('#menu-doc-setup').click(function() {
                 if(!activeId) return; isEditingDoc = true; const conf = projects[activeId].config;
-                $('#doc-modal-title').text('Edit Document Setup'); $('#doc-name-group').hide(); $('#create-doc-btn').text('Apply Changes');
+                $('#doc-modal-title').text('Edit Document Setup'); 
+                $('#doc-name-group').hide(); 
+                $('#doc-init-group').hide(); // Hide init options on edit
+                $('#create-doc-btn').text('Apply Changes');
                 $('#doc-unit').val(conf.unit); $('#doc-preset').val('Custom');
                 $('#doc-w').val(+(fromPx(conf.widthPx, conf.unit).toFixed(2))); $('#doc-h').val(+(fromPx(conf.heightPx, conf.unit).toFixed(2)));
                 $('#mar-t').val(+(fromPx(conf.marginsPx.t, conf.unit).toFixed(2))); $('#mar-b').val(+(fromPx(conf.marginsPx.b, conf.unit).toFixed(2)));
@@ -685,16 +754,36 @@
 
             $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
             $('#create-doc-btn').click(function() {
-                const u = $('#doc-unit').val(); const confData = {
+                const u = $('#doc-unit').val(); 
+                
+                const confData = {
                     unit: u, widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u),
                     marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) },
                     bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked')
                 };
 
                 if (isEditingDoc && activeId) {
-                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
+                    // Retain original color mode if editing
+                    confData.colorMode = projects[activeId].config.colorMode || 'RGB';
+                    projects[activeId].config = confData; 
+                    drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
-                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 };
+                    // New Doc Setup
+                    const docPages = parseInt($('#doc-pages').val()) || 1;
+                    confData.colorMode = $('#doc-color-mode').val();
+                    
+                    const newId = generateId(); 
+                    projects[newId] = { 
+                        name: $('#doc-name').val() || 'Untitled Project', 
+                        isDirty: false, 
+                        totalPages: docPages, 
+                        isMasterMode: false, 
+                        config: confData, 
+                        canvasData: null, 
+                        vpt: [1,0,0,1,0,0], 
+                        history: [], 
+                        historyIndex: -1 
+                    };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
                 $('#new-doc-modal').hide();
@@ -768,14 +857,12 @@
                 const list = $('#layer-list');
                 list.empty();
                 
-                // Get all user objects
                 const objects = canvas.getObjects().filter(o => 
                     !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide
                 );
 
                 const activeObjs = canvas.getActiveObjects();
 
-                // Render top to bottom
                 for (let i = objects.length - 1; i >= 0; i--) {
                     const obj = objects[i];
                     let typeName = obj.type.charAt(0).toUpperCase() + obj.type.slice(1);
@@ -905,7 +992,7 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
+            // --- NEW: SMART SNAPPING ENGINE ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -1613,7 +1700,7 @@
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); updateLayersPanel(); } }); 
-            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); updateLayersPanel(); } });
+            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
 
             // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
