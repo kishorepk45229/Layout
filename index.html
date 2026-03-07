@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.12</title>
+    <title>Thooval Workspace v5.13</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -76,11 +76,13 @@
         
         .toolbar-left { width: 110px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; align-items: center; }
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
-        .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; position: relative;}
         .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
+        .sub-icon { position: absolute; bottom: 4px; right: 4px; font-size: 8px; }
+
         /* Global Palette in Left Toolbar */
         .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
         .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
@@ -103,9 +105,6 @@
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
         input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
@@ -140,14 +139,6 @@
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
         
-        /* CROP MODE BANNER */
-        #crop-mode-banner { background: #3b82f6; display: none; }
-        #exit-crop-btn { background: #eff6ff; color: #1e3a8a; border: none; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
-        #exit-crop-btn:hover { background: #ffffff; }
-
-        #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
-        #exit-master-btn:hover { background: #000; border-color: var(--accent); }
-        
         #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center; }
         .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; }
         #inner-welcome h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
@@ -180,13 +171,20 @@
         .color-input-group { display: flex; align-items: center; gap: 8px; }
         .color-input-group label { width: 12px; color: var(--text-muted); font-weight: 600; }
         .color-input-group input { width: 100%; }
+        
+        /* PEN TOOL UI OVERLAYS */
+        .node-overlay { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 500; }
+        .node-anchor { position: absolute; width: 8px; height: 8px; background: #fff; border: 1px solid #000; transform: translate(-4px, -4px); pointer-events: all; cursor: pointer; }
+        .node-anchor.active { background: #00ffcc; border-color: #000; }
+        .node-handle { position: absolute; width: 6px; height: 6px; background: #ff00ff; border-radius: 50%; transform: translate(-3px, -3px); pointer-events: all; cursor: grab; }
+        .node-handle-line { position: absolute; height: 1px; background: #a1a1aa; transform-origin: left center; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v5.9</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v5.9.1</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -210,7 +208,7 @@
                         <li id="menu-copy"><span>Copy</span> <span class="shortcut">Ctrl+C</span></li>
                         <li id="menu-paste"><span>Paste</span> <span class="shortcut">Ctrl+V</span></li>
                         <li id="menu-paste-into"><span>Paste Into Shape</span> <span class="shortcut">Ctrl+Alt+V</span></li>
-                        <li id="menu-delete-action"><span>Delete</span> <span class="shortcut">Del</span></li>
+                        <li id="menu-delete-action"><span>Delete Selection</span> <span class="shortcut">Del</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
@@ -263,12 +261,17 @@
                 
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 
-                <button class="tool-btn" id="add-pen" title="Draw Tool / Pen (P)"><i class="fa-solid fa-pen-nib"></i></button>
+                <button class="tool-btn" id="add-freehand" title="Freehand Brush (F)"><i class="fa-solid fa-paintbrush"></i></button>
                 <button class="tool-btn" id="add-rect" title="Rectangle Tool (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse Tool (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="add-polygon" title="Polygon Tool (Shift+P)"><i class="fa-solid fa-draw-polygon"></i></button>
                 
-                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Selected Shape" style="grid-column: 1 / -1;"><i class="fa-solid fa-object-intersect"></i></button>
+                <div class="tool-divider" style="grid-column: 1 / -1;"></div>
+                
+                <button class="tool-btn" id="tool-pen" title="Bezier Pen Tool (P)"><i class="fa-solid fa-pen-nib"></i></button>
+                <button class="tool-btn" id="tool-add-node" title="Add Anchor Point"><i class="fa-solid fa-pen-nib"></i><i class="fa-solid fa-plus sub-icon"></i></button>
+                <button class="tool-btn" id="tool-del-node" title="Delete Anchor Point"><i class="fa-solid fa-pen-nib"></i><i class="fa-solid fa-minus sub-icon"></i></button>
+                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Selected Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
             <div class="tool-divider" style="flex: 1;"></div>
@@ -290,7 +293,7 @@
             </div>
 
             <div class="tool-divider"></div>
-            <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete Selection (Del)"><i class="fa-solid fa-trash-can"></i></button>
         </aside>
 
         <div class="editor-core">
@@ -299,17 +302,13 @@
                 <button id="exit-master-btn">Done</button>
             </div>
             
-            <div class="master-banner" id="crop-mode-banner">
-                <span><i class="fa-solid fa-crop"></i> Image Crop Mode</span>
-                <button id="exit-crop-btn">Apply Crop</button>
-            </div>
-            
             <canvas class="ruler-h" id="ruler-h"></canvas>
             
             <div class="editor-body">
                 <canvas class="ruler-v" id="ruler-v"></canvas>
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
+                    <div id="node-overlay-container" class="node-overlay"></div>
                     
                     <div id="inner-welcome">
                         <i class="fa-solid fa-feather-pointed logo-huge"></i>
@@ -360,19 +359,18 @@
             </div>
             
             <div id="properties-form" style="display: none;">
-
+                
                 <div class="panel-section" id="node-edit-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
                     <h3>Path Editing</h3>
                     <div class="prop-row" style="margin-bottom: 0;">
                         <button class="doc-btn" id="btn-edit-nodes" style="color: var(--accent); border-color: var(--accent);"><i class="fa-solid fa-draw-polygon"></i> Toggle Node Edit</button>
                     </div>
                 </div>
-                
+
                 <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(59, 130, 246, 0.1);">
                     <h3>Image Mask Options</h3>
                     <div class="prop-row" style="margin-bottom: 0;">
-                        <button class="doc-btn" id="btn-edit-mask" style="color: #60a5fa; border-color: #3b82f6;"><i class="fa-solid fa-crop"></i> Adjust Crop</button>
-                        <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Unmask</button>
+                        <button class="doc-btn" id="btn-unmask" style="color: var(--danger); width: 100%;"><i class="fa-solid fa-crop-simple"></i> Unmask</button>
                     </div>
                 </div>
 
@@ -582,7 +580,8 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked']; 
+            // Added penPoints to custom properties so paths are re-editable after saving
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked', 'penPoints']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -605,11 +604,19 @@
             let cropImage = null;
             let clipboard = null;
 
+            // --- BEZIER PEN TOOL STATE ---
+            let penPoints = [];
+            let activePenPath = null;
+            let isDraggingPenHandle = false;
+
+            // --- NODE EDITING STATE ---
+            let isNodeEditing = false;
+            let editingOriginalObj = null;
+
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
             let globalStrokeWeight = 0;
-            let colorPickerTarget = 'fill';
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -728,13 +735,6 @@
             const fontSelect = $('#obj-font-family');
             curatedFonts.forEach(font => {
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
-            });
-
-            // --- MENU FIX ---
-            $('.dropdown li').on('click', function() {
-                const $dropdown = $(this).closest('.dropdown');
-                $dropdown.hide();
-                setTimeout(() => $dropdown.css('display', ''), 150);
             });
 
             // --- MALAYALAM CONVERTER ---
@@ -858,8 +858,8 @@
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
             canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); updateLayersPanel(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); updateLayersPanel(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); updateLayersPanel(); } });
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide && !e.target.isPreviewNode) { markDirty(); saveHistory(); updateLayersPanel(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide && !e.target.isPreviewNode) { markDirty(); saveHistory(); updateLayersPanel(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -941,6 +941,7 @@
                         if (o.isMargin) return 0; 
                         if (o.isGuide || o.isMaskGuide) return 1; 
                         if (o.isSnapGuide) return 2;
+                        if (o.isPreviewNode) return 10;
                         return -3; 
                     };
                     return getZ(a) - getZ(b);
@@ -984,7 +985,7 @@
                 list.empty();
                 
                 const objects = canvas.getObjects().filter(o => 
-                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode
                 );
 
                 const activeObjs = canvas.getActiveObjects();
@@ -1021,7 +1022,7 @@
             $(document).on('click', '.layer-item', function(e) {
                 if ($(e.target).hasClass('layer-action-btn')) return; 
                 const idx = $(this).data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode);
                 const obj = objects[idx];
                 if (obj && !obj.locked && obj.visible !== false && !obj.isMasterClone) {
                     canvas.setActiveObject(obj);
@@ -1032,7 +1033,7 @@
             $(document).on('click', '.btn-lock', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode);
                 const obj = objects[idx];
                 
                 obj.locked = !obj.locked;
@@ -1052,7 +1053,7 @@
             $(document).on('click', '.btn-vis', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode);
                 const obj = objects[idx];
                 
                 obj.visible = obj.visible === false ? true : false;
@@ -1118,7 +1119,7 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
+            // --- SMART SNAPPING ENGINE ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -1126,14 +1127,14 @@
 
             canvas.on('object:moving', function(options) {
                 clearSnapLines();
-                if (!activeId || !showGuides || isPreviewMode || isCropMode || !enableSmartSnap) return;
+                if (!activeId || !showGuides || isPreviewMode || isCropMode || !enableSmartSnap || isNodeEditing) return;
                 
                 const obj = options.target; 
                 const zoom = canvas.getZoom();
                 const snapThreshold = SNAP_THRESHOLD / zoom;
 
                 const snapTargets = canvas.getObjects().filter(o => 
-                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && o.visible !== false
+                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && o.visible !== false
                 );
 
                 const objB = obj.getBoundingRect(true, true); 
@@ -1262,7 +1263,7 @@
 
             // --- CLIPBOARD (Cut/Copy/Paste) ---
             function copyObjects() {
-                if (!activeId) return;
+                if (!activeId || isNodeEditing) return;
                 const activeObject = canvas.getActiveObject();
                 if (activeObject) {
                     activeObject.clone(function(cloned) {
@@ -1272,7 +1273,7 @@
             }
 
             function cutObjects() {
-                if (!activeId) return;
+                if (!activeId || isNodeEditing) return;
                 const activeObject = canvas.getActiveObject();
                 if (activeObject && !activeObject.isEditing) {
                     activeObject.clone(function(cloned) {
@@ -1283,7 +1284,7 @@
             }
 
             function pasteObjects(inPlace = false) {
-                if (!activeId || !clipboard) return;
+                if (!activeId || !clipboard || isNodeEditing) return;
                 clipboard.clone(function(clonedObj) {
                     canvas.discardActiveObject();
                     const offset = inPlace ? 0 : 20;
@@ -1306,13 +1307,14 @@
             $('#menu-cut').click(cutObjects);
             $('#menu-paste').click(() => pasteObjects(false));
 
-            // --- IMPROVED MULTI-DELETE ---
+            // --- MULTI-DELETE ---
             function deleteActive() { 
+                if (isNodeEditing) return; // Prevent deleting whole path while in node edit
                 const activeObjects = canvas.getActiveObjects();
                 if (activeObjects.length) {
-                    canvas.discardActiveObject(); // Important: Discard selection before removing to prevent ghosting
+                    canvas.discardActiveObject();
                     activeObjects.forEach(function(obj) {
-                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) {
+                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone && !obj.isPreviewNode) {
                             canvas.remove(obj);
                         }
                     });
@@ -1321,20 +1323,10 @@
             }
 
             $('#delete-obj, #menu-delete-action').click(deleteActive); 
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible')) return;
-                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                if (canvas.getActiveObject()?.isEditing) return;
 
-                if (e.key === 'Delete' || e.key === 'Backspace') {
-                    deleteActive();
-                    e.preventDefault();
-                }
-            });
-
-            // --- IMPROVED GROUPING LOGIC ---
+            // --- GROUPING LOGIC ---
             function groupObjects() {
-                if (!activeId) return;
+                if (!activeId || isNodeEditing) return;
                 const activeObj = canvas.getActiveObject();
                 if (!activeObj || activeObj.type !== 'activeSelection') return;
                 
@@ -1346,7 +1338,7 @@
             }
 
             function ungroupObjects() {
-                if (!activeId) return;
+                if (!activeId || isNodeEditing) return;
                 const activeObj = canvas.getActiveObject();
                 if (!activeObj || activeObj.type !== 'group') return;
                 
@@ -1359,7 +1351,7 @@
             $('#menu-group').click(groupObjects);
             $('#menu-ungroup').click(ungroupObjects);
 
-            // --- ADVANCED IMAGE MASKING & CROPPING ---
+            // --- ADVANCED IMAGE MASKING ---
             function applyMask(img, shape) {
                 const imgCenter = img.getCenterPoint();
                 const shapeCenter = shape.getCenterPoint();
@@ -1463,124 +1455,190 @@
                 }, CUSTOM_PROPS);
             });
 
-            // --- FABRIC.JS NODE EDITING ENGINE ---
-            function getObjectSizeWithStroke(object) {
-                let stroke = new fabric.Point( object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1 ).multiply(object.strokeWidth || 0);
-                return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
-            }
-
-            function polygonPositionHandler(dim, finalMatrix, fabricObject) {
-                let x = (fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x),
-                    y = (fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y);
-                return fabric.util.transformPoint({ x: x, y: y }, fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()));
-            }
-
-            function actionHandler(eventData, transform, x, y) {
-                let polygon = transform.target,
-                    currentControl = polygon.controls[polygon.__corner],
-                    mouseLocalPosition = polygon.toLocalPoint(new fabric.Point(x, y), 'center', 'center'),
-                    polygonBaseSize = getObjectSizeWithStroke(polygon),
-                    size = polygon._getTransformedDimensions(0, 0),
-                    finalPointPosition = { x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x, y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y };
-                polygon.points[currentControl.pointIndex] = finalPointPosition;
-                return true;
-            }
-
-            function anchorWrapper(anchorIndex, fn) {
-                return function(eventData, transform, x, y) {
-                    let fabricObject = transform.target,
-                        absolutePoint = fabric.util.transformPoint({ x: (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x), y: (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y) }, fabricObject.calcTransformMatrix()),
-                        actionPerformed = fn(eventData, transform, x, y),
-                        newDim = fabricObject._calcDimensions(),
-                        currentX = (newDim.left - fabricObject.pathOffset.x),
-                        currentY = (newDim.top - fabricObject.pathOffset.y);
-                    fabricObject.set({ width: newDim.width, height: newDim.height, pathOffset: {x: currentX, y: currentY}, left: absolutePoint.x, top: absolutePoint.y });
-                    return actionPerformed;
+            // --- TRUE BEZIER PEN TOOL ---
+            function generateSVGString(points, previewPoint) {
+                if (points.length === 0) return '';
+                let svg = `M ${points[0].x} ${points[0].y} `;
+                for (let i = 1; i < points.length; i++) {
+                    svg += `Q ${points[i-1].cOutX} ${points[i-1].cOutY} ${points[i].x} ${points[i].y} `;
                 }
+                if (previewPoint) {
+                    let lastPt = points[points.length - 1];
+                    svg += `Q ${lastPt.cOutX} ${lastPt.cOutY} ${previewPoint.x} ${previewPoint.y} `;
+                }
+                return svg;
             }
+
+            function finishPen(close = false) {
+                if (!isDrawingPen || penPoints.length < 2) {
+                    resetPen(); return;
+                }
+                
+                if (close) {
+                    // Pull the last control point out for smoothness, and join to start.
+                    let startPt = penPoints[0];
+                    penPoints.push({ x: startPt.x, y: startPt.y, cInX: startPt.cInX, cInY: startPt.cInY, cOutX: startPt.cOutX, cOutY: startPt.cOutY });
+                }
+
+                let finalPathStr = generateSVGString(penPoints, null);
+                let finalPath = new fabric.Path(finalPathStr, {
+                    fill: globalFill,
+                    stroke: globalStroke !== 'transparent' ? globalStroke : null,
+                    strokeWidth: globalStrokeWeight || 0,
+                    objectCaching: false
+                });
+
+                // Attach custom point data for node editing later!
+                finalPath.penPoints = JSON.parse(JSON.stringify(penPoints)); 
+
+                resetPen();
+                processNewObject(finalPath);
+                setTool('select');
+            }
+
+            function resetPen() {
+                isDrawingPen = false;
+                isDraggingPenHandle = false;
+                penPoints = [];
+                if (activePenPath) { canvas.remove(activePenPath); activePenPath = null; }
+                canvas.getObjects().forEach(o => { if (o.isPreviewNode) canvas.remove(o); });
+                canvas.requestRenderAll();
+            }
+
+            // --- BEZIER NODE EDITOR OVERLAY ---
+            function enterNodeEdit(pathObj) {
+                if (!pathObj.penPoints || pathObj.penPoints.length < 2) {
+                    alert("This object was not drawn with the Pen tool or cannot be edited.");
+                    return;
+                }
+
+                isNodeEditing = true;
+                editingOriginalObj = pathObj;
+                pathObj.set('opacity', 0.2);
+                pathObj.set('selectable', false);
+                pathObj.set('evented', false);
+
+                renderNodeOverlay();
+                
+                $('#btn-edit-nodes').html('<i class="fa-solid fa-check"></i> Apply Path Changes').addClass('master-active');
+                setTool('select'); // Ensure we are in select mode so we can drag the overlay nodes
+            }
+
+            function exitNodeEdit() {
+                if (!isNodeEditing) return;
+
+                // Re-build original object from updated points
+                let finalPathStr = generateSVGString(editingOriginalObj.penPoints, null);
+                
+                // We recreate the path to avoid bounding box issues
+                let updatedPath = new fabric.Path(finalPathStr, {
+                    fill: editingOriginalObj.fill,
+                    stroke: editingOriginalObj.stroke,
+                    strokeWidth: editingOriginalObj.strokeWidth,
+                    objectCaching: false,
+                    isRegular: editingOriginalObj.isRegular,
+                    isMasterSource: editingOriginalObj.isMasterSource,
+                    penPoints: JSON.parse(JSON.stringify(editingOriginalObj.penPoints)) // save new points
+                });
+
+                // Maintain Z-Index
+                const zIndex = canvas.getObjects().indexOf(editingOriginalObj);
+                canvas.remove(editingOriginalObj);
+                canvas.insertAt(updatedPath, zIndex, false);
+
+                // Clean up overlay
+                canvas.getObjects().forEach(o => { if(o.isPreviewNode) canvas.remove(o); });
+
+                isNodeEditing = false;
+                editingOriginalObj = null;
+                
+                $('#btn-edit-nodes').html('<i class="fa-solid fa-draw-polygon"></i> Toggle Node Edit').removeClass('master-active');
+                canvas.setActiveObject(updatedPath);
+                markDirty(); saveHistory();
+            }
+
+            function renderNodeOverlay() {
+                // Clear old overlay
+                canvas.getObjects().forEach(o => { if (o.isPreviewNode) canvas.remove(o); });
+
+                const pts = editingOriginalObj.penPoints;
+                const zoom = canvas.getZoom();
+
+                // Draw Path preview
+                let previewPathObj = new fabric.Path(generateSVGString(pts, null), {
+                    fill: 'transparent',
+                    stroke: '#00ffcc',
+                    strokeWidth: 2 / zoom,
+                    selectable: false,
+                    evented: false,
+                    isPreviewNode: true,
+                    excludeFromExport: true
+                });
+                canvas.add(previewPathObj);
+
+                // Draw Controls
+                pts.forEach((p, index) => {
+                    // Handle Line
+                    let handleLine = new fabric.Line([p.x, p.y, p.cOutX, p.cOutY], {
+                        stroke: '#a1a1aa', strokeWidth: 1 / zoom, selectable: false, evented: false, isPreviewNode: true, excludeFromExport: true
+                    });
+                    canvas.add(handleLine);
+
+                    // Anchor Point (Blue Square)
+                    let anchorControl = new fabric.Rect({
+                        left: p.x, top: p.y, width: 8 / zoom, height: 8 / zoom, originX: 'center', originY: 'center',
+                        fill: '#fff', stroke: '#000', strokeWidth: 1/zoom,
+                        hasControls: false, hasBorders: false,
+                        isPreviewNode: true, isAnchor: true, pointIndex: index, excludeFromExport: true
+                    });
+                    canvas.add(anchorControl);
+
+                    // Handle Point (Pink Circle)
+                    let handleControl = new fabric.Circle({
+                        left: p.cOutX, top: p.cOutY, radius: 4 / zoom, originX: 'center', originY: 'center',
+                        fill: '#ff00ff', hasControls: false, hasBorders: false,
+                        isPreviewNode: true, isHandle: true, pointIndex: index, excludeFromExport: true
+                    });
+                    canvas.add(handleControl);
+                });
+            }
+
+            // Node Editing Drag Logic
+            canvas.on('object:moving', function(e) {
+                if (!isNodeEditing) return;
+                const target = e.target;
+                if (!target.isPreviewNode) return;
+
+                const idx = target.pointIndex;
+                const pts = editingOriginalObj.penPoints;
+
+                if (target.isAnchor) {
+                    // Move anchor and shift its handle to keep relative distance
+                    let dx = target.left - pts[idx].x;
+                    let dy = target.top - pts[idx].y;
+                    pts[idx].x = target.left;
+                    pts[idx].y = target.top;
+                    pts[idx].cOutX += dx;
+                    pts[idx].cOutY += dy;
+                } else if (target.isHandle) {
+                    // Move just the handle
+                    pts[idx].cOutX = target.left;
+                    pts[idx].cOutY = target.top;
+                }
+                
+                // Real-time update visual overlay (lazy approach: just re-render on move)
+                renderNodeOverlay();
+                canvas.setActiveObject(target); // maintain selection
+            });
 
             $('#btn-edit-nodes').click(function() {
-                let poly = canvas.getActiveObject();
-                // Support both standard polygons and drawn Paths
-                if(!poly || (!['polygon', 'polyline', 'path'].includes(poly.type))) return;
-                
-                poly.edit = !poly.edit;
-                
-                if (poly.edit) {
-                    poly.hasControls = false;
-                    poly.hasBorders = false;
-                    poly.lockMovementX = true;
-                    poly.lockMovementY = true;
-                    
-                    if (poly.type === 'polygon' || poly.type === 'polyline') {
-                        let lastControl = poly.points.length - 1;
-                        poly.controls = poly.points.reduce(function(acc, point, index) {
-                            acc['p' + index] = new fabric.Control({
-                                positionHandler: polygonPositionHandler,
-                                actionHandler: anchorWrapper(index > 0 ? index - 1 : lastControl, actionHandler),
-                                actionName: 'modifyPolygon',
-                                pointIndex: index,
-                                cursorStyle: 'pointer',
-                                render: function(ctx, left, top, styleOverride, fabricObject) {
-                                    ctx.beginPath(); ctx.arc(left, top, 4, 0, Math.PI * 2, false);
-                                    ctx.fillStyle = '#00ffcc'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
-                                }
-                            });
-                            return acc;
-                        }, {});
-                    } else if (poly.type === 'path') {
-                        // Advanced Path Editing 
-                        poly.controls = poly.path.reduce(function(acc, seg, index) {
-                            let isCurve = seg[0] === 'Q' || seg[0] === 'C';
-                            let xIdx = isCurve ? seg.length - 2 : (seg[0] === 'H' ? null : 1);
-                            let yIdx = isCurve ? seg.length - 1 : (seg[0] === 'V' ? null : 2);
-
-                            if (xIdx !== null && yIdx !== null && seg[xIdx] !== undefined) {
-                                acc['p' + index] = new fabric.Control({
-                                    positionHandler: function(dim, finalMatrix, fabricObject) {
-                                        let x = fabricObject.path[index][xIdx] - fabricObject.pathOffset.x;
-                                        let y = fabricObject.path[index][yIdx] - fabricObject.pathOffset.y;
-                                        return fabric.util.transformPoint( { x: x, y: y }, fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()) );
-                                    },
-                                    actionHandler: function(eventData, transform, x, y) {
-                                        let target = transform.target;
-                                        let localPoint = target.toLocalPoint(new fabric.Point(x, y), 'center', 'center');
-                                        let size = target._getTransformedDimensions(0, 0);
-                                        let baseSize = getObjectSizeWithStroke(target);
-
-                                        target.path[index][xIdx] = localPoint.x * baseSize.x / size.x + target.pathOffset.x;
-                                        target.path[index][yIdx] = localPoint.y * baseSize.y / size.y + target.pathOffset.y;
-                                        return true;
-                                    },
-                                    cursorStyle: 'pointer',
-                                    render: function(ctx, left, top, styleOverride, fabricObject) {
-                                        ctx.beginPath(); ctx.arc(left, top, 4, 0, Math.PI * 2, false);
-                                        ctx.fillStyle = '#00ffcc'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
-                                    }
-                                });
-                            }
-                            return acc;
-                        }, {});
-                    }
-                } else {
-                    poly.hasControls = true;
-                    poly.hasBorders = true;
-                    poly.lockMovementX = false;
-                    poly.lockMovementY = false;
-                    poly.controls = fabric.Object.prototype.controls;
-                    markDirty(); saveHistory();
+                if (isNodeEditing) { exitNodeEdit(); } 
+                else {
+                    let obj = canvas.getActiveObject();
+                    if (obj) enterNodeEdit(obj);
                 }
-                canvas.requestRenderAll();
             });
 
-            canvas.on('selection:cleared', function() {
-                canvas.getObjects().forEach(o => {
-                    if (o.edit) {
-                        o.edit = false; o.hasControls = true; o.hasBorders = true; o.lockMovementX = false; o.lockMovementY = false;
-                        o.controls = fabric.Object.prototype.controls;
-                    }
-                });
-            });
 
             // --- DRAWING SHAPES & TEXT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
@@ -1589,15 +1647,6 @@
                 if(!activeId) return; 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
-            }
-
-            function getPolygonPoints(sides, radius) {
-                const points = [];
-                const angle = (Math.PI * 2) / sides;
-                for (let i = 0; i < sides; i++) {
-                    points.push({ x: radius * Math.sin(i * angle), y: -radius * Math.cos(i * angle) });
-                }
-                return points;
             }
 
             $('#add-text').click(() => {
@@ -1651,13 +1700,19 @@
             // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
             function setTool(tool) {
                 if (isCropMode) { alert("Please Apply Crop first."); return; }
+                if (isDrawingPen && tool !== 'pen') finishPen(false);
+                if (isNodeEditing && tool !== 'select' && tool !== 'add-node' && tool !== 'delete-node' && tool !== 'pan' && tool !== 'zoom') exitNodeEdit();
+
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); 
                 if(tool==='pan') $('#tool-pan').addClass('active-state'); 
                 if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if(['rect', 'circle', 'polygon', 'pen'].includes(tool)) $(`#add-${tool}`).addClass('active-state');
+                if(['rect', 'circle', 'polygon', 'pen', 'add-node', 'delete-node'].includes(tool)) {
+                    $(`#tool-${tool}`).length ? $(`#tool-${tool}`).addClass('active-state') : $(`#add-${tool}`).addClass('active-state');
+                }
 
-                if (tool === 'pen') {
+                if (tool === 'freehand') {
+                    $('#add-freehand').addClass('active-state');
                     canvas.isDrawingMode = true;
                     canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
                     canvas.freeDrawingBrush.color = globalStroke !== 'transparent' ? globalStroke : (globalFill !== 'transparent' ? globalFill : '#000000');
@@ -1669,18 +1724,19 @@
                     canvas.isDrawingMode = false;
                 }
 
-                if (tool !== 'select') { 
+                if (tool !== 'select' && tool !== 'add-node' && tool !== 'delete-node') { 
                     canvas.selection = false; 
                     canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set({selectable: false, evented: false}); 
+                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide && !o.isPreviewNode) o.set({selectable: false, evented: false}); 
                     }); 
                     if (tool === 'pan') canvas.defaultCursor = 'grab';
                     else if (tool === 'zoom') canvas.defaultCursor = 'zoom-in';
+                    else if (tool === 'pen') canvas.defaultCursor = 'crosshair';
                     else canvas.defaultCursor = 'crosshair';
                 } else { 
                     canvas.selection = true; 
                     canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
+                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide && !o.isPreviewNode) {
                             if (o.isMasterClone || o.locked) {
                                 o.set({selectable: false, evented: false});
                             } else {
@@ -1688,14 +1744,24 @@
                             }
                         } 
                     }); 
-                    canvas.defaultCursor = 'default'; 
+                    canvas.defaultCursor = (tool === 'add-node' || tool === 'delete-node') ? 'cell' : 'default'; 
                 }
-                canvas.discardActiveObject(); canvas.requestRenderAll();
+                if (tool !== 'add-node' && tool !== 'delete-node' && !isNodeEditing) canvas.discardActiveObject(); 
+                canvas.requestRenderAll();
             }
 
             $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
             $('#add-rect').click(() => setTool('rect')); $('#add-circle').click(() => setTool('circle'));
-            $('#add-pen').click(() => setTool('pen'));
+            $('#add-freehand').click(() => setTool('freehand'));
+            $('#tool-pen').click(() => setTool('pen'));
+            $('#tool-add-node').click(() => {
+                if (!isNodeEditing) alert("Please enter Node Edit mode on a Path first.");
+                else setTool('add-node');
+            });
+            $('#tool-del-node').click(() => {
+                if (!isNodeEditing) alert("Please enter Node Edit mode on a Path first.");
+                else setTool('delete-node');
+            });
             
             $('#add-polygon').click(() => {
                 let sides = prompt("Enter number of sides for the polygon (3-30):", polygonSides);
@@ -1739,6 +1805,11 @@
 
                 if (canvas.getActiveObject()?.isEditing) return; 
 
+                if (e.key === 'Escape' || e.key === 'Enter') {
+                    if (activeTool === 'pen' && isDrawingPen) { finishPen(false); e.preventDefault(); return; }
+                    if (isNodeEditing) { exitNodeEdit(); e.preventDefault(); return; }
+                }
+
                 if (e.ctrlKey) {
                     const key = e.key.toLowerCase();
                     if (key === 'z') { e.preventDefault(); performUndo(); return; }
@@ -1756,6 +1827,7 @@
                 if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
                 if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
                 if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
+                if (e.key.toLowerCase() === 'f' && !e.ctrlKey) setTool('freehand');
                 if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
                 if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
                 if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
@@ -1774,9 +1846,61 @@
                 if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
                 if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return; }
 
+                const pointer = canvas.getPointer(opt.e); 
+                origX = pointer.x; origY = pointer.y;
+
+                // NODE EDITING: Add or Delete Logic
+                if (isNodeEditing) {
+                    if (activeTool === 'delete-node') {
+                        if (opt.target && opt.target.isPreviewNode && opt.target.isAnchor) {
+                            editingOriginalObj.penPoints.splice(opt.target.pointIndex, 1);
+                            renderNodeOverlay();
+                        }
+                        return;
+                    }
+                    if (activeTool === 'add-node') {
+                        if (!opt.target || opt.target.isMaskGuide || opt.target.isPaper) {
+                            // Insert at end for simplicity in this implementation
+                            let lastPt = editingOriginalObj.penPoints[editingOriginalObj.penPoints.length - 1];
+                            editingOriginalObj.penPoints.push({ x: origX, y: origY, cInX: origX, cInY: origY, cOutX: origX, cOutY: origY });
+                            renderNodeOverlay();
+                        }
+                        return;
+                    }
+                }
+
+                // BEZIER PEN LOGIC
+                if (activeTool === 'pen' && !isSpaceDown) {
+                    
+                    if (penPoints.length > 0) {
+                        let start = penPoints[0];
+                        let dist = Math.hypot(origX - start.x, origY - start.y);
+                        if (dist < 10 / canvas.getZoom()) {
+                            finishPen(true); // close path
+                            return;
+                        }
+                    }
+
+                    isDrawingPen = true;
+                    isDraggingPenHandle = true;
+                    penPoints.push({ x: origX, y: origY, cInX: origX, cInY: origY, cOutX: origX, cOutY: origY });
+                    
+                    // Draw visual node
+                    let circle = new fabric.Circle({ radius: 3 / canvas.getZoom(), fill: '#00ffcc', left: origX, top: origY, originX: 'center', originY: 'center', selectable: false, evented: false, isPenTemp: true, excludeFromExport: true });
+                    canvas.add(circle);
+                    
+                    if (!activePenPath) {
+                        activePenPath = new fabric.Path(generateSVGString(penPoints, null), {
+                            fill: 'transparent', stroke: '#00ffcc', strokeWidth: 1.5 / canvas.getZoom(), selectable: false, evented: false, isPenTemp: true, excludeFromExport: true
+                        });
+                        canvas.add(activePenPath);
+                    }
+                    
+                    return;
+                }
+
                 if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
                     isDrawingShape = true; isDragging = false;
-                    const pointer = canvas.getPointer(opt.e); origX = pointer.x; origY = pointer.y;
 
                     let shapeOpts = { left: origX, top: origY, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
                     
@@ -1790,9 +1914,26 @@
             });
             
             canvas.on('mouse:move', function(opt) { 
-                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
+                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return; } 
+                
+                const pointer = canvas.getPointer(opt.e);
+
+                if (activeTool === 'pen' && isDrawingPen) {
+                    if (isDraggingPenHandle) {
+                        // Dragging adjusts the curve handles
+                        let lastPt = penPoints[penPoints.length - 1];
+                        lastPt.cOutX = pointer.x;
+                        lastPt.cOutY = pointer.y;
+                        lastPt.cInX = lastPt.x - (pointer.x - lastPt.x);
+                        lastPt.cInY = lastPt.y - (pointer.y - lastPt.y);
+                    }
+                    if (activePenPath) {
+                        activePenPath.set({ path: fabric.util.parsePath(generateSVGString(penPoints, isDraggingPenHandle ? null : pointer)) });
+                        canvas.requestRenderAll();
+                    }
+                }
+
                 if (isDrawingShape && drawingObject) {
-                    const pointer = canvas.getPointer(opt.e);
                     if (activeTool === 'rect') { drawingObject.set({ width: Math.abs(pointer.x - origX), height: Math.abs(pointer.y - origY), left: Math.min(origX, pointer.x), top: Math.min(origY, pointer.y) }); } 
                     else if (activeTool === 'circle') { const radius = Math.max(Math.abs(pointer.x - origX), Math.abs(pointer.y - origY)) / 2; drawingObject.set({ radius: radius, left: origX + (pointer.x - origX)/2, top: origY + (pointer.y - origY)/2 }); } 
                     else if (activeTool === 'polygon') { const dx = pointer.x - origX; const dy = pointer.y - origY; const radius = Math.sqrt(dx * dx + dy * dy); const scale = radius / 50; drawingObject.set({ scaleX: scale, scaleY: scale }); }
@@ -1802,7 +1943,12 @@
 
             canvas.on('mouse:up', function(opt) { 
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
-                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                
+                if (activeTool === 'pen' && isDrawingPen) {
+                    isDraggingPenHandle = false;
+                }
+
+                if (activeTool === 'select' && !isSpaceDown && !isNodeEditing) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
                 
                 if (isDrawingShape) {
                     isDrawingShape = false;
@@ -1865,8 +2011,8 @@
                 } else {
                     $('#shape-properties').hide();
                 }
-                
-                if (obj.type === 'polygon' || obj.type === 'polyline' || obj.type === 'path') {
+
+                if (obj.type === 'path' && obj.penPoints) {
                     $('#node-edit-tools').show();
                 } else {
                     $('#node-edit-tools').hide();
@@ -1888,9 +2034,13 @@
             }
 
             function updateColorsUI(obj) {
+                if (!obj) return;
+                
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
                 
-                globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
+                if (obj.type !== 'activeSelection') {
+                    globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
+                }
 
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
