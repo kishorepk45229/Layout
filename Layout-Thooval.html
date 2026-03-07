@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.4</title>
+    <title>Thooval Workspace v5.5</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -46,7 +46,7 @@
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
         
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
@@ -203,6 +203,8 @@
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-toggle-snap"><span>Toggle Smart Snapping</span> <span class="shortcut">Shift+S</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-toggle-preview"><span>Toggle Preview Mode</span> <span class="shortcut">W</span></li>
                         <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
@@ -490,6 +492,8 @@
             let isSpaceDown = false;
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
+            let enableSmartSnap = true; // New snap toggle state
+            let snapLines = []; // To store visual snap indicators
             let pagesActionType = null; let isEditingDoc = false;
 
             // Global State for Draw Tools & Cropping
@@ -643,8 +647,8 @@
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
             canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); } });
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -690,7 +694,7 @@
 
             function maintainHairlines() {
                 if(!activeId) return; const z = canvas.getZoom();
-                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isMaskGuide) o.set('strokeWidth', 1 / z); });
+                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isMaskGuide || o.isSnapGuide) o.set('strokeWidth', 1 / z); });
             }
 
             function sortLayers() {
@@ -704,6 +708,7 @@
                         if (o.isBleed) return -1; 
                         if (o.isMargin) return 0; 
                         if (o.isGuide || o.isMaskGuide) return 1; 
+                        if (o.isSnapGuide) return 2;
                         return -3; 
                     };
                     return getZ(a) - getZ(b);
@@ -760,6 +765,11 @@
             $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-guides').click(() => { showGuides = !showGuides; updateVisibilityToggles(); });
+            
+            $('#menu-toggle-snap').click(() => {
+                enableSmartSnap = !enableSmartSnap;
+                alert(`Smart Snapping is now ${enableSmartSnap ? 'ON' : 'OFF'}`);
+            });
 
             // --- DRAGGABLE RULERS ---
             function drawRulers() {
@@ -792,16 +802,22 @@
                 draggingGuideType = null;
             });
 
-            // --- NEW: SMART SNAPPING ENGINE ---
+            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
+            function clearSnapLines() {
+                snapLines.forEach(line => canvas.remove(line));
+                snapLines = [];
+            }
+
             canvas.on('object:moving', function(options) {
-                if (!activeId || !showGuides || isPreviewMode || isCropMode) return;
+                clearSnapLines();
+                if (!activeId || !showGuides || isPreviewMode || isCropMode || !enableSmartSnap) return;
                 
                 const obj = options.target; 
                 const zoom = canvas.getZoom();
                 const snapThreshold = SNAP_THRESHOLD / zoom;
 
                 const snapTargets = canvas.getObjects().filter(o => 
-                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && o.visible !== false
+                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && o.visible !== false
                 );
 
                 const objB = obj.getBoundingRect();
@@ -809,9 +825,10 @@
                 let snapY = false;
                 let dx = 0;
                 let dy = 0;
+                let lineX = null;
+                let lineY = null;
 
                 snapTargets.forEach(target => {
-                    // Guide lines logic
                     if (target.isGuide) {
                         if (target.lockMovementX && !snapY) {
                             if (Math.abs(objB.top - target.top) < snapThreshold) { dy = target.top - objB.top; snapY = true; }
@@ -826,28 +843,27 @@
                         return;
                     }
 
-                    // Smart Object & Page/Margin logic
                     const tarB = target.getBoundingRect();
                     
-                    // X-Axis Snapping (Left, Center, Right)
+                    // X-Axis (Left, Center, Right)
                     if (!snapX) {
                         const tarPointsX = [tarB.left, tarB.left + tarB.width, tarB.left + tarB.width/2];
                         const objPointsX = [objB.left, objB.left + objB.width, objB.left + objB.width/2];
                         for(let t of tarPointsX) {
                             for(let o of objPointsX) {
-                                if (Math.abs(o - t) < snapThreshold) { dx = t - o; snapX = true; break; }
+                                if (Math.abs(o - t) < snapThreshold) { dx = t - o; snapX = true; lineX = t; break; }
                             }
                             if(snapX) break;
                         }
                     }
 
-                    // Y-Axis Snapping (Top, Center, Bottom)
+                    // Y-Axis (Top, Center, Bottom)
                     if (!snapY) {
                         const tarPointsY = [tarB.top, tarB.top + tarB.height, tarB.top + tarB.height/2];
                         const objPointsY = [objB.top, objB.top + objB.height, objB.top + objB.height/2];
                         for(let t of tarPointsY) {
                             for(let o of objPointsY) {
-                                if (Math.abs(o - t) < snapThreshold) { dy = t - o; snapY = true; break; }
+                                if (Math.abs(o - t) < snapThreshold) { dy = t - o; snapY = true; lineY = t; break; }
                             }
                             if(snapY) break;
                         }
@@ -857,6 +873,16 @@
                 if (snapX || snapY) {
                     obj.set({ left: obj.left + dx, top: obj.top + dy });
                     obj.setCoords();
+
+                    // Render Visual Teal Lines
+                    if (snapX && lineX !== null) {
+                        let vLine = new fabric.Line([lineX, -50000, lineX, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5,5], isSnapGuide: true, excludeFromExport: true });
+                        snapLines.push(vLine); canvas.add(vLine);
+                    }
+                    if (snapY && lineY !== null) {
+                        let hLine = new fabric.Line([-50000, lineY, 50000, lineY], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5,5], isSnapGuide: true, excludeFromExport: true });
+                        snapLines.push(hLine); canvas.add(hLine);
+                    }
                 }
             });
 
@@ -1193,13 +1219,23 @@
 
                 if (tool !== 'select') { 
                     canvas.selection = false; 
-                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); 
+                    canvas.getObjects().forEach(o => { 
+                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set({selectable: false, evented: false}); 
+                    }); 
                     if (tool === 'pan') canvas.defaultCursor = 'grab';
                     else if (tool === 'zoom') canvas.defaultCursor = 'zoom-in';
                     else canvas.defaultCursor = 'crosshair';
                 } else { 
                     canvas.selection = true; 
-                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); 
+                    canvas.getObjects().forEach(o => { 
+                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
+                            if (o.isMasterClone) {
+                                o.set({selectable: false, evented: false});
+                            } else {
+                                o.set({selectable: true, evented: true});
+                            }
+                        } 
+                    }); 
                     canvas.defaultCursor = 'default'; 
                 }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
@@ -1257,6 +1293,7 @@
                 if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
                 if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
                 if (e.key.toLowerCase() === 'p' && !e.ctrlKey) $('#add-polygon').click();
+                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
                 
                 if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
                 if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
@@ -1304,6 +1341,8 @@
                     else { drawingObject.setCoords(); canvas.setActiveObject(drawingObject); sortLayers(); markDirty(); saveHistory(); }
                     setTool('select'); drawingObject = null;
                 }
+                
+                clearSnapLines();
                 if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
 
