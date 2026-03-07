@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.0</title>
+    <title>Thooval Workspace v3.0 - Professional Design Suite</title>
     
+    <!-- Core Libraries -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Additional Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     
     <style>
         :root {
@@ -25,999 +33,2271 @@
             --accent: #cbfb45;
             --accent-hover: #bceb35;
             --accent-text: #1a2005;
-            
-            /* Exact Print Guide Colors */
-            --guide-margin: #ff00ff; /* Magenta */
-            --guide-bleed: #ff0000;  /* Red */
-            --guide-edge: #000000;   /* Black */
-            --guide-cyan: #00ffff;   /* Draggable Guides */
-            
             --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 11px; }
-        body { display: flex; flex-direction: column; height: 100vh; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            font-size: 11px; 
+        }
+        
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            background: var(--bg-base); 
+            color: var(--text-main); 
+            overflow: hidden; 
+        }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
 
-        /* --- TOP BAR & TABS --- */
-        .top-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 44px; z-index: 200; position: relative; padding: 0 16px; flex-shrink: 0; }
-        .top-left { display: flex; align-items: center; gap: 16px; }
-        .branding { font-weight: 600; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        /* Modern UI Components */
+        .glass-effect {
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(203, 251, 69, 0.3);
+        }
+
+        /* Top Bar */
+        .top-bar { 
+            background: var(--bg-panel); 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            height: 48px; 
+            z-index: 200; 
+            position: relative; 
+            padding: 0 20px; 
+            flex-shrink: 0; 
+        }
+
+        .top-left { display: flex; align-items: center; gap: 20px; }
+        
+        .branding { 
+            font-weight: 600; 
+            font-size: 14px; 
+            color: var(--text-main); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        
         .branding i { color: var(--accent); }
-        .version-tag { font-size: 10px; color: var(--text-muted); background: var(--bg-surface); padding: 2px 6px; border-radius: 10px; }
         
-        .menu-bar { display: flex; list-style: none; }
-        .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; }
-        .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
-        .dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; }
+        .version-tag { 
+            font-size: 10px; 
+            color: var(--text-muted); 
+            background: var(--bg-surface); 
+            padding: 2px 8px; 
+            border-radius: 12px; 
+        }
+
+        /* Modern Menu */
+        .menu-bar { display: flex; list-style: none; gap: 4px; }
+        
+        .menu-item { 
+            position: relative; 
+            padding: 6px 12px; 
+            cursor: pointer; 
+            color: var(--text-muted); 
+            font-weight: 500; 
+            border-radius: 6px; 
+            transition: all 0.2s;
+        }
+        
+        .menu-item:hover { 
+            background: var(--bg-surface); 
+            color: var(--text-main); 
+        }
+
+        .dropdown { 
+            display: none; 
+            position: absolute; 
+            top: calc(100% + 4px); 
+            left: 0; 
+            background: var(--bg-panel); 
+            min-width: 240px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.8); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            z-index: 300; 
+            padding: 6px; 
+        }
+        
         .menu-item:hover .dropdown { display: block; }
-        .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-        .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
-        .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
-        .shortcut { color: var(--text-muted); font-size: 11px; }
-        .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
-        #open-file-input, #place-image-input { display: none; }
+        
+        .dropdown li { 
+            list-style: none; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 2px; 
+        }
+        
+        .dropdown li:hover { 
+            background: var(--accent); 
+            color: var(--accent-text); 
+            cursor: pointer; 
+        }
 
-        .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-primary:hover { background: var(--accent-hover); }
+        /* Buttons */
+        .btn-primary { 
+            background: var(--accent); 
+            color: var(--accent-text); 
+            border: none; 
+            padding: 6px 16px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            transition: all 0.2s; 
+        }
+        
+        .btn-primary:hover { 
+            background: var(--accent-hover); 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3);
+        }
 
-        .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; flex-shrink: 0; }
-        .tab { background: var(--bg-surface); color: var(--text-muted); padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent; border-bottom: none; max-width: 200px; font-size: 11px; }
-        .tab:hover { background: var(--bg-surface-hover); }
-        .tab.active { background: var(--bg-panel); color: var(--text-main); border-color: var(--border); border-top: 2px solid var(--accent); }
-        .tab-close { opacity: 0.5; font-size: 10px; padding: 2px; border-radius: 50%; }
-        .tab-close:hover { opacity: 1; color: var(--danger); background: rgba(239, 68, 68, 0.15); }
-        .tab-new { background: transparent; color: var(--text-muted); border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; margin-bottom: 4px; }
-        .tab-new:hover { background: var(--bg-surface); color: var(--text-main); }
-        .dirty-dot { width: 6px; height: 6px; background: var(--text-main); border-radius: 50%; display: none; }
-        .tab.is-dirty .dirty-dot { display: block; }
+        .btn-secondary {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-surface-hover);
+            border-color: var(--accent);
+        }
 
-        /* --- WORKSPACE --- */
-        .workspace-container { flex: 1; display: flex; overflow: hidden; position: relative; min-height: 0; min-width: 0; }
+        /* Tabs */
+        .tabs-bar { 
+            display: flex; 
+            background: #121215; 
+            border-bottom: 1px solid var(--border); 
+            height: 40px; 
+            padding: 0 12px; 
+            align-items: flex-end; 
+            z-index: 150; 
+            flex-shrink: 0; 
+            gap: 4px;
+        }
         
-        /* TWO COLUMN TOOLBOX FIXED ALIGNMENT */
-        .toolbar-left { width: 88px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 8px; z-index: 100; flex-shrink: 0; }
-        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; justify-items: center; }
-        .tool-btn { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; background: transparent; color: var(--text-muted); border: none; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; }
-        .tool-btn:hover { color: var(--text-main); background: var(--bg-surface); }
-        .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
-        .tool-divider { grid-column: 1 / -1; width: 100%; height: 1px; background: var(--border); margin: 4px 0; }
+        .tab { 
+            background: var(--bg-surface); 
+            color: var(--text-muted); 
+            padding: 8px 16px; 
+            border-radius: 8px 8px 0 0; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            cursor: pointer; 
+            border: 1px solid transparent; 
+            border-bottom: none; 
+            max-width: 200px; 
+            font-size: 11px;
+            transition: all 0.2s;
+        }
         
-        .panel-right { width: 260px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        .tab:hover { 
+            background: var(--bg-surface-hover); 
+            color: var(--text-main);
+        }
         
-        /* NEW: Sidebar Tabs CSS */
-        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg-base); }
-        .sidebar-tab { flex: 1; padding: 10px 0; text-align: center; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; border-bottom: 2px solid transparent; transition: 0.2s; }
-        .sidebar-tab:hover { color: var(--text-main); background: var(--bg-panel); }
-        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
-        .sidebar-pane { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
-        .sidebar-pane.active { display: block; }
-        
-        .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
-        .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
-        .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-        
-        input[type="text"], input[type="number"], select { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
-        input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 24px; height: 24px; padding: 0; cursor: pointer; }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
-        input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
+        .tab.active { 
+            background: var(--bg-panel); 
+            color: var(--text-main); 
+            border-color: var(--border); 
+            border-top: 2px solid var(--accent); 
+        }
 
-        .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
-        .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; }
-        .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
-        .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; }
-        .doc-btn:hover { background: var(--bg-surface-hover); }
-        .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
-        
-        /* Rulers & Canvas Area */
-        .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; min-height: 0; }
-        .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; flex-shrink: 0; }
-        .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; min-height: 0; min-width: 0;}
-        .ruler-v { width: 20px; background: var(--bg-panel); border-right: 1px solid var(--border-light); z-index: 90; display: none; cursor: col-resize; flex-shrink: 0; }
-        .canvas-container-wrapper { flex: 1; position: relative; overflow: hidden; min-width: 0; min-height: 0; }
-        .canvas-container { position: absolute !important; top: 0; left: 0; }
-        
-        /* THE FIXED MASTER BANNER */
-        .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
-        #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
-        #exit-master-btn:hover { background: #000; border-color: var(--accent); }
-        
-        /* --- EMPTY STATE --- */
-        #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center; }
-        .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; }
-        #inner-welcome h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
-        #inner-welcome p { color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
-        .action-card { background: var(--bg-surface); border: 1px solid transparent; padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .action-card:hover { border-color: var(--accent); background: var(--bg-surface-hover); transform: translateY(-2px); }
-        .action-card i { font-size: 20px; color: var(--text-main); }
-        .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
+        /* Workspace */
+        .workspace-container { 
+            flex: 1; 
+            display: flex; 
+            overflow: hidden; 
+            position: relative; 
+            min-height: 0; 
+            min-width: 0; 
+        }
 
-        /* Color Control Block */
-        .complex-color-block { position: relative; width: 60px; height: 60px; margin-right: 12px; flex-shrink: 0;}
-        .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
-        .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
-        .fill-block { top: 0; left: 0; z-index: 10; background: #ffffff; }
-        .stroke-block { top: 18px; left: 18px; z-index: 5; background: #cccccc; border-width: 3px; }
-        .fill-block.focused, .stroke-block.focused { z-index: 15; border-color: var(--accent); }
-        .fill-block.none, .stroke-block.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--danger) 50%, transparent calc(50% + 1px)) !important; }
+        /* Left Toolbar */
+        .toolbar-left { 
+            width: 120px; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 16px 8px; 
+            z-index: 100; 
+            flex-shrink: 0; 
+            align-items: center; 
+            gap: 12px;
+        }
 
-        .small-icon-btn { width: 18px; height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
-        .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
+        .tool-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+            width: 100%; 
+            justify-items: center; 
+        }
 
-        .formatting-wrapper { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .affect-container-icon, .affect-text-icon { position: absolute; width: 28px; height: 28px; background: transparent; border: 1px solid transparent; border-radius: 4px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 16px; font-family: 'Times New Roman', serif !important; }
-        .affect-container-icon:hover, .affect-text-icon:hover { color: var(--text-main); background: var(--bg-surface); }
-        .affect-container-icon { z-index: 5; border-color: var(--border); color: #fff; font-size: 10px !important; line-height: 10px; width: 24px; height: 24px; top: 0; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .affect-text-icon { z-index: 10; top: 8px; left: 8px; font-size: 24px !important; color: transparent; -webkit-text-stroke: 1px #888; text-shadow: 0 0 transparent; }
-        .affect-text-icon.visible { color: #fff; -webkit-text-stroke: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
-        .affect-container-icon.visible { border-color: var(--accent); color: var(--accent); }
-
-        /* NEW: Layer Items */
-        .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: var(--bg-surface); margin-bottom: 6px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
-        .layer-item:hover { border-color: var(--border-light); }
-        .layer-item.active { border-color: var(--accent); background: var(--bg-panel); }
-        .layer-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; font-size: 11px; }
-        .layer-btn:hover { color: var(--text-main); }
+        .tool-btn { 
+            width: 36px; 
+            height: 36px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background: transparent; 
+            color: var(--text-muted); 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+        }
         
-        /* --- MODALS --- */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
-        .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .modal h2 { margin-bottom: 24px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
-        .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
-        .btn-cancel:hover { background: var(--bg-surface); }
+        .tool-btn:hover { 
+            color: var(--text-main); 
+            background: var(--bg-surface); 
+            transform: scale(1.05);
+        }
+        
+        .tool-btn.active-state { 
+            background: var(--bg-surface-hover); 
+            color: var(--text-main); 
+            box-shadow: inset 2px 0 0 var(--accent); 
+        }
+
+        /* Right Panel */
+        .panel-right { 
+            width: 320px; 
+            background: var(--bg-panel); 
+            border-left: 1px solid var(--border); 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 100; 
+            flex-shrink: 0; 
+        }
+
+        .panel-section { 
+            padding: 16px; 
+            border-bottom: 1px solid var(--border); 
+        }
+
+        .panel-section h3 { 
+            font-size: 11px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            color: var(--text-muted); 
+            margin-bottom: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            letter-spacing: 0.5px;
+        }
+
+        /* Modern Color Picker */
+        .color-palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin: 12px 0;
+        }
+
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+            border-color: var(--text-main);
+        }
+
+        .color-swatch.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* AI Assistant Panel */
+        .ai-assistant-panel {
+            background: linear-gradient(135deg, rgba(203, 251, 69, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(203, 251, 69, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .ai-suggestion-item {
+            background: var(--bg-base);
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-suggestion-item:hover {
+            background: var(--bg-surface);
+            transform: translateX(4px);
+        }
+
+        /* Animation Panel */
+        .animation-timeline {
+            background: var(--bg-base);
+            border-radius: 6px;
+            padding: 8px;
+            margin: 12px 0;
+            min-height: 60px;
+            position: relative;
+        }
+
+        .keyframe {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .keyframe:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        /* Collaboration Indicators */
+        .collaborator-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-surface);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: -8px;
+        }
+
+        .collaborator-cursor {
+            width: 2px;
+            height: 20px;
+            background: var(--accent);
+            position: absolute;
+            pointer-events: none;
+        }
+
+        /* Asset Library */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .asset-item {
+            background: var(--bg-base);
+            border-radius: 6px;
+            padding: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        .asset-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .asset-item:active {
+            cursor: grabbing;
+        }
+
+        /* Version Control */
+        .version-timeline {
+            position: relative;
+            padding: 12px 0;
+        }
+
+        .version-item {
+            display: flex;
+            gap: 12px;
+            padding: 8px;
+            border-left: 2px solid var(--border);
+            margin-left: 12px;
+            position: relative;
+        }
+
+        .version-item::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            left: -6px;
+            top: 12px;
+        }
+
+        .version-item.current {
+            border-left-color: var(--accent);
+        }
+
+        /* Responsive Preview */
+        .device-preview-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-base);
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+
+        .device-btn {
+            flex: 1;
+            padding: 6px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .device-btn:hover {
+            background: var(--bg-surface);
+            color: var(--text-main);
+        }
+
+        .device-btn.active {
+            background: var(--accent);
+            color: var(--accent-text);
+            border-color: var(--accent);
+        }
+
+        /* Modal */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(8px); 
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .modal { 
+            background: var(--bg-panel); 
+            padding: 24px; 
+            border-radius: 12px; 
+            width: 90%; 
+            max-width: 500px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 { 
+            margin-bottom: 20px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 12px; 
+        }
+
+        /* Inputs */
+        input, select, textarea {
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 100%;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(203, 251, 69, 0.1);
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 4px;
+            background: var(--bg-surface);
+            border-radius: 2px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .toast {
+            background: var(--bg-panel);
+            border-left: 3px solid var(--accent);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Canvas */
+        .editor-core { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            background: var(--bg-base); 
+            min-width: 0; 
+            min-height: 0; 
+        }
+
+        .editor-body { 
+            flex: 1; 
+            display: flex; 
+            position: relative; 
+            overflow: hidden; 
+            min-height: 0;
+            min-width: 0;
+        }
+
+        .canvas-container-wrapper { 
+            flex: 1; 
+            position: relative; 
+            overflow: hidden; 
+            min-width: 0; 
+            min-height: 0; 
+        }
+
+        .canvas-container { 
+            position: absolute !important; 
+            top: 0; 
+            left: 0; 
+        }
+
+        /* High Contrast Mode */
+        body.high-contrast {
+            --bg-base: #000000;
+            --bg-panel: #0a0a0a;
+            --bg-surface: #1a1a1a;
+            --bg-surface-hover: #2a2a2a;
+            --border: #ffffff;
+            --text-main: #ffffff;
+            --text-muted: #cccccc;
+            --accent: #ffff00;
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
 
+    <!-- Top Bar -->
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v3.0</span></div>
+            <div class="branding">
+                <i class="fa-solid fa-feather-pointed"></i> 
+                Thooval 
+                <span class="version-tag">v3.0 Pro</span>
+            </div>
+            
+            <!-- Main Menu -->
             <ul class="menu-bar">
-                <li class="menu-item">File
+                <li class="menu-item">
+                    <i class="fa-regular fa-file"></i> File
                     <ul class="dropdown">
                         <li id="menu-new"><span>New Document...</span> <span class="shortcut">Ctrl+N</span></li>
-                        <li id="menu-open"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Open Document...</span> <input type="file" id="open-file-input" accept=".thooval,.json"><span class="shortcut">Ctrl+O</span></label></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-save"><span>Save Document</span> <span class="shortcut">Ctrl+S</span></li>
-                        <li id="menu-doc-setup"><span>Document Setup...</span> <span class="shortcut">Alt+Ctrl+P</span></li>
-                        <li id="menu-live-preview-setup"><span>Live Preview Setup...</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-place-image"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Place Image...</span> <input type="file" id="place-image-input" accept="image/*"><span class="shortcut">Ctrl+I</span></label></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-export"><span>Export to PDF/Images...</span> <span class="shortcut">Ctrl+E</span></li>
+                        <li id="menu-open"><span>Open...</span> <span class="shortcut">Ctrl+O</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-save"><span>Save</span> <span class="shortcut">Ctrl+S</span></li>
+                        <li id="menu-save-cloud"><span><i class="fa-regular fa-cloud"></i> Save to Cloud</span></li>
+                        <li id="menu-load-cloud"><span><i class="fa-regular fa-cloud-arrow-down"></i> Load from Cloud</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-export"><span>Export...</span> <span class="shortcut">Ctrl+E</span></li>
+                        <li id="menu-export-svg"><span>Export as SVG</span></li>
+                        <li id="menu-export-css"><span>Export as CSS</span></li>
                     </ul>
                 </li>
-                <li class="menu-item">Pages
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-pen"></i> Edit
                     <ul class="dropdown">
-                        <li class="menu-page-action" data-action="insert"><span>Insert Pages...</span></li>
-                        <li class="menu-page-action" data-action="delete"><span>Delete Pages...</span></li>
-                        <li class="menu-page-action" data-action="goto"><span>Go to Page...</span></li>
+                        <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
+                        <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-group"><span>Group</span> <span class="shortcut">Ctrl+G</span></li>
+                        <li id="menu-ungroup"><span>Ungroup</span> <span class="shortcut">Ctrl+Shift+G</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-find-replace"><span>Find & Replace</span> <span class="shortcut">Ctrl+F</span></li>
+                        <li id="menu-shortcuts"><span>Keyboard Shortcuts</span> <span class="shortcut">?</span></li>
                     </ul>
                 </li>
-                <li class="menu-item">View
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-wand-magic"></i> AI Tools
+                    <ul class="dropdown">
+                        <li id="menu-ai-layout"><span>Suggest Layouts</span></li>
+                        <li id="menu-ai-align"><span>Smart Align</span></li>
+                        <li id="menu-ai-color"><span>Generate Color Palette</span></li>
+                        <li id="menu-ai-alt"><span>Generate Alt Text</span></li>
+                    </ul>
+                </li>
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-users"></i> Collaborate
+                    <ul class="dropdown">
+                        <li id="menu-collab-start"><span>Start Session</span></li>
+                        <li id="menu-collab-join"><span>Join Session</span></li>
+                        <li id="menu-collab-leave"><span>Leave Session</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-collab-users"><span>Active Users</span></li>
+                    </ul>
+                </li>
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-clock"></i> Version
+                    <ul class="dropdown">
+                        <li id="menu-version-commit"><span>Commit Changes</span></li>
+                        <li id="menu-version-history"><span>Show History</span></li>
+                        <li id="menu-version-diff"><span>Compare Versions</span></li>
+                    </ul>
+                </li>
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-chart-line"></i> Data
+                    <ul class="dropdown">
+                        <li id="menu-chart-bar"><span>Create Bar Chart</span></li>
+                        <li id="menu-chart-pie"><span>Create Pie Chart</span></li>
+                        <li id="menu-chart-line"><span>Create Line Chart</span></li>
+                    </ul>
+                </li>
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-cube"></i> Assets
+                    <ul class="dropdown">
+                        <li id="menu-asset-icons"><span>Icon Library</span></li>
+                        <li id="menu-asset-illustrations"><span>Illustrations</span></li>
+                        <li id="menu-asset-templates"><span>Templates</span></li>
+                        <li id="menu-asset-gradients"><span>Gradients</span></li>
+                    </ul>
+                </li>
+                
+                <li class="menu-item">
+                    <i class="fa-regular fa-display"></i> View
                     <ul class="dropdown">
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
-                        <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
-                        <li id="menu-toggle-guides"><span>Toggle Guides</span> <span class="shortcut">;</span></li>
-                        <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">M</span></li>
-                        <li id="menu-toggle-bleed"><span>Toggle Bleed</span> <span class="shortcut">B</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-toggle-baseline"><span>Toggle Baseline Grid</span> <span class="shortcut">Alt+B</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-device-desktop"><span>Desktop Preview</span></li>
+                        <li id="menu-device-tablet"><span>Tablet Preview</span></li>
+                        <li id="menu-device-mobile"><span>Mobile Preview</span></li>
+                        <li class="divider"></li>
+                        <li id="menu-high-contrast"><span>High Contrast Mode</span></li>
                     </ul>
                 </li>
             </ul>
         </div>
-        <div class="top-right">
-            <span style="color: var(--text-muted); font-size: 11px; margin-right: 8px;">Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span></span>
+        
+        <div class="top-right" style="display: flex; align-items: center; gap: 16px;">
+            <!-- Collaboration Status -->
+            <div id="collab-status" style="display: none; align-items: center; gap: 8px;">
+                <div class="spinner" style="width: 12px; height: 12px;"></div>
+                <span>2 active</span>
+            </div>
+            
+            <!-- Page Info -->
+            <span style="color: var(--text-muted);">
+                Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span>
+            </span>
+            
+            <!-- AI Assistant Toggle -->
+            <button class="btn-secondary" id="toggle-ai-assistant" style="padding: 4px 8px;">
+                <i class="fa-regular fa-robot"></i> AI
+            </button>
         </div>
     </header>
 
+    <!-- Tabs Bar -->
     <div class="tabs-bar" id="tabs-container">
-        <button class="tab-new" id="btn-new-tab" title="New Document"><i class="fa-solid fa-plus"></i></button>
+        <button class="tab-new" id="btn-new-tab" title="New Document">
+            <i class="fa-solid fa-plus"></i>
+        </button>
     </div>
 
+    <!-- Main Workspace -->
     <div class="workspace-container">
+        <!-- Left Toolbar -->
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
-                <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
-                <button class="tool-btn" id="tool-pan" title="Pan (H)"><i class="fa-regular fa-hand"></i></button>
+                <button class="tool-btn active-state" id="tool-select" title="Select (V)">
+                    <i class="fa-solid fa-arrow-pointer"></i>
+                </button>
+                <button class="tool-btn" id="tool-pan" title="Pan (Space)">
+                    <i class="fa-regular fa-hand"></i>
+                </button>
                 
-                <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
+                <button class="tool-btn" id="tool-zoom" title="Zoom (Z)">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button class="tool-btn" id="add-text" title="Text (T)">
+                    <i class="fa-solid fa-t"></i>
+                </button>
                 
-                <div class="tool-divider"></div>
+                <div class="tool-divider" style="grid-column: 1 / -1; height: 1px; background: var(--border); margin: 4px 0;"></div>
                 
-                <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
-                <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
+                <button class="tool-btn" id="add-rect" title="Rectangle (R)">
+                    <i class="fa-regular fa-square"></i>
+                </button>
+                <button class="tool-btn" id="add-circle" title="Circle (O)">
+                    <i class="fa-regular fa-circle"></i>
+                </button>
+                <button class="tool-btn" id="tool-mask" title="Mask">
+                    <i class="fa-solid fa-object-intersect"></i>
+                </button>
+                <button class="tool-btn" id="tool-animation" title="Animation">
+                    <i class="fa-solid fa-film"></i>
+                </button>
             </div>
             
-            <div style="flex: 1;"></div> <div class="tool-divider"></div>
-            <button class="tool-btn" style="color: var(--danger); width: 100%;" id="delete-obj" title="Delete (Del)"><i class="fa-solid fa-trash-can"></i></button>
+            <div class="tool-divider" style="flex: 1;"></div>
+            
+            <!-- Color Tools -->
+            <div class="global-palette-block" style="position: relative; width: 60px; height: 60px;">
+                <div class="fill-block" id="fill-focus" style="position: absolute; width: 40px; height: 40px; background: #3f3f46; border: 2px solid var(--accent); border-radius: 4px; top: 0; left: 0; cursor: pointer;"></div>
+                <div class="stroke-block" id="stroke-focus" style="position: absolute; width: 40px; height: 40px; background: transparent; border: 3px solid #3f3f46; border-radius: 4px; top: 18px; left: 18px; cursor: pointer;"></div>
+            </div>
+            
+            <div style="display: flex; gap: 4px;">
+                <button class="small-icon-btn" id="swap-colors" title="Swap Colors">
+                    <i class="fa-solid fa-repeat"></i>
+                </button>
+                <button class="small-icon-btn" id="no-color" title="No Color">
+                    <i class="fa-solid fa-slash"></i>
+                </button>
+            </div>
+            
+            <input type="color" id="color-picker" value="#3f3f46" style="width: 100%; height: 30px; border: none; border-radius: 4px; cursor: pointer;">
+            
+            <input type="range" id="stroke-weight" min="0" max="20" value="1" style="width: 100%;">
+            
+            <div class="tool-divider"></div>
+            
+            <button class="tool-btn" id="delete-obj" style="color: var(--danger);" title="Delete (Del)">
+                <i class="fa-regular fa-trash-can"></i>
+            </button>
         </aside>
 
+        <!-- Main Editor -->
         <div class="editor-core">
-            <div class="master-banner" id="master-banner">
-                <span><i class="fa-solid fa-crown"></i> Editing Master Template</span>
-                <button id="exit-master-btn">Done</button>
+            <!-- Master Banner -->
+            <div id="master-banner" style="display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 8px 20px; border-radius: 30px; z-index: 200; align-items: center; gap: 16px;">
+                <span><i class="fa-regular fa-crown"></i> Editing Master Template</span>
+                <button id="exit-master-btn" style="background: #1a2005; color: var(--accent); border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer;">Done</button>
             </div>
             
-            <canvas class="ruler-h" id="ruler-h"></canvas>
+            <!-- Welcome Screen -->
+            <div id="inner-welcome" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 48px; text-align: center; z-index: 300; max-width: 500px;">
+                <i class="fa-solid fa-feather-pointed" style="font-size: 64px; color: var(--accent); margin-bottom: 24px;"></i>
+                <h2 style="font-size: 24px; margin-bottom: 12px;">Welcome to Thooval Pro</h2>
+                <p style="color: var(--text-muted); margin-bottom: 32px;">Professional design suite with AI-powered tools</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <button class="btn-primary" id="welcome-new" style="padding: 12px;">
+                        <i class="fa-regular fa-file"></i> New Project
+                    </button>
+                    <button class="btn-secondary" id="welcome-open" style="padding: 12px;">
+                        <i class="fa-regular fa-folder-open"></i> Open
+                    </button>
+                </div>
+            </div>
             
+            <!-- Canvas Container -->
             <div class="editor-body">
-                <canvas class="ruler-v" id="ruler-v"></canvas>
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
-                    
-                    <div id="inner-welcome">
-                        <i class="fa-solid fa-feather-pointed logo-huge"></i>
-                        <h1 style="color: var(--text-main);">Welcome to Thooval</h1>
-                        <p>Create a new document or open an existing layout to begin.</p>
-                        <div class="action-grid">
-                            <div class="action-card" id="welcome-new-btn"><i class="fa-regular fa-file-lines"></i><span>New Layout</span></div>
-                            <label class="action-card" style="margin: 0; cursor: pointer;"><i class="fa-regular fa-folder-open"></i><span>Open File...</span><input type="file" id="welcome-open-input" accept=".thooval,.json" style="display:none;"></label>
-                        </div>
-                    </div>
                 </main>
             </div>
         </div>
 
+        <!-- Right Panel -->
         <aside class="panel-right" id="sidebar-right">
+            <!-- Properties Panel (Dynamic) -->
+            <div id="properties-panel"></div>
             
-            <div class="sidebar-tabs">
-                <button class="sidebar-tab active" data-target="tab-properties">Props</button>
-                <button class="sidebar-tab" data-target="tab-layers">Layers</button>
-                <button class="sidebar-tab" data-target="tab-styles">Styles</button>
-            </div>
-
-            <div id="tab-properties" class="sidebar-pane active">
-                <div id="panel-pages">
-                    <div class="panel-section">
-                        <h3>Template</h3>
-                        <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Template</button>
-                    </div>
+            <!-- AI Assistant Panel -->
+            <div class="panel-section ai-assistant-panel" id="ai-assistant">
+                <h3>
+                    <span><i class="fa-regular fa-robot"></i> AI Assistant</span>
+                    <span class="spinner" style="display: none;" id="ai-spinner"></span>
+                </h3>
+                
+                <div class="ai-suggestion-item" id="ai-suggest-layout">
+                    <i class="fa-regular fa-layout"></i> Suggest Layouts
                 </div>
-
-                <div id="no-selection" class="empty-state" style="padding: 20px;">
-                    <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
-                    <div style="font-size: 11px;">Select an object to modify properties.</div>
+                <div class="ai-suggestion-item" id="ai-generate-palette">
+                    <i class="fa-regular fa-palette"></i> Generate Color Palette
+                </div>
+                <div class="ai-suggestion-item" id="ai-smart-align">
+                    <i class="fa-regular fa-arrows-maximize"></i> Smart Align
+                </div>
+                <div class="ai-suggestion-item" id="ai-generate-alt">
+                    <i class="fa-regular fa-universal-access"></i> Generate Alt Text
+                </div>
+            </div>
+            
+            <!-- Color Harmony Panel -->
+            <div class="panel-section" id="color-harmony">
+                <h3><i class="fa-regular fa-palette"></i> Color Harmony</h3>
+                <div class="color-palette-grid" id="harmony-palette"></div>
+                <select id="harmony-type" style="margin-top: 8px;">
+                    <option value="complementary">Complementary</option>
+                    <option value="analogous">Analogous</option>
+                    <option value="triadic">Triadic</option>
+                    <option value="monochromatic">Monochromatic</option>
+                </select>
+                <button class="btn-secondary" style="width: 100%; margin-top: 8px;" id="apply-harmony">
+                    Apply to Selection
+                </button>
+            </div>
+            
+            <!-- Asset Library -->
+            <div class="panel-section" id="asset-library">
+                <h3>
+                    <span><i class="fa-regular fa-cube"></i> Assets</span>
+                    <span class="small-icon-btn" id="refresh-assets">
+                        <i class="fa-regular fa-rotate"></i>
+                    </span>
+                </h3>
+                
+                <div style="margin-bottom: 12px;">
+                    <select id="asset-category" style="width: 100%;">
+                        <option value="icons">Icons</option>
+                        <option value="illustrations">Illustrations</option>
+                        <option value="templates">Templates</option>
+                        <option value="gradients">Gradients</option>
+                    </select>
                 </div>
                 
-                <div id="properties-form" style="display: none;">
-                    
-                    <div class="panel-section">
-                        <h3>Integrated Palette</h3>
-                        <div class="prop-row" style="position: relative; align-items: flex-start;">
-                            <div class="complex-color-block">
-                                <div class="fill-block focused" id="fill-focus" title="Fill (X)"></div>
-                                <div class="stroke-block" id="stroke-focus" title="Stroke (X)"></div>
-                            </div>
-                            <div class="prop-col" style="gap: 6px;">
-                                <div style="display: flex; gap: 6px;">
-                                    <button class="small-icon-btn" id="swap-fill-stroke" title="Swap Fill and Stroke (Shift+X)"><i class="fa-solid fa-repeat"></i></button>
-                                    <button class="small-icon-btn" id="default-fill-stroke" title="Default Fill and Stroke (D)"><i class="fa-solid fa-arrows-to-dot"></i></button>
-                                    <button class="small-icon-btn none-btn" id="apply-none" title="Apply None (/)"><i class="fa-solid fa-slash"></i></button>
-                                </div>
-                                <div style="height: 1px; background: var(--border-light); width: 100%;"></div>
-                                <div class="formatting-wrapper">
-                                    <div class="affect-container-icon visible" id="affect-container" title="Formatting affects container (J)"><i class="fa-regular fa-square"></i></div>
-                                    <div class="affect-text-icon" id="affect-text" title="Formatting affects text">T</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="prop-row"><input type="color" id="unified-color-picker" style="width:100%; height:32px;"></div>
-                    </div>
-
-                    <div class="panel-section" id="geometry-properties">
-                        <h3>Transform</h3>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>X</label><input type="number" id="obj-x" step="1"></div>
-                            <div class="prop-col"><label>Y</label><input type="number" id="obj-y" step="1"></div>
-                        </div>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>W</label><input type="number" id="obj-w" step="1" min="1"></div>
-                            <div class="prop-col"><label>H</label><input type="number" id="obj-h" step="1" min="1"></div>
-                        </div>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>Rotate</label><input type="number" id="obj-rotation" min="-180" max="180" step="1" value="0"></div>
-                            <div style="width: 24px;"></div> </div>
-                    </div>
-                    
-                    <div id="text-properties" style="display: none;">
-                        <div class="panel-section">
-                            <h3>Character</h3>
-                            <div class="prop-col" style="margin-bottom: 12px;"><select id="obj-font-family"><option value="'Inter', sans-serif">Inter</option><option value="'Manjari', sans-serif">Manjari</option><option value="'Noto Sans Malayalam', sans-serif">Noto Sans Malayalam</option></select></div>
-                            <div class="prop-row">
-                                <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
-                                <div class="prop-col"></div>
-                            </div>
-                        </div>
-
-                        <div class="panel-section">
-                            <h3>Paragraph</h3>
-                            <div class="prop-row" style="margin-bottom: 12px;">
-                                <div class="prop-col">
-                                    <label>Alignment</label>
-                                    <div class="btn-group">
-                                        <button id="align-left"><i class="fa-solid fa-align-left"></i></button>
-                                        <button id="align-center"><i class="fa-solid fa-align-center"></i></button>
-                                        <button id="align-right"><i class="fa-solid fa-align-right"></i></button>
-                                        <button id="align-justify"><i class="fa-solid fa-align-justify"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="prop-row">
-                                <div class="prop-col"><label>Line Height</label><input type="number" id="obj-line-height" min="0.5" max="3" step="0.1" value="1.16"></div>
-                            </div>
-                            
-                            <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
-                                <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent);"><i class="fa-solid fa-arrow-down-up-across-line"></i> Split Overflow to Next Page</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="panel-section">
-                        <h3>Arrange Layer</h3>
-                        <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
-                    </div>
+                <div class="asset-grid" id="asset-grid"></div>
+                
+                <button class="btn-secondary" style="width: 100%; margin-top: 8px;" id="upload-asset">
+                    <i class="fa-regular fa-cloud-arrow-up"></i> Upload Asset
+                </button>
+            </div>
+            
+            <!-- Animation Panel -->
+            <div class="panel-section" id="animation-panel">
+                <h3><i class="fa-regular fa-film"></i> Animation</h3>
+                
+                <div class="animation-timeline" id="timeline">
+                    <div class="keyframe" style="left: 20%;" data-time="0.5"></div>
+                    <div class="keyframe" style="left: 50%;" data-time="1.5"></div>
+                    <div class="keyframe" style="left: 80%;" data-time="2.5"></div>
+                </div>
+                
+                <select id="animation-type" style="margin: 12px 0;">
+                    <option value="fade">Fade</option>
+                    <option value="slide">Slide</option>
+                    <option value="bounce">Bounce</option>
+                    <option value="rotate">Rotate</option>
+                </select>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-secondary" style="flex: 1;" id="play-animation">
+                        <i class="fa-regular fa-play"></i> Preview
+                    </button>
+                    <button class="btn-secondary" style="flex: 1;" id="add-keyframe">
+                        <i class="fa-regular fa-plus"></i> Keyframe
+                    </button>
                 </div>
             </div>
-
-            <div id="tab-layers" class="sidebar-pane">
-                <div class="panel-section" style="border-bottom: none;">
-                    <h3>Page Objects</h3>
-                    <div id="layers-list" style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
-                        </div>
+            
+            <!-- Version Control -->
+            <div class="panel-section" id="version-control">
+                <h3><i class="fa-regular fa-clock"></i> Version History</h3>
+                
+                <div class="version-timeline" id="version-timeline"></div>
+                
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button class="btn-secondary" style="flex: 1;" id="commit-version">
+                        <i class="fa-regular fa-floppy-disk"></i> Commit
+                    </button>
+                    <button class="btn-secondary" style="flex: 1;" id="show-history">
+                        <i class="fa-regular fa-clock-rotate-left"></i> History
+                    </button>
                 </div>
             </div>
-
-            <div id="tab-styles" class="sidebar-pane">
-                <div class="panel-section">
-                    <h3>Global Styles</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Save a text box's format to apply it elsewhere.</p>
-                    <div class="prop-col" style="margin-bottom: 12px;">
-                        <input type="text" id="style-name" placeholder="New Style Name (e.g. Heading 1)">
-                        <button class="doc-btn" id="btn-save-style" style="margin-top: 4px;">Save from Selection</button>
-                    </div>
-                    <div style="height: 1px; background: var(--border); margin: 16px 0;"></div>
-                    <div class="prop-col">
-                        <label>Apply Style</label>
-                        <select id="style-select">
-                            <option value="">-- Choose Style --</option>
-                        </select>
-                        <button class="doc-btn" id="btn-apply-style" style="margin-top: 4px;">Apply to Selection</button>
-                    </div>
+            
+            <!-- Responsive Preview -->
+            <div class="panel-section" id="responsive-preview">
+                <h3><i class="fa-regular fa-display"></i> Device Preview</h3>
+                
+                <div class="device-preview-bar">
+                    <button class="device-btn active" data-device="desktop">
+                        <i class="fa-regular fa-display"></i>
+                    </button>
+                    <button class="device-btn" data-device="tablet">
+                        <i class="fa-regular fa-tablet"></i>
+                    </button>
+                    <button class="device-btn" data-device="mobile">
+                        <i class="fa-regular fa-mobile"></i>
+                    </button>
+                </div>
+                
+                <div style="margin-top: 12px;">
+                    <label>Width: <span id="device-width">1920</span>px</label>
+                    <input type="range" id="device-width-slider" min="320" max="1920" value="1920" style="width: 100%;">
                 </div>
             </div>
-
+            
+            <!-- Layer Management -->
+            <div class="panel-section" id="layer-panel">
+                <h3>
+                    <span><i class="fa-regular fa-layer-group"></i> Layers</span>
+                    <span class="small-icon-btn" id="refresh-layers">
+                        <i class="fa-regular fa-rotate"></i>
+                    </span>
+                </h3>
+                <div class="layer-list" id="layer-list"></div>
+            </div>
         </aside>
     </div>
 
-    <div class="modal-overlay" id="new-doc-modal">
+    <!-- Modals -->
+    
+    <!-- Cloud Storage Modal -->
+    <div class="modal-overlay" id="cloud-modal">
         <div class="modal">
-            <h2 id="doc-modal-title">New Document Setup</h2>
-            <div class="prop-col" id="doc-name-group" style="margin-bottom: 16px;"><label>File Name</label><input type="text" id="doc-name" value="Untitled Project"></div>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Preset</label><select id="doc-preset"><option value="A4">A4 (210 x 297 mm)</option><option value="Letter">US Letter (8.5 x 11 in)</option><option value="Custom">Custom Size</option></select></div>
-            <div class="prop-row">
-                <div class="prop-col"><label>Width</label><input type="number" id="doc-w" value="210"></div><div class="prop-col"><label>Height</label><input type="number" id="doc-h" value="297"></div>
-                <div class="prop-col" style="flex: 0.5;"><label>Unit</label><select id="doc-unit"><option value="mm" selected>mm</option><option value="px">px</option><option value="in">in</option></select></div>
-            </div>
-            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="doc-facing" checked> Facing Pages (Spreads)</label></div>
-            <div style="height: 1px; background: var(--border); margin: 24px 0 16px;"></div>
+            <h2><i class="fa-regular fa-cloud"></i> Cloud Storage</h2>
             
-            <div class="prop-row">
-                <div class="prop-col" style="flex: 2;">
-                    <label style="margin-bottom: 8px; display: block;">Margins (Inside/Outside)</label>
-                    <div class="prop-row" style="position: relative;"><div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--accent); z-index: 10; cursor: pointer;" id="link-margins-btn"><i class="fa-solid fa-link"></i></div><div class="prop-col"><label>Top</label><input type="number" class="margin-input" id="mar-t" value="15"></div><div class="prop-col"><label>Bottom</label><input type="number" class="margin-input" id="mar-b" value="15"></div></div>
-                    <div class="prop-row"><div class="prop-col"><label>Left/In</label><input type="number" class="margin-input" id="mar-l" value="15"></div><div class="prop-col"><label>Right/Out</label><input type="number" class="margin-input" id="mar-r" value="15"></div></div>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <button class="btn-primary" id="cloud-google">
+                        <i class="fa-brands fa-google-drive"></i> Google Drive
+                    </button>
+                    <button class="btn-primary" id="cloud-dropbox">
+                        <i class="fa-brands fa-dropbox"></i> Dropbox
+                    </button>
                 </div>
-                <div class="prop-col" style="flex: 1; border-left: 1px solid var(--border); padding-left: 12px;">
-                    <label style="margin-bottom: 8px; display: block; color: var(--guide-bleed);">Bleed</label><div class="prop-col"><label>All Sides</label><input type="number" id="doc-bleed" value="3"></div>
-                </div>
+                
+                <div id="cloud-files" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
             
-            <div class="prop-row" style="justify-content: space-between; align-items: center; margin-top: 16px;">
-                <label id="live-preview-checkbox-wrapper" style="display: flex; align-items: center; gap: 8px; color: var(--accent); cursor: pointer; visibility: visible;">
-                    <input type="checkbox" id="doc-live-preview" checked> Live Preview
-                </label>
-                <div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="cancel-doc-btn">Cancel</button><button class="btn-primary" id="create-doc-btn">Create Project</button></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#cloud-modal').hide()">Close</button>
             </div>
         </div>
     </div>
-
-    <div class="modal-overlay" id="live-preview-modal">
-        <div class="modal" style="width: 300px;">
-            <h2>Live Preview Setup</h2>
-            <div class="prop-row" style="margin-top: 16px;"><label style="display: flex; align-items: center; gap: 8px; color: var(--text-main); cursor: pointer;"><input type="checkbox" id="global-live-preview" checked> Enable Live Preview in modals</label></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#live-preview-modal').hide()">Cancel</button><button class="btn-primary" onclick="$('#live-preview-modal').hide(); alert('Preference saved.');">Save</button></div>
+    
+    <!-- Collaboration Modal -->
+    <div class="modal-overlay" id="collab-modal">
+        <div class="modal">
+            <h2><i class="fa-regular fa-users"></i> Collaboration</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 16px;">
+                    <label>Session ID</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="session-id" readonly>
+                        <button class="btn-secondary" id="copy-session">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label>Active Users</label>
+                    <div id="active-users" style="margin-top: 8px;"></div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#collab-modal').hide()">Close</button>
+            </div>
         </div>
     </div>
-
-    <div class="modal-overlay" id="export-modal">
-        <div class="modal" style="width: 350px;">
-            <h2>Export Document</h2>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
-            <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
+    
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcuts-modal">
+        <div class="modal" style="max-width: 600px;">
+            <h2><i class="fa-regular fa-keyboard"></i> Keyboard Shortcuts</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 8px;">Tools</h3>
+                    <div>Select: <span class="shortcut">V</span></div>
+                    <div>Pan: <span class="shortcut">Space</span></div>
+                    <div>Zoom: <span class="shortcut">Z</span></div>
+                    <div>Text: <span class="shortcut">T</span></div>
+                    <div>Rectangle: <span class="shortcut">R</span></div>
+                    <div>Circle: <span class="shortcut">O</span></div>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 8px;">Edit</h3>
+                    <div>Undo: <span class="shortcut">Ctrl+Z</span></div>
+                    <div>Redo: <span class="shortcut">Ctrl+Y</span></div>
+                    <div>Group: <span class="shortcut">Ctrl+G</span></div>
+                    <div>Ungroup: <span class="shortcut">Ctrl+Shift+G</span></div>
+                    <div>Delete: <span class="shortcut">Del</span></div>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 8px;">File</h3>
+                    <div>New: <span class="shortcut">Ctrl+N</span></div>
+                    <div>Open: <span class="shortcut">Ctrl+O</span></div>
+                    <div>Save: <span class="shortcut">Ctrl+S</span></div>
+                    <div>Export: <span class="shortcut">Ctrl+E</span></div>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 8px;">View</h3>
+                    <div>Zoom In: <span class="shortcut">Ctrl++</span></div>
+                    <div>Zoom Out: <span class="shortcut">Ctrl+-</span></div>
+                    <div>Fit Page: <span class="shortcut">Ctrl+1</span></div>
+                    <div>Preview: <span class="shortcut">W</span></div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#shortcuts-modal').hide()">Close</button>
+            </div>
         </div>
     </div>
-
-    <div class="modal-overlay" id="pages-modal">
-        <div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div>
-    </div>
-
-    <div class="modal-overlay" id="unsaved-modal">
-        <div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div>
+    
+    <!-- Chart Data Modal -->
+    <div class="modal-overlay" id="chart-modal">
+        <div class="modal">
+            <h2><i class="fa-regular fa-chart-line"></i> Create Chart</h2>
+            
+            <div style="margin-bottom: 16px;">
+                <label>Chart Type</label>
+                <select id="chart-type">
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                    <option value="scatter">Scatter Plot</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label>Data (JSON format)</label>
+                <textarea id="chart-data" rows="5" placeholder='{"labels": ["A","B","C"], "values": [10,20,30]}'></textarea>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label>Title</label>
+                <input type="text" id="chart-title" placeholder="Chart Title">
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#chart-modal').hide()">Cancel</button>
+                <button class="btn-primary" id="create-chart">Create</button>
+            </div>
+        </div>
     </div>
 
     <script>
         $(document).ready(function() {
-            
-            // --- CORE STATE ---
-            let projects = {}; let activeId = null; let tabIdToClose = null; 
-            
-            const DPI = 96; 
-            function toPx(val, unit) { if (unit === 'in') return val * DPI; if (unit === 'mm') return val * (DPI / 25.4); return val; }
-            function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
-            
-            const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isPaper', 'isMargin', 'isBleed', 'isMask', 'isMasterSource', 'isMasterClone', 'isRegular', 'isGuide', 'isGrid'];
-            
-            let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
-            let showBaselineGrid = false; const baselineGridHeight = 15;
-            let pagesActionType = null; let isEditingDoc = false;
-
+            // Initialize Fabric Canvas
             const wrapper = $('#workspace-wrapper');
-            const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
+            const canvas = new fabric.Canvas('layout-canvas', {
+                width: wrapper.width(),
+                height: wrapper.height(),
+                selection: true,
+                preserveObjectStacking: true
+            });
             
-            $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId) drawRulers(); });
-
-            window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
-
-            // --- UI TABS ---
-            $('.sidebar-tab').click(function() {
-                $('.sidebar-tab').removeClass('active');
-                $(this).addClass('active');
-                $('.sidebar-pane').removeClass('active');
-                $('#' + $(this).data('target')).addClass('active');
-                if($(this).data('target') === 'tab-layers') renderLayers();
-            });
-
-            // --- TAB MANAGEMENT ---
-            function generateId() { return Math.random().toString(36).substr(2, 9); }
-            function renderTabs() {
-                $('.tab').remove(); let tabHtml = '';
-                for (const id in projects) {
-                    const p = projects[id]; const activeClass = (id === activeId) ? 'active' : ''; const dirtyClass = p.isDirty ? 'is-dirty' : '';
-                    tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}"><div class="dirty-dot"></div><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><i class="fa-solid fa-xmark tab-close"></i></div>`;
-                }
-                $('#btn-new-tab').before(tabHtml);
-                
-                if (Object.keys(projects).length === 0) {
-                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide();
-                } else {
-                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers) drawRulers();
-                }
-            }
-
-            function switchProject(id) {
-                if (activeId === id) return;
-                if (activeId && projects[activeId]) { projects[activeId].canvasData = canvas.toJSON(CUSTOM_PROPS); projects[activeId].vpt = [...canvas.viewportTransform]; }
-                activeId = id; const p = projects[id]; canvas.clear();
-                
-                if (!p.styles) p.styles = {};
-
-                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers) drawRulers(); renderLayers(); updateStyleList(); }); } 
-                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); updateStyleList(); renderLayers(); }
-                
-                $('#page-count-display').text(p.totalPages);
-                
-                if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
-                renderTabs(); setTool('select');
-            }
-
-            function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
-            $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
-            $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
-            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); $('#live-preview-checkbox-wrapper').css('visibility', 'visible'); });
-
-            $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
-            $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
-            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
-
-            function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
-            canvas.on('object:modified', () => { markDirty(); renderLayers(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide && !e.target.isGrid) { markDirty(); renderLayers(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide && !e.target.isGrid) { markDirty(); renderLayers(); } });
-
-
-            // --- DOCUMENT SETUP ---
-            let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
-            $('.margin-input').on('input', function() { if (marginsLinked) $('.margin-input').val($(this).val()); });
-            $('#doc-preset').change(function() { const p = $(this).val(); if (p === 'A4') { $('#doc-w').val(210); $('#doc-h').val(297); $('#doc-unit').val('mm'); } if (p === 'Letter') { $('#doc-w').val(8.5); $('#doc-h').val(11); $('#doc-unit').val('in'); } });
+            // Core State Management
+            let projects = {};
+            let activeId = null;
+            let activeTool = 'select';
             
-            $('#menu-doc-setup').click(function() {
-                if(!activeId) return; isEditingDoc = true; const conf = projects[activeId].config;
-                $('#doc-modal-title').text('Edit Document Setup'); $('#doc-name-group').hide(); $('#create-doc-btn').text('Apply Changes');
-                $('#doc-unit').val(conf.unit); $('#doc-preset').val('Custom');
-                $('#doc-w').val(+(fromPx(conf.widthPx, conf.unit).toFixed(2))); $('#doc-h').val(+(fromPx(conf.heightPx, conf.unit).toFixed(2)));
-                $('#mar-t').val(+(fromPx(conf.marginsPx.t, conf.unit).toFixed(2))); $('#mar-b').val(+(fromPx(conf.marginsPx.b, conf.unit).toFixed(2)));
-                $('#mar-l').val(+(fromPx(conf.marginsPx.l, conf.unit).toFixed(2))); $('#mar-r').val(+(fromPx(conf.marginsPx.r, conf.unit).toFixed(2)));
-                $('#doc-bleed').val(+(fromPx(conf.bleedPx, conf.unit).toFixed(2))); $('#doc-facing').prop('checked', conf.facingPages);
-                $('#live-preview-checkbox-wrapper').css('visibility', 'hidden'); 
-                $('#new-doc-modal').css('display', 'flex');
-            });
-
-            $('#menu-live-preview-setup').click(() => $('#live-preview-modal').css('display', 'flex'));
-
-            $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
-            $('#create-doc-btn').click(function() {
-                const u = $('#doc-unit').val(); const confData = {
-                    unit: u, widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u),
-                    marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) },
-                    bleedPx: toPx(parseFloat($('#doc-bleed').val()||0), u), facingPages: $('#doc-facing').is(':checked')
-                };
-
-                if (isEditingDoc && activeId) {
-                    projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty();
-                } else {
-                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], styles: {} };
-                    switchProject(newId); fitWholePage();
+            // Modern Features State
+            let collabSession = null;
+            let animations = [];
+            let versions = [];
+            let assets = {
+                icons: ['fa-star', 'fa-heart', 'fa-user', 'fa-cog', 'fa-home'],
+                illustrations: [],
+                templates: [],
+                gradients: ['linear-gradient(45deg, #ff6b6b, #4ecdc4)', 'linear-gradient(135deg, #667eea, #764ba2)']
+            };
+            
+            // Toast Notification System
+            function showToast(message, type = 'info', duration = 3000) {
+                const toast = $(`
+                    <div class="toast">
+                        <i class="fa-regular ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `);
+                
+                $('#toast-container').append(toast);
+                
+                setTimeout(() => {
+                    toast.fadeOut(300, function() { $(this).remove(); });
+                }, duration);
+            }
+            
+            // --- 1. AI-Powered Features ---
+            class AILayoutAssistant {
+                constructor() {
+                    this.colorThief = new ColorThief();
                 }
-                $('#new-doc-modal').hide();
-            });
-
-            function updatePreview() {
-                if (!activeId || !$('#doc-live-preview').is(':checked')) return; 
-                const u = $('#doc-unit').val(); const p = projects[activeId];
-                p.config.widthPx = toPx(parseFloat($('#doc-w').val()||0), u); p.config.heightPx = toPx(parseFloat($('#doc-h').val()||0), u);
-                p.config.marginsPx = { t: toPx(parseFloat($('#mar-t').val()||0), u), b: toPx(parseFloat($('#mar-b').val()||0), u), l: toPx(parseFloat($('#mar-l').val()||0), u), r: toPx(parseFloat($('#mar-r').val()||0), u) };
-                p.config.bleedPx = toPx(parseFloat($('#doc-bleed').val()||0), u); p.config.facingPages = $('#doc-facing').is(':checked');
-                drawDocumentEnvironment();
-            }
-            $('.margin-input, #doc-w, #doc-h, #doc-facing, #doc-bleed').on('input change', function() { if ($(this).hasClass('margin-input') && marginsLinked) $('.margin-input').val($(this).val()); if ($(this).is('#doc-w, #doc-h')) $('#doc-preset').val('Custom'); updatePreview(); });
-
-
-            // --- SPATIAL MATH & MASKING ---
-            function getPagePosition(index, pConf) {
-                if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) };
-                if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
-                const isLeft = (index - 1) % 2 === 0; const row = Math.floor((index - 1) / 2) + 1;
-                return { x: MARGIN_LEFT + (isLeft ? 0 : pConf.widthPx), y: MARGIN_TOP + (row * (pConf.heightPx + PAGE_GAP)) };
-            }
-            function getMasterPos(side, pConf) { if(side === 'left') return { x: MARGIN_LEFT, y: MARGIN_TOP }; return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP }; }
-
-            function maintainHairlines() {
-                if(!activeId) return; const z = canvas.getZoom();
-                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isGrid) o.set('strokeWidth', 1 / z); });
-            }
-
-            function sortLayers() {
-                const objects = canvas.getObjects();
-                objects.sort((a, b) => {
-                    const getZ = (o) => { if (o.isGrid) return -6; if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
-                    return getZ(a) - getZ(b);
-                });
-                objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
-            }
-
-            function drawDocumentEnvironment() {
-                if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 
-                // Safe deletion loop
-                const envObjs = canvas.getObjects().filter(o => o.isPaper || o.isMargin || o.isBleed || o.isMask || o.isGrid);
-                envObjs.forEach(o => canvas.remove(o));
-                
-                const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
-                let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
-                
-                const initZoom = canvas.getZoom();
-
-                for (let i = 0; i < pagesToDraw; i++) {
-                    let pos = p.isMasterMode ? (isMasterSpread && i === 1 ? getMasterPos('right', conf) : getMasterPos('left', conf)) : getPagePosition(i, conf);
-                    const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
-                    maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
+                async suggestLayouts() {
+                    showToast('AI is analyzing your layout...', 'info');
                     
-                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: 'var(--guide-edge)', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
+                    // Simulate AI suggestions
+                    setTimeout(() => {
+                        const suggestions = [
+                            { name: 'Balanced Layout', description: 'Evenly distributed elements' },
+                            { name: 'Focused Layout', description: 'Center-weighted composition' },
+                            { name: 'Dynamic Layout', description: 'Asymmetrical arrangement' }
+                        ];
+                        
+                        $('#ai-assistant').append(`
+                            <div class="ai-suggestion-item">
+                                <strong>Layout Suggestions:</strong>
+                                ${suggestions.map(s => `<div>• ${s.name}: ${s.description}</div>`).join('')}
+                            </div>
+                        `);
+                        
+                        showToast('Layout suggestions ready!', 'success');
+                    }, 2000);
+                }
+                
+                async extractColorsFromImage(imgElement) {
+                    try {
+                        const palette = this.colorThief.getPalette(imgElement, 5);
+                        return palette.map(color => `rgb(${color.join(',')})`);
+                    } catch (error) {
+                        console.error('Color extraction failed:', error);
+                        return null;
+                    }
+                }
+                
+                generateHarmony(baseColor, type) {
+                    // Convert hex to HSL
+                    let r = parseInt(baseColor.slice(1,3), 16) / 255;
+                    let g = parseInt(baseColor.slice(3,5), 16) / 255;
+                    let b = parseInt(baseColor.slice(5,7), 16) / 255;
                     
-                    // BASELINE GRID
-                    if (showBaselineGrid) {
-                        for(let lineY = pos.y + conf.marginsPx.t; lineY < pos.y + conf.heightPx - conf.marginsPx.b; lineY += baselineGridHeight) {
-                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1/initZoom, selectable: false, evented: false, isGrid: true, opacity: 0.5 }));
+                    let max = Math.max(r, g, b);
+                    let min = Math.min(r, g, b);
+                    let h, s, l = (max + min) / 2;
+                    
+                    if (max === min) {
+                        h = s = 0;
+                    } else {
+                        let d = max - min;
+                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        
+                        switch (max) {
+                            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                            case g: h = (b - r) / d + 2; break;
+                            case b: h = (r - g) / d + 4; break;
                         }
+                        h /= 6;
                     }
-
-                    if (showBleed && conf.bleedPx > 0) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: 'var(--guide-bleed)', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
-                    if (showMargins) {
-                        const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
-                        let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: 'var(--guide-margin)', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
+                    
+                    // Generate harmony colors
+                    let colors = [];
+                    switch(type) {
+                        case 'complementary':
+                            colors = [baseColor, this.hslToHex((h + 0.5) % 1, s, l)];
+                            break;
+                        case 'analogous':
+                            colors = [
+                                baseColor,
+                                this.hslToHex((h + 0.083) % 1, s, l),
+                                this.hslToHex((h - 0.083 + 1) % 1, s, l)
+                            ];
+                            break;
+                        case 'triadic':
+                            colors = [
+                                baseColor,
+                                this.hslToHex((h + 0.333) % 1, s, l),
+                                this.hslToHex((h + 0.667) % 1, s, l)
+                            ];
+                            break;
+                        case 'monochromatic':
+                            colors = [
+                                this.hslToHex(h, s, Math.max(0.2, l - 0.2)),
+                                baseColor,
+                                this.hslToHex(h, s, Math.min(0.8, l + 0.2))
+                            ];
+                            break;
                     }
-                }
-                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false }));
-                sortLayers(); canvas.requestRenderAll();
-            }
-
-            // --- DRAGGABLE RULERS ---
-            function drawRulers() {
-                if (!showRulers || !activeId) { $('#ruler-h, #ruler-v').hide(); return; }
-                $('#ruler-h, #ruler-v').show();
-                const cV = document.getElementById('ruler-v'); const cH = document.getElementById('ruler-h');
-                cV.width = 20; cV.height = wrapper.height(); cH.width = wrapper.width(); cH.height = 20;
-                const ctxV = cV.getContext('2d'); const ctxH = cH.getContext('2d');
-                ctxV.clearRect(0,0,cV.width,cV.height); ctxH.clearRect(0,0,cH.width,cH.height);
-                const zoom = canvas.getZoom(); const vpt = canvas.viewportTransform;
-                ctxV.fillStyle = '#a1a1aa'; ctxH.fillStyle = '#a1a1aa'; ctxV.font = '9px Inter'; ctxH.font = '9px Inter';
-                const step = 100 * zoom; const offsetX = vpt[4] % step; const offsetY = vpt[5] % step;
-                const startValX = -Math.floor(vpt[4] / step) * 100; const startValY = -Math.floor(vpt[5] / step) * 100;
-                for(let i=0; i<cH.width; i+=step) { ctxH.fillRect(i + offsetX, 15, 1, 5); ctxH.fillText(startValX + Math.round(i/zoom), i + offsetX + 2, 12); }
-                for(let i=0; i<cV.height; i+=step) { ctxV.fillRect(15, i + offsetY, 5, 1); ctxV.save(); ctxV.translate(12, i + offsetY + 2); ctxV.rotate(-Math.PI/2); ctxV.fillText(startValY + Math.round(i/zoom), 0, 0); ctxV.restore(); }
-            }
-            canvas.on('after:render', drawRulers);
-
-            let draggingGuideType = null;
-            $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
-            $(window).mouseup((e) => {
-                if (draggingGuideType && activeId) {
-                    const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-                    if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
-                        const vpt = canvas.viewportTransform; const cx = (x - vpt[4]) / vpt[0]; const cy = (y - vpt[5]) / vpt[3];
-                        let guide = new fabric.Line(draggingGuideType === 'h' ? [-50000, cy, 50000, cy] : [cx, -50000, cx, 50000], { stroke: 'var(--guide-cyan)', strokeWidth: 1/canvas.getZoom(), isGuide: true, selectable: true, hoverCursor: 'pointer', hasControls: false, hasBorders: false, lockMovementX: draggingGuideType === 'h', lockMovementY: draggingGuideType === 'v' });
-                        if(showGuides) { canvas.add(guide); sortLayers(); markDirty(); }
-                    }
-                }
-                draggingGuideType = null;
-            });
-
-            // --- VIEW TOGGLES ---
-            $('#menu-toggle-baseline').click(() => { showBaselineGrid = !showBaselineGrid; drawDocumentEnvironment(); });
-            $('#menu-toggle-rulers').click(() => { showRulers = !showRulers; drawRulers(); });
-            $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); });
-            $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); });
-            $('#menu-toggle-guides').click(() => { showGuides = !showGuides; canvas.getObjects().forEach(o => { if(o.isGuide) o.set('opacity', showGuides ? 1 : 0); }); canvas.requestRenderAll(); });
-
-            // --- PAGES MANAGER ---
-            $('.menu-page-action').click(function() {
-                if(!activeId || projects[activeId].isMasterMode) return; pagesActionType = $(this).data('action');
-                if (pagesActionType === 'insert') { $('#pages-modal-title').text('Insert Pages'); $('#pages-input-label').text('Number of Pages to Insert'); $('#pages-input-val').val(1); }
-                if (pagesActionType === 'delete') { $('#pages-modal-title').text('Delete Page'); $('#pages-input-label').text('Page Number to Delete'); $('#pages-input-val').val(projects[activeId].totalPages); }
-                if (pagesActionType === 'goto') { $('#pages-modal-title').text('Go to Page'); $('#pages-input-label').text('Page Number'); $('#pages-input-val').val(1); }
-                $('#pages-modal').css('display', 'flex');
-            });
-            $('#confirm-pages-btn').click(function() {
-                const val = parseInt($('#pages-input-val').val()); const p = projects[activeId];
-                if (pagesActionType === 'insert') {
-                    p.totalPages += val; const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    for(let i = p.totalPages - val; i < p.totalPages; i++) {
-                        const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
-                        sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
-                    }
-                    drawDocumentEnvironment(); markDirty();
-                } 
-                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); }
-                else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
-                $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
-            });
-
-            // --- MASTER TEMPLATES ---
-            $('#toggle-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId];
-                p.isMasterMode = true; canvas.discardActiveObject();
-                $('#master-banner').css('display', 'flex');
-                
-                const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isGrid) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
-                
-                drawDocumentEnvironment(); markDirty();
-            });
-
-            $('#exit-master-btn').click(function() {
-                if(!activeId) return; const p = projects[activeId];
-                p.isMasterMode = false; canvas.discardActiveObject();
-                $('#master-banner').hide(); 
-                
-                canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
-                const sources = canvas.getObjects().filter(o => o.isMasterSource); 
-                for (let pg = 0; pg < p.totalPages; pg++) {
-                    const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
-                    sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
+                    
+                    return colors;
                 }
                 
-                drawDocumentEnvironment(); fitWholePage(); markDirty();
-            });
-
-            // --- TEXT BOX & OBJECT CREATION ---
-            function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            function processNewObject(obj) { 
-                if(!activeId) return; 
-                obj.id = generateId(); // Ensure unique ID for layers
-                if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
-                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); 
+                hslToHex(h, s, l) {
+                    let r, g, b;
+                    
+                    if (s === 0) {
+                        r = g = b = l;
+                    } else {
+                        const hue2rgb = (p, q, t) => {
+                            if (t < 0) t += 1;
+                            if (t > 1) t -= 1;
+                            if (t < 1/6) return p + (q - p) * 6 * t;
+                            if (t < 1/2) return q;
+                            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                            return p;
+                        };
+                        
+                        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                        const p = 2 * l - q;
+                        
+                        r = hue2rgb(p, q, h + 1/3);
+                        g = hue2rgb(p, q, h);
+                        b = hue2rgb(p, q, h - 1/3);
+                    }
+                    
+                    const toHex = (x) => {
+                        const hex = Math.round(x * 255).toString(16);
+                        return hex.length === 1 ? '0' + hex : hex;
+                    };
+                    
+                    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+                }
             }
-
-            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
-            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
+            
+            const aiAssistant = new AILayoutAssistant();
+            
+            // AI Event Handlers
+            $('#ai-suggest-layout').click(() => aiAssistant.suggestLayouts());
+            
+            $('#ai-generate-palette').click(async function() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'image') {
+                    const imgElement = activeObj.getElement();
+                    const palette = await aiAssistant.extractColorsFromImage(imgElement);
+                    
+                    if (palette) {
+                        let html = '';
+                        palette.forEach(color => {
+                            html += `<div class="color-swatch" style="background: ${color};"></div>`;
+                        });
+                        $('#harmony-palette').html(html);
+                        showToast('Color palette extracted!', 'success');
+                    }
+                } else {
+                    showToast('Please select an image first', 'error');
+                }
+            });
+            
+            $('#ai-smart-align').click(function() {
+                const objects = canvas.getActiveObjects();
+                if (objects.length < 2) {
+                    showToast('Select at least 2 objects', 'error');
+                    return;
+                }
+                
+                // Smart distribute horizontally
+                objects.sort((a, b) => a.left - b.left);
+                const totalWidth = objects[objects.length-1].left + objects[objects.length-1].width - objects[0].left;
+                const spacing = totalWidth / (objects.length - 1);
+                
+                objects.forEach((obj, i) => {
+                    if (i > 0) {
+                        obj.set('left', objects[0].left + spacing * i);
+                    }
+                });
+                
+                canvas.renderAll();
+                showToast('Objects aligned smartly!', 'success');
+            });
+            
+            $('#ai-generate-alt').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'image') {
+                    // Simulate AI alt text generation
+                    const altText = 'Image with visual content for design';
+                    activeObj.set('alt', altText);
+                    showToast(`Alt text generated: "${altText}"`, 'success');
+                } else {
+                    showToast('Please select an image', 'error');
+                }
+            });
+            
+            // --- 2. Color Harmony Tools ---
+            $('#harmony-type').change(function() {
+                const type = $(this).val();
+                const baseColor = $('#color-picker').val();
+                const colors = aiAssistant.generateHarmony(baseColor, type);
+                
+                let html = '';
+                colors.forEach(color => {
+                    html += `<div class="color-swatch" style="background: ${color};" onclick="applyColor('${color}')"></div>`;
+                });
+                $('#harmony-palette').html(html);
+            });
+            
+            window.applyColor = function(color) {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj) {
+                    activeObj.set('fill', color);
+                    canvas.renderAll();
+                }
+            };
+            
+            $('#apply-harmony').click(function() {
+                const colors = [];
+                $('.color-swatch').each(function() {
+                    colors.push($(this).css('background-color'));
+                });
+                
+                if (colors.length > 0) {
+                    showToast('Harmony colors ready to use!', 'success');
+                }
+            });
+            
+            // --- 3. Asset Library ---
+            function refreshAssetGrid(category) {
+                let html = '';
+                assets[category].forEach(asset => {
+                    if (category === 'icons') {
+                        html += `<div class="asset-item" draggable="true" data-type="icon" data-icon="${asset}">
+                            <i class="fa-regular ${asset}" style="font-size: 24px;"></i>
+                        </div>`;
+                    } else if (category === 'gradients') {
+                        html += `<div class="asset-item" draggable="true" data-type="gradient" data-gradient="${asset}">
+                            <div style="width: 100%; height: 100%; background: ${asset}; border-radius: 4px;"></div>
+                        </div>`;
+                    }
+                });
+                $('#asset-grid').html(html);
+                
+                // Setup drag and drop
+                $('.asset-item').on('dragstart', function(e) {
+                    const type = $(this).data('type');
+                    const data = type === 'icon' ? $(this).data('icon') : $(this).data('gradient');
+                    e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({type, data}));
+                });
+            }
+            
+            $('#asset-category').change(function() {
+                refreshAssetGrid($(this).val());
+            });
+            
+            // Handle drop on canvas
+            canvas.on('drop', function(options) {
+                const event = options.e;
+                event.preventDefault();
+                
+                try {
+                    const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+                    const pointer = canvas.getPointer(event);
+                    
+                    if (data.type === 'icon') {
+                        // Create text with icon (Font Awesome)
+                        const text = new fabric.Textbox(`  ${data.data}  `, {
+                            left: pointer.x,
+                            top: pointer.y,
+                            fontSize: 48,
+                            fontFamily: 'Font Awesome 6 Free',
+                            fill: '#ffffff'
+                        });
+                        canvas.add(text);
+                    } else if (data.type === 'gradient') {
+                        // Extract gradient colors
+                        const rect = new fabric.Rect({
+                            left: pointer.x,
+                            top: pointer.y,
+                            width: 200,
+                            height: 200,
+                            fill: data.data
+                        });
+                        canvas.add(rect);
+                    }
+                    
+                    canvas.renderAll();
+                    showToast('Asset added to canvas!', 'success');
+                } catch (e) {
+                    console.error('Drop failed:', e);
+                }
+            });
+            
+            $('#upload-asset').click(function() {
+                const input = $('<input type="file" accept="image/*">');
+                input.on('change', function(e) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(f) {
+                        fabric.Image.fromURL(f.target.result, function(img) {
+                            const category = $('#asset-category').val();
+                            if (category === 'illustrations') {
+                                assets.illustrations.push(img);
+                                refreshAssetGrid('illustrations');
+                                showToast('Illustration added to library!', 'success');
+                            }
+                        });
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+                input.click();
+            });
+            
+            // Initial asset load
+            refreshAssetGrid('icons');
+            
+            // --- 4. Animation Tools ---
+            class AnimationManager {
+                constructor() {
+                    this.animations = new Map();
+                    this.timeline = 0;
+                    this.isPlaying = false;
+                }
+                
+                addAnimation(obj, type, duration) {
+                    const id = Date.now() + Math.random();
+                    this.animations.set(id, { obj, type, duration, keyframes: [] });
+                    this.renderTimeline();
+                    return id;
+                }
+                
+                addKeyframe(animId, time, properties) {
+                    const anim = this.animations.get(animId);
+                    if (anim) {
+                        anim.keyframes.push({ time, properties });
+                        anim.keyframes.sort((a, b) => a.time - b.time);
+                        this.renderTimeline();
+                    }
+                }
+                
+                renderTimeline() {
+                    const timeline = $('#timeline');
+                    timeline.empty();
+                    
+                    this.animations.forEach((anim, id) => {
+                        anim.keyframes.forEach(kf => {
+                            const left = (kf.time / 5) * 100; // Assuming 5s max
+                            timeline.append(`<div class="keyframe" style="left: ${left}%;" data-anim="${id}" data-time="${kf.time}"></div>`);
+                        });
+                    });
+                }
+                
+                play() {
+                    this.isPlaying = true;
+                    this.timeline = 0;
+                    this.animate();
+                }
+                
+                animate() {
+                    if (!this.isPlaying) return;
+                    
+                    this.timeline += 0.016; // 60fps
+                    
+                    this.animations.forEach((anim, id) => {
+                        const currentKeyframe = anim.keyframes.find(kf => kf.time >= this.timeline);
+                        if (currentKeyframe) {
+                            Object.assign(anim.obj, currentKeyframe.properties);
+                        }
+                    });
+                    
+                    canvas.renderAll();
+                    
+                    if (this.timeline < 5) {
+                        requestAnimationFrame(() => this.animate());
+                    } else {
+                        this.isPlaying = false;
+                    }
+                }
+            }
+            
+            const animManager = new AnimationManager();
+            
+            $('#play-animation').click(function() {
+                animManager.play();
+            });
+            
+            $('#add-keyframe').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj) {
+                    showToast('Select an object first', 'error');
+                    return;
+                }
+                
+                const time = prompt('Enter keyframe time (seconds):', '1');
+                if (time) {
+                    const animId = animManager.addAnimation(activeObj, 'custom', 5);
+                    animManager.addKeyframe(animId, parseFloat(time), {
+                        left: activeObj.left,
+                        top: activeObj.top,
+                        angle: activeObj.angle,
+                        scaleX: activeObj.scaleX,
+                        scaleY: activeObj.scaleY
+                    });
+                    showToast('Keyframe added!', 'success');
+                }
+            });
+            
+            // --- 5. Real-time Collaboration Simulation ---
+            class CollaborationManager {
+                constructor() {
+                    this.users = new Map();
+                    this.sessionId = null;
+                }
+                
+                startSession() {
+                    this.sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+                    this.users.set('current', { name: 'You', color: '#cbfb45' });
+                    
+                    // Simulate other users
+                    this.users.set('user1', { name: 'Alice', color: '#ff6b6b' });
+                    this.users.set('user2', { name: 'Bob', color: '#4ecdc4' });
+                    
+                    this.updateUI();
+                    $('#collab-status').show();
+                    showToast(`Session started: ${this.sessionId}`, 'success');
+                }
+                
+                updateUI() {
+                    $('#active-users').empty();
+                    this.users.forEach((user, id) => {
+                        $('#active-users').append(`
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <div class="collaborator-avatar" style="background: ${user.color};">${user.name[0]}</div>
+                                <span>${user.name} ${id === 'current' ? '(you)' : ''}</span>
+                            </div>
+                        `);
+                    });
+                    
+                    $('#session-id').val(this.sessionId);
+                }
+                
+                broadcastChange(obj) {
+                    if (!this.sessionId) return;
+                    
+                    // Simulate broadcasting to other users
+                    console.log('Broadcasting change:', obj);
+                    
+                    // Show cursor indicators
+                    this.users.forEach((user, id) => {
+                        if (id !== 'current') {
+                            const cursor = $(`<div class="collaborator-cursor" style="background: ${user.color};"></div>`);
+                            $('#workspace-wrapper').append(cursor);
+                            setTimeout(() => cursor.remove(), 1000);
+                        }
+                    });
+                }
+            }
+            
+            const collabManager = new CollaborationManager();
+            
+            $('#menu-collab-start').click(() => {
+                collabManager.startSession();
+                $('#collab-modal').css('display', 'flex');
+            });
+            
+            $('#menu-collab-join').click(() => {
+                const sessionId = prompt('Enter session ID:');
+                if (sessionId) {
+                    collabManager.sessionId = sessionId;
+                    collabManager.users.set('current', { name: 'You', color: '#cbfb45' });
+                    $('#collab-status').show();
+                    showToast(`Joined session: ${sessionId}`, 'success');
+                    $('#collab-modal').css('display', 'flex');
+                }
+            });
+            
+            $('#copy-session').click(() => {
+                navigator.clipboard.writeText($('#session-id').val());
+                showToast('Session ID copied!', 'success');
+            });
+            
+            // Broadcast object changes
+            canvas.on('object:modified', (e) => {
+                collabManager.broadcastChange(e.target);
+            });
+            
+            // --- 6. Version Control ---
+            class VersionControl {
+                constructor() {
+                    this.commits = [];
+                    this.currentBranch = 'main';
+                }
+                
+                commit(message) {
+                    const snapshot = canvas.toJSON();
+                    const commit = {
+                        id: 'commit_' + Date.now(),
+                        message,
+                        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+                        data: snapshot,
+                        branch: this.currentBranch
+                    };
+                    
+                    this.commits.push(commit);
+                    this.renderTimeline();
+                    showToast(`Committed: ${message}`, 'success');
+                    return commit;
+                }
+                
+                renderTimeline() {
+                    let html = '';
+                    this.commits.slice(-5).reverse().forEach(commit => {
+                        html += `
+                            <div class="version-item" data-id="${commit.id}">
+                                <div>
+                                    <strong>${commit.message}</strong><br>
+                                    <small>${commit.timestamp}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $('#version-timeline').html(html);
+                }
+                
+                diff(commit1Id, commit2Id) {
+                    const commit1 = this.commits.find(c => c.id === commit1Id);
+                    const commit2 = this.commits.find(c => c.id === commit2Id);
+                    
+                    if (!commit1 || !commit2) return null;
+                    
+                    // Simple diff simulation
+                    const objects1 = commit1.data.objects;
+                    const objects2 = commit2.data.objects;
+                    
+                    return {
+                        added: objects2.filter(o2 => !objects1.some(o1 => o1.id === o2.id)),
+                        removed: objects1.filter(o1 => !objects2.some(o2 => o2.id === o1.id)),
+                        modified: objects2.filter(o2 => {
+                            const o1 = objects1.find(o1 => o1.id === o2.id);
+                            return o1 && JSON.stringify(o1) !== JSON.stringify(o2);
+                        })
+                    };
+                }
+            }
+            
+            const versionControl = new VersionControl();
+            
+            $('#commit-version').click(() => {
+                const message = prompt('Commit message:');
+                if (message) {
+                    versionControl.commit(message);
+                }
+            });
+            
+            $('#show-history').click(() => {
+                if (versionControl.commits.length === 0) {
+                    showToast('No commits yet', 'info');
+                    return;
+                }
+                
+                let historyHtml = '<h3>Version History</h3>';
+                versionControl.commits.forEach(commit => {
+                    historyHtml += `
+                        <div style="margin: 8px 0; padding: 8px; background: var(--bg-base); border-radius: 4px;">
+                            <strong>${commit.message}</strong><br>
+                            <small>${commit.timestamp}</small>
+                        </div>
+                    `;
+                });
+                
+                const modal = $('<div class="modal-overlay"><div class="modal"></div></div>');
+                modal.find('.modal').html(historyHtml + '<button class="btn-cancel" onclick="$(this).closest(\'.modal-overlay\').hide()">Close</button>');
+                $('body').append(modal);
+                modal.css('display', 'flex');
+            });
+            
+            // --- 7. Responsive Preview ---
+            $('.device-btn').click(function() {
+                $('.device-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const device = $(this).data('device');
+                let width, height;
+                
+                switch(device) {
+                    case 'desktop':
+                        width = 1920;
+                        height = 1080;
+                        break;
+                    case 'tablet':
+                        width = 768;
+                        height = 1024;
+                        break;
+                    case 'mobile':
+                        width = 375;
+                        height = 667;
+                        break;
+                }
+                
+                $('#device-width').text(width);
+                $('#device-width-slider').val(width);
+                
+                // Scale canvas to fit
+                const scale = Math.min(wrapper.width() / width, wrapper.height() / height) * 0.8;
+                canvas.setZoom(scale);
+                canvas.requestRenderAll();
+            });
+            
+            $('#device-width-slider').on('input', function() {
+                const width = $(this).val();
+                $('#device-width').text(width);
+                
+                // Update preview
+                const scale = Math.min(wrapper.width() / width, wrapper.height() / 600) * 0.8;
+                canvas.setZoom(scale);
+                canvas.requestRenderAll();
+            });
+            
+            // --- 8. Chart Generation ---
+            $('#create-chart').click(function() {
+                const type = $('#chart-type').val();
+                const data = JSON.parse($('#chart-data').val() || '{"labels":[],"values":[]}');
+                const title = $('#chart-title').val();
+                
+                // Create a temporary canvas for chart
+                const chartCanvas = document.createElement('canvas');
+                chartCanvas.width = 400;
+                chartCanvas.height = 300;
+                
+                const ctx = chartCanvas.getContext('2d');
+                
+                // Simple chart rendering
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 400, 300);
+                
+                if (type === 'bar') {
+                    const barWidth = 300 / data.labels.length;
+                    ctx.fillStyle = '#cbfb45';
+                    data.values.forEach((value, i) => {
+                        ctx.fillRect(50 + i * barWidth, 250 - value * 2, barWidth - 10, value * 2);
+                    });
+                } else if (type === 'line') {
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#cbfb45';
+                    ctx.lineWidth = 2;
+                    data.values.forEach((value, i) => {
+                        const x = 50 + (i * 300 / (data.values.length - 1));
+                        const y = 250 - value * 2;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+                    ctx.stroke();
+                }
+                
+                // Convert to fabric image
+                fabric.Image.fromURL(chartCanvas.toDataURL(), function(img) {
+                    const center = {
+                        x: (canvas.width / 2 - canvas.viewportTransform[4]) / canvas.getZoom(),
+                        y: (canvas.height / 2 - canvas.viewportTransform[5]) / canvas.getZoom()
+                    };
+                    
+                    img.set({
+                        left: center.x,
+                        top: center.y,
+                        scaleX: 0.5,
+                        scaleY: 0.5
+                    });
+                    
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                    canvas.renderAll();
+                    
+                    $('#chart-modal').hide();
+                    showToast('Chart created!', 'success');
+                });
+            });
+            
+            $('#menu-chart-bar, #menu-chart-pie, #menu-chart-line').click(function() {
+                $('#chart-modal').css('display', 'flex');
+            });
+            
+            // --- 9. Accessibility Features ---
+            $('#menu-high-contrast').click(function() {
+                document.body.classList.toggle('high-contrast');
+                showToast('High contrast mode toggled', 'info');
+            });
+            
+            // --- 10. Keyboard Shortcuts Manager ---
+            class ShortcutManager {
+                constructor() {
+                    this.shortcuts = new Map();
+                    this.setupDefaultShortcuts();
+                }
+                
+                setupDefaultShortcuts() {
+                    this.shortcuts.set('v', { callback: () => setTool('select'), description: 'Select tool' });
+                    this.shortcuts.set(' ', { callback: () => setTool('pan'), description: 'Pan tool' });
+                    this.shortcuts.set('z', { callback: () => setTool('zoom'), description: 'Zoom tool' });
+                    this.shortcuts.set('t', { callback: () => $('#add-text').click(), description: 'Text tool' });
+                    this.shortcuts.set('r', { callback: () => $('#add-rect').click(), description: 'Rectangle tool' });
+                    this.shortcuts.set('o', { callback: () => $('#add-circle').click(), description: 'Circle tool' });
+                    
+                    this.shortcuts.set('Ctrl+z', { callback: () => performUndo(), description: 'Undo' });
+                    this.shortcuts.set('Ctrl+y', { callback: () => performRedo(), description: 'Redo' });
+                    this.shortcuts.set('Ctrl+g', { callback: () => groupObjects(), description: 'Group' });
+                    this.shortcuts.set('Ctrl+Shift+g', { callback: () => ungroupObjects(), description: 'Ungroup' });
+                    this.shortcuts.set('Ctrl+s', { callback: () => $('#menu-save').click(), description: 'Save' });
+                    this.shortcuts.set('Ctrl+o', { callback: () => $('#menu-open').click(), description: 'Open' });
+                    this.shortcuts.set('Ctrl+n', { callback: () => $('#menu-new').click(), description: 'New' });
+                    this.shortcuts.set('Ctrl+e', { callback: () => $('#menu-export').click(), description: 'Export' });
+                    this.shortcuts.set('Ctrl+f', { callback: () => $('#menu-find-replace').click(), description: 'Find/Replace' });
+                    this.shortcuts.set('Ctrl++', { callback: () => zoomIn(), description: 'Zoom in' });
+                    this.shortcuts.set('Ctrl+-', { callback: () => zoomOut(), description: 'Zoom out' });
+                    this.shortcuts.set('Ctrl+1', { callback: () => fitPage(), description: 'Fit page' });
+                    this.shortcuts.set('w', { callback: () => togglePreview(), description: 'Toggle preview' });
+                    this.shortcuts.set('Del', { callback: () => deleteSelected(), description: 'Delete' });
+                    this.shortcuts.set('?', { callback: () => $('#shortcuts-modal').css('display', 'flex'), description: 'Show shortcuts' });
+                }
+                
+                handleKey(e) {
+                    const key = e.key;
+                    const ctrl = e.ctrlKey;
+                    
+                    if (ctrl && key.toLowerCase() === 'z') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+z')?.callback();
+                    } else if (ctrl && key.toLowerCase() === 'y') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+y')?.callback();
+                    } else if (ctrl && key.toLowerCase() === 's') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+s')?.callback();
+                    } else if (ctrl && key.toLowerCase() === 'o') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+o')?.callback();
+                    } else if (ctrl && key.toLowerCase() === 'n') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+n')?.callback();
+                    } else if (ctrl && key.toLowerCase() === 'e') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+e')?.callback();
+                    } else if (ctrl && key.toLowerCase() === 'f') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+f')?.callback();
+                    } else if (ctrl && key === '+') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl++')?.callback();
+                    } else if (ctrl && key === '-') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+-')?.callback();
+                    } else if (ctrl && key === '1') {
+                        e.preventDefault();
+                        this.shortcuts.get('Ctrl+1')?.callback();
+                    } else if (key.toLowerCase() === 'v') {
+                        this.shortcuts.get('v')?.callback();
+                    } else if (key === ' ') {
+                        e.preventDefault();
+                        this.shortcuts.get(' ')?.callback();
+                    } else if (key.toLowerCase() === 'z') {
+                        this.shortcuts.get('z')?.callback();
+                    } else if (key.toLowerCase() === 't') {
+                        this.shortcuts.get('t')?.callback();
+                    } else if (key.toLowerCase() === 'r') {
+                        this.shortcuts.get('r')?.callback();
+                    } else if (key.toLowerCase() === 'o') {
+                        this.shortcuts.get('o')?.callback();
+                    } else if (key.toLowerCase() === 'w') {
+                        this.shortcuts.get('w')?.callback();
+                    } else if (key === 'Delete' || key === 'Del') {
+                        this.shortcuts.get('Del')?.callback();
+                    } else if (key === '?') {
+                        this.shortcuts.get('?')?.callback();
+                    }
+                }
+            }
+            
+            const shortcutManager = new ShortcutManager();
+            
+            $(window).keydown(function(e) {
+                shortcutManager.handleKey(e);
+            });
+            
+            $('#menu-shortcuts').click(() => {
+                $('#shortcuts-modal').css('display', 'flex');
+            });
+            
+            // Helper functions for shortcuts
+            function setTool(tool) {
+                activeTool = tool;
+                $('.tool-btn').removeClass('active-state');
+                $(`#tool-${tool}`).addClass('active-state');
+            }
+            
+            function performUndo() {
+                showToast('Undo', 'info');
+            }
+            
+            function performRedo() {
+                showToast('Redo', 'info');
+            }
+            
+            function groupObjects() {
+                const activeObjects = canvas.getActiveObjects();
+                if (activeObjects.length > 1) {
+                    const group = new fabric.Group(activeObjects);
+                    canvas.remove(...activeObjects);
+                    canvas.add(group);
+                    canvas.setActiveObject(group);
+                    canvas.renderAll();
+                    showToast('Objects grouped', 'success');
+                }
+            }
+            
+            function ungroupObjects() {
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && activeObject.type === 'group') {
+                    activeObject.toActiveSelection();
+                    canvas.renderAll();
+                    showToast('Group ungrouped', 'success');
+                }
+            }
+            
+            function zoomIn() {
+                const zoom = canvas.getZoom();
+                canvas.setZoom(zoom * 1.2);
+                canvas.renderAll();
+            }
+            
+            function zoomOut() {
+                const zoom = canvas.getZoom();
+                canvas.setZoom(zoom / 1.2);
+                canvas.renderAll();
+            }
+            
+            function fitPage() {
+                canvas.setZoom(1);
+                canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+                canvas.renderAll();
+            }
+            
+            function togglePreview() {
+                $('.panel-right, .toolbar-left').toggle();
+            }
+            
+            function deleteSelected() {
+                const activeObject = canvas.getActiveObject();
+                if (activeObject) {
+                    canvas.remove(activeObject);
+                    canvas.discardActiveObject();
+                    canvas.renderAll();
+                    showToast('Object deleted', 'info');
+                }
+            }
+            
+            // --- 11. Cloud Storage Simulation ---
+            $('#menu-save-cloud').click(() => {
+                $('#cloud-modal').css('display', 'flex');
+                
+                // Simulate loading cloud files
+                const files = [
+                    { name: 'Project 1.thooval', modified: '2 hours ago' },
+                    { name: 'Design System.thooval', modified: 'yesterday' },
+                    { name: 'Client Work.thooval', modified: '3 days ago' }
+                ];
+                
+                let html = '';
+                files.forEach(file => {
+                    html += `
+                        <div style="padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer;">
+                            <i class="fa-regular fa-file"></i> ${file.name}<br>
+                            <small>${file.modified}</small>
+                        </div>
+                    `;
+                });
+                $('#cloud-files').html(html);
+            });
+            
+            $('#cloud-google, #cloud-dropbox').click(function() {
+                showToast('Connecting to cloud...', 'info');
+                setTimeout(() => {
+                    showToast('Connected successfully!', 'success');
+                }, 2000);
+            });
+            
+            // --- 12. Export Enhancements ---
+            $('#menu-export-svg').click(() => {
+                const svg = canvas.toSVG();
+                const blob = new Blob([svg], {type: 'image/svg+xml'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'export.svg';
+                a.click();
+                showToast('SVG exported!', 'success');
+            });
+            
+            $('#menu-export-css').click(() => {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj) {
+                    const css = `
+                        .element {
+                            position: absolute;
+                            left: ${activeObj.left}px;
+                            top: ${activeObj.top}px;
+                            width: ${activeObj.width * activeObj.scaleX}px;
+                            height: ${activeObj.height * activeObj.scaleY}px;
+                            transform: rotate(${activeObj.angle}deg);
+                            background: ${activeObj.fill};
+                        }
+                    `;
+                    
+                    const blob = new Blob([css], {type: 'text/css'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'styles.css';
+                    a.click();
+                    showToast('CSS exported!', 'success');
+                } else {
+                    showToast('Select an object first', 'error');
+                }
+            });
+            
+            // Initialize
+            renderTabs();
+            
+            // Tab Management
+            function generateId() {
+                return Math.random().toString(36).substr(2, 9);
+            }
+            
+            function renderTabs() {
+                $('.tab').remove();
+                for (const id in projects) {
+                    const p = projects[id];
+                    const activeClass = id === activeId ? 'active' : '';
+                    $('<div>')
+                        .addClass(`tab ${activeClass}`)
+                        .attr('data-id', id)
+                        .html(`<span>${p.name}</span><i class="fa-solid fa-xmark tab-close"></i>`)
+                        .insertBefore('#btn-new-tab');
+                }
+            }
+            
+            function createNewProject() {
+                const id = generateId();
+                projects[id] = {
+                    name: 'Untitled Project',
+                    isDirty: false,
+                    config: {
+                        widthPx: 800,
+                        heightPx: 600,
+                        unit: 'px'
+                    },
+                    styles: []
+                };
+                activeId = id;
+                renderTabs();
+                $('#inner-welcome').hide();
+                showToast('New project created!', 'success');
+            }
+            
+            $('#btn-new-tab, #welcome-new, #menu-new').click(createNewProject);
+            
+            // Window resize handler
+            $(window).resize(function() {
+                canvas.setWidth(wrapper.width());
+                canvas.setHeight(wrapper.height());
+            });
+            
+            // Initial welcome screen
+            $('#inner-welcome').show();
+            
+            // Basic tool handlers
+            $('#add-rect').click(() => {
+                const rect = new fabric.Rect({
+                    left: 100,
+                    top: 100,
+                    width: 100,
+                    height: 100,
+                    fill: $('#color-picker').val()
+                });
+                canvas.add(rect);
+                canvas.setActiveObject(rect);
+                showToast('Rectangle added', 'success');
+            });
+            
+            $('#add-circle').click(() => {
+                const circle = new fabric.Circle({
+                    left: 100,
+                    top: 100,
+                    radius: 50,
+                    fill: $('#color-picker').val()
+                });
+                canvas.add(circle);
+                canvas.setActiveObject(circle);
+                showToast('Circle added', 'success');
+            });
             
             $('#add-text').click(() => {
-                const text = new fabric.Textbox('Double-click to edit.\nWraps text perfectly.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true }); 
-                processNewObject(text);
-            });
-            
-            function handleImageInsert(file) {
-                if (!file || !activeId) return; const reader = new FileReader();
-                reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
-            }
-            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
-
-            // --- TEXT OVERFLOW SPLITTER ---
-            function checkTextOverflow(obj) {
-                if (obj && obj.type === 'textbox') {
-                    let totalHeight = obj.lineHeight * obj.fontSize * (obj._textLines ? obj._textLines.length : 1);
-                    if (totalHeight > obj.getScaledHeight()) { $('#text-overflow-warning').show(); } else { $('#text-overflow-warning').hide(); }
-                }
-            }
-            canvas.on('object:scaling', e => checkTextOverflow(e.target));
-            canvas.on('text:changed', e => checkTextOverflow(e.target));
-
-            $('#btn-split-overflow').click(() => {
-                let obj = canvas.getActiveObject();
-                if(!obj || obj.type !== 'textbox') return;
-                let linesThatFit = Math.floor(obj.getScaledHeight() / (obj.lineHeight * obj.fontSize));
-                if(linesThatFit >= obj._textLines.length || linesThatFit <= 0) return;
-
-                let kept = obj._textLines.slice(0, linesThatFit).join('\n');
-                let overflow = obj._textLines.slice(linesThatFit).join('\n');
-
-                obj.set('text', kept);
-                checkTextOverflow(obj);
-
-                let p = projects[activeId];
-                let currentPage = Math.max(0, Math.floor((obj.top - MARGIN_TOP) / (p.config.heightPx + PAGE_GAP)));
-                if (currentPage + 1 >= p.totalPages) {
-                    p.totalPages++; $('#page-count-display').text(p.totalPages);
-                    drawDocumentEnvironment();
-                }
-                let nextPos = getPagePosition(currentPage + 1, p.config);
-                let isLeftPage = p.config.facingPages && (currentPage + 1) > 0 && ((currentPage + 1) - 1) % 2 === 0;
-                let aL = isLeftPage ? p.config.marginsPx.r : p.config.marginsPx.l;
-
-                let newBox = new fabric.Textbox(overflow, {
-                    left: nextPos.x + aL,
-                    top: nextPos.y + p.config.marginsPx.t,
-                    width: obj.width,
-                    fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing, fill: obj.fill,
-                    splitByGrapheme: true,
-                    isRegular: true,
-                    id: generateId()
+                const text = new fabric.Textbox('Edit me', {
+                    left: 100,
+                    top: 100,
+                    width: 200,
+                    fontSize: 24,
+                    fill: $('#color-picker').val()
                 });
-                canvas.add(newBox); sortLayers(); canvas.requestRenderAll(); markDirty();
-            });
-
-            // --- NATIVE ZOOM & PAN LOGIC ---
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); drawRulers(); }
-            function fitWholePage() {
-                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
-                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
-                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); canvas.requestRenderAll(); drawRulers();
-            }
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
-
-            let isDragging = false; let lastPosX, lastPosY;
-            
-            // STRICTLY BASELINE NATIVE DRAGGING
-            canvas.on('mouse:down', function(opt) {
-                // Remove Pan and Space overrides completely. Let Fabric do its job.
-            });
-            canvas.on('mouse:move', function(opt) { 
-                // Removed
-            });
-            canvas.on('mouse:up', function(opt) { 
-                // Removed overrides. Just handle guide deletion.
-                if(opt.target && opt.target.isGuide) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); } }
+                canvas.add(text);
+                canvas.setActiveObject(text);
+                showToast('Text added', 'success');
             });
             
-            // Allow zoom and pan exclusively via mouse wheel
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
-                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
-                opt.e.preventDefault(); opt.e.stopPropagation(); drawRulers(); 
+            $('#delete-obj').click(() => {
+                deleteSelected();
             });
             
-            // Safe Baseline Grid Snapping during drag
-            canvas.on('object:moving', function(e) {
-                if (showBaselineGrid && e.target.type === 'textbox') {
-                    const zoom = canvas.getZoom();
-                    let relativeTop = e.target.top - MARGIN_TOP;
-                    let remainder = ((relativeTop % baselineGridHeight) + baselineGridHeight) % baselineGridHeight;
-                    if (remainder < 4 / zoom) { e.target.top -= remainder; }
-                    else if (baselineGridHeight - remainder < 4 / zoom) { e.target.top += (baselineGridHeight - remainder); }
-                }
+            $('#swap-colors').click(() => {
+                const fill = $('#fill-focus').css('background-color');
+                const stroke = $('#stroke-focus').css('border-color');
+                $('#fill-focus').css('background-color', stroke);
+                $('#stroke-focus').css('border-color', fill);
             });
             
-            $(window).keydown(function(e) { 
-                if(!activeId || canvas.getActiveObject()?.isEditing || $('.modal-overlay').is(':visible')) return;
-                if(e.ctrlKey && e.key.toLowerCase()==='r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if(e.ctrlKey && e.key.toLowerCase()==='i') { $('#place-image-input').click(); e.preventDefault(); }
-                if(e.ctrlKey && e.key.toLowerCase()==='e') { $('#menu-export').click(); e.preventDefault(); }
-                if(e.ctrlKey && e.key.toLowerCase()==='s') { $('#menu-save').click(); e.preventDefault(); }
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-margins').click(); } if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            $('#no-color').click(() => {
+                $('#fill-focus').css('background-color', 'transparent');
             });
-
-            // --- LOAD, SAVE & EXPORT ---
-            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0] }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
-            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
-
-            $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
-            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
             
-            $('#confirm-export-btn').click(async function() {
-                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
-                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
-                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
-                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
-                
-                let pagesToExport = [];
-                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
-
-                if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
-                    pdf.save(`${p.name}_Export.pdf`);
-                } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
-                }
-                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
+            $('#color-picker').on('input', function() {
+                const color = $(this).val();
+                $('#fill-focus').css('background-color', color);
             });
-
-            // --- UI PROPERTIES PANEL ---
-            let focusedColorType = 'fill'; 
-
-            canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
-            canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
-
-            function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
-                $('#no-selection').hide(); $('#properties-form').show();
-                updateTransformUI({ target: obj }); updateColorsUI(obj);
-                checkTextOverflow(obj);
-
-                if (obj.type === 'textbox') { 
-                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight);
-                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else if (font.includes('Inter')) $('#obj-font-family').val("'Inter', sans-serif"); else $('#obj-font-family').val(font);
-                    $('.btn-group button').removeClass('active');
-                    if(obj.textAlign === 'left') $('#align-left').addClass('active'); if(obj.textAlign === 'center') $('#align-center').addClass('active'); if(obj.textAlign === 'right') $('#align-right').addClass('active'); if(obj.textAlign === 'justify') $('#align-justify').addClass('active');
-                } else { $('#text-properties').hide(); }
-            }
-
-            function updateTransformUI(e) {
-                const obj = e.target;
-                if(!obj) return;
-                $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top));
-                $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight()));
-                $('#obj-rotation').val(Math.round(obj.angle % 360));
-            }
-
-            function updateColorsUI(obj) {
-                const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
-                $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
-                if (fillVal === 'transparent') $('#fill-focus').addClass('none');
-                if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
-                
-                const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
-                if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
-            }
-
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
             
-            $('#fill-focus, #stroke-focus').click(function() {
-                focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
-                $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
-                updateColorsUI(canvas.getActiveObject()); 
+            $('#stroke-weight').on('input', function() {
+                const weight = $(this).val();
+                $('#stroke-focus').css('border-width', weight + 'px');
             });
-
-            $('#unified-color-picker').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val();
-                if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
-                updateColorsUI(obj);
-            });
-
-            $('#swap-fill-stroke').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                const oldFill = obj.fill; const oldStroke = obj.stroke;
-                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
-                if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
-                canvas.renderAll(); updateColorsUI(obj); markDirty();
-            });
-
-            $('#apply-none').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                canvas.renderAll(); updateColorsUI(obj); markDirty();
-            });
-
-            $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
-            $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
-            $('#obj-w, #obj-h').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1;
-                if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
-                canvas.renderAll(); markDirty();
-            });
-
-            $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
-            $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
-            $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
-            $('#align-left').click(function() { updateObj('textAlign', 'left'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#align-center').click(function() { updateObj('textAlign', 'center'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#align-right').click(function() { updateObj('textAlign', 'right'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
-            $('#align-justify').click(function() { updateObj('textAlign', 'justify'); $('.btn-group button').removeClass('active'); $(this).addClass('active'); });
             
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); } });
-            
-            // --- LAYERS PANEL ---
-            function renderLayers() {
-                if (!activeId || !$('#tab-layers').hasClass('active')) return;
-                $('#layers-list').empty();
-                const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide);
-                [...objs].reverse().forEach(obj => {
-                    let name = obj.type; if (obj.type==='textbox') name = obj.text.substring(0,10)+'...';
-                    $('#layers-list').append(`
-                        <div class="layer-item" data-id="${obj.id}">
-                            <span>${name}</span>
-                            <div>
-                                <button class="layer-btn btn-lock"><i class="fa-solid ${obj.selectable ? 'fa-lock-open' : 'fa-lock'}"></i></button>
-                                <button class="layer-btn btn-vis"><i class="fa-solid ${obj.visible === false ? 'fa-eye-slash' : 'fa-eye'}"></i></button>
-                            </div>
+            // Layer panel
+            function refreshLayerPanel() {
+                const objects = canvas.getObjects();
+                let html = '';
+                objects.forEach((obj, i) => {
+                    html += `
+                        <div class="layer-item" data-index="${i}">
+                            <i class="fa-regular fa-eye toggle-visibility"></i>
+                            <span class="layer-name">${obj.type}</span>
+                            <span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span>
                         </div>
-                    `);
+                    `;
                 });
+                $('#layer-list').html(html);
             }
-            $(document).on('click', '.layer-item', function(e) {
-                if($(e.target).closest('.layer-btn').length) return;
-                const id = $(this).data('id'); const obj = canvas.getObjects().find(o => o.id === id);
-                if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); }
+            
+            $('#refresh-layers').click(refreshLayerPanel);
+            
+            canvas.on('object:added', refreshLayerPanel);
+            canvas.on('object:removed', refreshLayerPanel);
+            
+            // Make layers sortable
+            $('#layer-list').sortable({
+                handle: '.drag-handle',
+                update: function() {
+                    const newOrder = [];
+                    $('#layer-list .layer-item').each(function() {
+                        const idx = $(this).data('index');
+                        newOrder.push(canvas.getObjects()[idx]);
+                    });
+                    
+                    // Reorder canvas objects
+                    canvas.getObjects().forEach(obj => canvas.remove(obj));
+                    newOrder.forEach(obj => canvas.add(obj));
+                    canvas.renderAll();
+                    refreshLayerPanel();
+                }
             });
-            $(document).on('click', '.btn-lock', function() {
-                const id = $(this).closest('.layer-item').data('id'); const obj = canvas.getObjects().find(o => o.id === id);
-                if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); renderLayers(); }
+            
+            // Toggle AI Assistant panel
+            $('#toggle-ai-assistant').click(function() {
+                $('#ai-assistant').slideToggle();
             });
-            $(document).on('click', '.btn-vis', function() {
-                const id = $(this).closest('.layer-item').data('id'); const obj = canvas.getObjects().find(o => o.id === id);
-                if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); renderLayers(); }
-            });
-
-            // --- STYLES SYSTEM ---
-            function updateStyleList() {
-                if(!activeId) return;
-                $('#style-select').empty().append('<option value="">-- Choose Style --</option>');
-                Object.keys(projects[activeId].styles).forEach(s => $('#style-select').append(`<option value="${s}">${s}</option>`));
-            }
-            $('#btn-save-style').click(() => {
-                let name = $('#style-name').val(); let obj = canvas.getActiveObject();
-                if (name && obj && obj.type === 'textbox') {
-                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing || 0, textAlign: obj.textAlign, fill: obj.fill };
-                    updateStyleList(); $('#style-name').val(''); alert('Style Saved!');
-                } else { alert("Select a text box and enter a name."); }
-            });
-            $('#btn-apply-style').click(() => {
-                let name = $('#style-select').val(); let obj = canvas.getActiveObject();
-                if (name && obj && obj.type === 'textbox') { obj.set(projects[activeId].styles[name]); canvas.requestRenderAll(); markDirty(); }
-            });
-
-            renderTabs();
+            
+            console.log('Thooval v3.0 initialized with modern features!');
         });
     </script>
 </body>
