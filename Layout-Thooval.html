@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.5</title>
+    <title>Thooval Workspace v5.6</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -492,8 +492,8 @@
             let isSpaceDown = false;
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
-            let enableSmartSnap = true; // New snap toggle state
-            let snapLines = []; // To store visual snap indicators
+            let enableSmartSnap = true; 
+            let snapLines = []; 
             let pagesActionType = null; let isEditingDoc = false;
 
             // Global State for Draw Tools & Cropping
@@ -602,6 +602,10 @@
                     });
                 }
             }
+
+            // Bind Undo/Redo Menus
+            $('#menu-undo').click(performUndo);
+            $('#menu-redo').click(performRedo);
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -802,7 +806,7 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
+            // --- NEW: SMART SNAPPING ENGINE ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -820,7 +824,9 @@
                     o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && o.visible !== false
                 );
 
-                const objB = obj.getBoundingRect();
+                // Get bounding box without any viewport transform interference
+                const objB = obj.getBoundingRect(true, true); 
+                
                 let snapX = false;
                 let snapY = false;
                 let dx = 0;
@@ -828,65 +834,62 @@
                 let lineX = null;
                 let lineY = null;
 
-                snapTargets.forEach(target => {
-                    if (target.isGuide) {
-                        if (target.lockMovementX && !snapY) {
-                            if (Math.abs(objB.top - target.top) < snapThreshold) { dy = target.top - objB.top; snapY = true; }
-                            else if (Math.abs((objB.top + objB.height) - target.top) < snapThreshold) { dy = target.top - (objB.top + objB.height); snapY = true; }
-                            else if (Math.abs((objB.top + objB.height/2) - target.top) < snapThreshold) { dy = target.top - (objB.top + objB.height/2); snapY = true; }
-                        }
-                        if (target.lockMovementY && !snapX) {
-                            if (Math.abs(objB.left - target.left) < snapThreshold) { dx = target.left - objB.left; snapX = true; }
-                            else if (Math.abs((objB.left + objB.width) - target.left) < snapThreshold) { dx = target.left - (objB.left + objB.width); snapX = true; }
-                            else if (Math.abs((objB.left + objB.width/2) - target.left) < snapThreshold) { dx = target.left - (objB.left + objB.width/2); snapX = true; }
-                        }
-                        return;
-                    }
+                let targetXs = [];
+                let targetYs = [];
 
-                    const tarB = target.getBoundingRect();
-                    
-                    // X-Axis (Left, Center, Right)
-                    if (!snapX) {
-                        const tarPointsX = [tarB.left, tarB.left + tarB.width, tarB.left + tarB.width/2];
-                        const objPointsX = [objB.left, objB.left + objB.width, objB.left + objB.width/2];
-                        for(let t of tarPointsX) {
-                            for(let o of objPointsX) {
-                                if (Math.abs(o - t) < snapThreshold) { dx = t - o; snapX = true; lineX = t; break; }
-                            }
-                            if(snapX) break;
-                        }
-                    }
-
-                    // Y-Axis (Top, Center, Bottom)
-                    if (!snapY) {
-                        const tarPointsY = [tarB.top, tarB.top + tarB.height, tarB.top + tarB.height/2];
-                        const objPointsY = [objB.top, objB.top + objB.height, objB.top + objB.height/2];
-                        for(let t of tarPointsY) {
-                            for(let o of objPointsY) {
-                                if (Math.abs(o - t) < snapThreshold) { dy = t - o; snapY = true; lineY = t; break; }
-                            }
-                            if(snapY) break;
-                        }
+                snapTargets.forEach(t => {
+                    if (t.isGuide) {
+                        if (t.lockMovementX) targetYs.push(t.top); 
+                        if (t.lockMovementY) targetXs.push(t.left);
+                    } else {
+                        let tB = t.getBoundingRect(true, true);
+                        targetXs.push(tB.left, tB.left + tB.width/2, tB.left + tB.width);
+                        targetYs.push(tB.top, tB.top + tB.height/2, tB.top + tB.height);
                     }
                 });
 
+                let objXs = [objB.left, objB.left + objB.width/2, objB.left + objB.width];
+                let objYs = [objB.top, objB.top + objB.height/2, objB.top + objB.height];
+
+                let minDx = Infinity;
+                for (let oX of objXs) {
+                    for (let tX of targetXs) {
+                        if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) {
+                            minDx = tX - oX;
+                            lineX = tX;
+                            snapX = true;
+                        }
+                    }
+                }
+
+                let minDy = Infinity;
+                for (let oY of objYs) {
+                    for (let tY of targetYs) {
+                        if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) {
+                            minDy = tY - oY;
+                            lineY = tY;
+                            snapY = true;
+                        }
+                    }
+                }
+
                 if (snapX || snapY) {
-                    obj.set({ left: obj.left + dx, top: obj.top + dy });
+                    if (snapX) obj.set('left', obj.left + minDx);
+                    if (snapY) obj.set('top', obj.top + minDy);
                     obj.setCoords();
 
-                    // Render Visual Teal Lines
                     if (snapX && lineX !== null) {
-                        let vLine = new fabric.Line([lineX, -50000, lineX, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5,5], isSnapGuide: true, excludeFromExport: true });
+                        let vLine = new fabric.Line([lineX, -50000, lineX, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
                         snapLines.push(vLine); canvas.add(vLine);
                     }
                     if (snapY && lineY !== null) {
-                        let hLine = new fabric.Line([-50000, lineY, 50000, lineY], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5,5], isSnapGuide: true, excludeFromExport: true });
+                        let hLine = new fabric.Line([-50000, lineY, 50000, lineY], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
                         snapLines.push(hLine); canvas.add(hLine);
                     }
                 }
             });
 
-            // --- TEXT SCALING FIX ---
+            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -963,7 +966,7 @@
                 if (activeObject && !activeObject.isEditing) {
                     activeObject.clone(function(cloned) {
                         clipboard = cloned;
-                        deleteActive(); // Safely delete only after clone finishes
+                        deleteActive(); 
                     }, CUSTOM_PROPS);
                 }
             }
