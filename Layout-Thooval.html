@@ -25,6 +25,7 @@
             --accent-hover: #bceb35;
             --accent-text: #1a2005;
             --danger: #ef4444;
+            --guide-bleed: #ff4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 11px; }
@@ -150,7 +151,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.9</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v4</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -395,7 +396,7 @@
     <div class="modal-overlay" id="export-modal">
         <div class="modal" style="width: 350px;">
             <h2>Export Document</h2>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable / Vector-ready)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
             <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div>
             <div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div>
             <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
@@ -485,6 +486,19 @@
             const fontSelect = $('#obj-font-family');
             curatedFonts.forEach(font => {
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
+            });
+
+            // --- MALAYALAM SMART FONT TOGGLE (NEW ADDITION) ---
+            canvas.on('text:changed', function(e) {
+                const obj = e.target;
+                const malayalamRegex = /[\u0D00-\u0D7F]/;
+                if (malayalamRegex.test(obj.text)) {
+                    if (obj.fontFamily.includes('Inter')) {
+                        obj.set('fontFamily', "'Manjari', sans-serif");
+                        canvas.renderAll();
+                        updateUI({ selected: [obj] });
+                    }
+                }
             });
 
             // --- MALAYALAM FML ↔ UNICODE ENGINE ---
@@ -647,13 +661,22 @@
                 canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
             }
 
+            // --- OPTIMIZED LAYER SORTING (NEW ADDITION) ---
             function sortLayers() {
-                const objects = canvas.getObjects();
-                objects.sort((a, b) => {
-                    const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
+                canvas._objects.sort((a, b) => {
+                    const getZ = (o) => { 
+                        if (o.isPaper) return -5; 
+                        if (o.isMasterClone) return -4; 
+                        if (o.isRegular || o.isMasterSource) return -3; 
+                        if (o.isMask) return -2; 
+                        if (o.isBleed) return -1; 
+                        if (o.isMargin) return 0; 
+                        if (o.isGuide) return 1; 
+                        return -3; 
+                    };
                     return getZ(a) - getZ(b);
                 });
-                objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
+                canvas.requestRenderAll();
             }
 
             function drawDocumentEnvironment() {
@@ -681,7 +704,7 @@
                     }
                 }
                 canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
-                sortLayers(); canvas.requestRenderAll();
+                sortLayers();
             }
 
             // --- TOGGLES & PREVIEW MODE ---
@@ -845,6 +868,30 @@
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
+            // --- GROUPING LOGIC (NEW ADDITIONS) ---
+            function groupObjects() {
+                if (!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'activeSelection') return;
+                activeObj.toGroup();
+                canvas.requestRenderAll();
+                markDirty();
+                saveHistory();
+            }
+
+            function ungroupObjects() {
+                if (!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'group') return;
+                activeObj.toActiveSelection();
+                canvas.requestRenderAll();
+                markDirty();
+                saveHistory();
+            }
+
+            $('#menu-group').click(groupObjects);
+            $('#menu-ungroup').click(ungroupObjects);
+
             // --- ADVANCED IMAGE MASKING ---
             $('#tool-mask-image').click(function() {
                 const activeSelection = canvas.getActiveObject();
@@ -961,15 +1008,36 @@
                 }
             });
             canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
+            
             canvas.on('mouse:up', function(opt) { 
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
                 if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
                 else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
                 if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
-            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+            
+            // --- ZOOM (REFINED ADDITION) ---
+            canvas.on('mouse:wheel', function(opt) { 
+                opt.e.preventDefault();
+                opt.e.stopPropagation();
+                
+                if(opt.e.ctrlKey) { 
+                    let zoom = canvas.getZoom();
+                    zoom *= 0.999 ** opt.e.deltaY;
+                    if (zoom > 20) zoom = 20;
+                    if (zoom < 0.05) zoom = 0.05;
+                    canvas.zoomToPoint({x: opt.e.offsetX, y: opt.e.offsetY}, zoom);
+                } else { 
+                    canvas.viewportTransform[5] -= opt.e.deltaY; 
+                    canvas.viewportTransform[4] -= opt.e.deltaX; 
+                    canvas.requestRenderAll(); 
+                } 
+                
+                maintainHairlines();
+                if(!isPreviewMode) drawRulers(); 
+            });
 
-            // --- EXPORT & SAVE ---
+            // --- EXPORT & SAVE (HIGH RES ADDITIONS INCLUDED) ---
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
             $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
 
@@ -980,20 +1048,37 @@
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
                 canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
-                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                
+                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed || o.excludeFromExport) o.set('visible', false); });
                 
                 let pagesToExport = [];
-                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
+                if (range === 'all') { 
+                    for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); 
+                } else { 
+                    const centerY = (-canvas.viewportTransform[5] + (canvas.height / 2)) / canvas.getZoom();
+                    const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                    let currentPage = Math.floor((centerY - MARGIN_TOP) / pageHeightWithGap);
+                    pagesToExport.push(Math.max(0, Math.min(currentPage, p.totalPages - 1)));
+                }
 
                 if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
-                    pdf.save(`${p.name}_Export.pdf`);
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: p.config.widthPx > p.config.heightPx ? 'l' : 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                    for (let i = 0; i < pagesToExport.length; i++) { 
+                        const pg = pagesToExport[i]; if (i > 0) pdf.addPage([p.config.widthPx, p.config.heightPx]); 
+                        const pos = getPagePosition(pg, p.config); 
+                        const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 3, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }); 
+                        pdf.addImage(dataUrl, 'PNG', 0, 0, p.config.widthPx, p.config.heightPx, null, 'FAST'); 
+                    }
+                    pdf.save(`${p.name}.pdf`);
                 } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
+                    for (let i = 0; i < pagesToExport.length; i++) { 
+                        const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); 
+                        const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }); 
+                        a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); 
+                        await new Promise(r => setTimeout(r, 300)); 
+                    }
                 }
-                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
+                canvas.getObjects().forEach(o => o.set('visible', true)); drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
             });
 
             // --- UI PROPERTIES PANEL ---
