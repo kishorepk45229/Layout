@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v4.1</title>
+    <title>Thooval Workspace v5</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -25,7 +25,6 @@
             --accent-hover: #bceb35;
             --accent-text: #1a2005;
             --danger: #ef4444;
-            --guide-bleed: #ff4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 11px; }
@@ -45,8 +44,12 @@
         .menu-bar { display: flex; list-style: none; }
         .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; }
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
-        .dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--bg-panel); min-width: 250px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; }
+        
+        /* MENU FIX: Invisible hover bridge to prevent disconnects */
+        .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
+        
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
@@ -78,6 +81,7 @@
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
+        /* Global Palette in Left Toolbar */
         .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
         .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
         .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
@@ -170,13 +174,6 @@
                         <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
                         <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
                         <li class="divider-li"></li>
-                        <li id="menu-cut"><span>Cut</span> <span class="shortcut">Ctrl+X</span></li>
-                        <li id="menu-copy"><span>Copy</span> <span class="shortcut">Ctrl+C</span></li>
-                        <li id="menu-paste"><span>Paste</span> <span class="shortcut">Ctrl+V</span></li>
-                        <li id="menu-paste-in-place"><span>Paste in Place</span> <span class="shortcut">Ctrl+Shift+V</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-find-replace"><span>Find & Replace Text...</span> <span class="shortcut">Ctrl+F</span></li>
-                        <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
                         <li class="divider-li"></li>
@@ -219,15 +216,16 @@
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
-                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
+                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space/H)"><i class="fa-regular fa-hand"></i></button>
                 
                 <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
                 
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 
-                <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
-                <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
+                <button class="tool-btn" id="add-rect" title="Rectangle Tool (R)"><i class="fa-regular fa-square"></i></button>
+                <button class="tool-btn" id="add-circle" title="Ellipse Tool (O)"><i class="fa-regular fa-circle"></i></button>
+                <button class="tool-btn" id="add-polygon" title="Polygon Tool (P)"><i class="fa-solid fa-draw-polygon"></i></button>
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
@@ -399,28 +397,10 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="find-replace-modal">
-        <div class="modal" style="width: 350px;">
-            <h2>Find and Replace Text</h2>
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>Find what:</label>
-                <input type="text" id="find-text-input" placeholder="Text to search for...">
-            </div>
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>Replace with:</label>
-                <input type="text" id="replace-text-input" placeholder="Replacement text...">
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#find-replace-modal').hide()">Close</button>
-                <button class="btn-primary" id="btn-replace-all">Replace All</button>
-            </div>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="export-modal">
         <div class="modal" style="width: 350px;">
             <h2>Export Document</h2>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable / Vector-ready)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Format</label><select id="export-format"><option value="pdf">PDF (Printable)</option><option value="png">PNG Image</option><option value="jpeg">JPEG Image</option></select></div>
             <div class="prop-row" id="export-scale-row" style="display: none; margin-bottom: 16px;"><div class="prop-col"><label>Scale / Quality</label><select id="export-scale"><option value="1">1x (Standard)</option><option value="2" selected>2x (High Res)</option><option value="3">3x (Ultra)</option></select></div></div>
             <div class="prop-col" style="margin-bottom: 16px;"><label>Pages</label><select id="export-range"><option value="all">All Pages</option><option value="current">Current Page Only</option></select></div>
             <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
@@ -483,8 +463,11 @@
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let pagesActionType = null; let isEditingDoc = false;
 
-            // --- CLIPBOARD STATE ---
-            let clipboard = null;
+            // Global State for Draw Tools
+            let isDrawingShape = false;
+            let drawingObject = null;
+            let origX = 0, origY = 0;
+            let polygonSides = 5;
 
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
@@ -513,19 +496,6 @@
             const fontSelect = $('#obj-font-family');
             curatedFonts.forEach(font => {
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
-            });
-
-            // --- MALAYALAM SMART FONT TOGGLE ---
-            canvas.on('text:changed', function(e) {
-                const obj = e.target;
-                const malayalamRegex = /[\u0D00-\u0D7F]/;
-                if (malayalamRegex.test(obj.text)) {
-                    if (obj.fontFamily.includes('Inter')) {
-                        obj.set('fontFamily', "'Manjari', sans-serif");
-                        canvas.renderAll();
-                        updateUI({ selected: [obj] });
-                    }
-                }
             });
 
             // --- MALAYALAM FML ↔ UNICODE ENGINE ---
@@ -688,22 +658,13 @@
                 canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
             }
 
-            // --- OPTIMIZED LAYER SORTING ---
             function sortLayers() {
-                canvas._objects.sort((a, b) => {
-                    const getZ = (o) => { 
-                        if (o.isPaper) return -5; 
-                        if (o.isMasterClone) return -4; 
-                        if (o.isRegular || o.isMasterSource) return -3; 
-                        if (o.isMask) return -2; 
-                        if (o.isBleed) return -1; 
-                        if (o.isMargin) return 0; 
-                        if (o.isGuide) return 1; 
-                        return -3; 
-                    };
+                const objects = canvas.getObjects();
+                objects.sort((a, b) => {
+                    const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
                     return getZ(a) - getZ(b);
                 });
-                canvas.requestRenderAll();
+                objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
             }
 
             function drawDocumentEnvironment() {
@@ -731,102 +692,8 @@
                     }
                 }
                 canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
-                sortLayers();
+                sortLayers(); canvas.requestRenderAll();
             }
-
-            // --- CLIPBOARD (COPY, CUT, PASTE) ---
-            function copyObjects() {
-                if (!activeId) return;
-                const activeObject = canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.clone(function(cloned) {
-                        clipboard = cloned;
-                    }, CUSTOM_PROPS);
-                }
-            }
-
-            function cutObjects() {
-                if (!activeId) return;
-                const activeObject = canvas.getActiveObject();
-                if (activeObject && !activeObject.isEditing) {
-                    copyObjects();
-                    deleteActive();
-                }
-            }
-
-            function pasteObjects(inPlace = false) {
-                if (!activeId || !clipboard) return;
-                
-                clipboard.clone(function(clonedObj) {
-                    canvas.discardActiveObject();
-                    
-                    // Standard paste offsets by 20px so user sees it. Paste in place stays at 0.
-                    const offset = inPlace ? 0 : 20;
-                    
-                    clonedObj.set({
-                        left: clonedObj.left + offset,
-                        top: clonedObj.top + offset,
-                        evented: true,
-                    });
-
-                    if (clonedObj.type === 'activeSelection') {
-                        clonedObj.canvas = canvas;
-                        clonedObj.forEachObject(function(obj) {
-                            canvas.add(obj);
-                        });
-                        clonedObj.setCoords();
-                    } else {
-                        canvas.add(clonedObj);
-                    }
-                    
-                    clipboard.top += offset;
-                    clipboard.left += offset;
-                    
-                    canvas.setActiveObject(clonedObj);
-                    sortLayers();
-                    markDirty();
-                    saveHistory();
-                }, CUSTOM_PROPS);
-            }
-
-            $('#menu-copy').click(copyObjects);
-            $('#menu-cut').click(cutObjects);
-            $('#menu-paste').click(() => pasteObjects(false));
-            $('#menu-paste-in-place').click(() => pasteObjects(true));
-
-            // --- FIND AND REPLACE ---
-            $('#menu-find-replace').click(() => {
-                if(!activeId) return;
-                $('#find-text-input').val('');
-                $('#replace-text-input').val('');
-                $('#find-replace-modal').css('display', 'flex');
-            });
-
-            $('#btn-replace-all').click(() => {
-                const findStr = $('#find-text-input').val();
-                const replaceStr = $('#replace-text-input').val();
-                if (!findStr) return;
-                
-                let count = 0;
-                canvas.getObjects().forEach(obj => {
-                    if (obj.type === 'textbox') {
-                        if (obj.text.includes(findStr)) {
-                            obj.set('text', obj.text.split(findStr).join(replaceStr));
-                            count++;
-                        }
-                    }
-                });
-                
-                if (count > 0) {
-                    canvas.requestRenderAll();
-                    markDirty();
-                    saveHistory();
-                    alert(`Successfully replaced ${count} occurrence(s).`);
-                } else {
-                    alert("Text not found in any active text box.");
-                }
-                $('#find-replace-modal').hide();
-            });
 
             // --- TOGGLES & PREVIEW MODE ---
             function updateVisibilityToggles() {
@@ -899,7 +766,7 @@
                 });
             });
 
-            // --- TEXT SCALING FIX ---
+            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -959,58 +826,35 @@
                 drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- TEXT BOX, OBJECT CREATION ---
+            // --- SHAPE & TEXT GENERATION / DRAWING ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             
             function processNewObject(obj) { 
                 if(!activeId) return; 
-                if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
-                
-                if (obj.type !== 'image') {
-                    obj.set('fill', globalFill);
-                    if (globalStroke !== 'transparent' && globalStrokeWeight > 0) {
-                        obj.set('stroke', globalStroke);
-                        obj.set('strokeWidth', globalStrokeWeight);
-                    }
-                }
-                
                 canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
             }
 
-            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, width: 100, height: 100 })));
-            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, radius: 50 })));
-            $('#add-text').click(() => processNewObject(new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true })));
+            function getPolygonPoints(sides, radius) {
+                const points = [];
+                const angle = (Math.PI * 2) / sides;
+                for (let i = 0; i < sides; i++) {
+                    points.push({ x: radius * Math.sin(i * angle), y: -radius * Math.cos(i * angle) });
+                }
+                return points;
+            }
+
+            $('#add-text').click(() => {
+                const txt = new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight });
+                processNewObject(txt);
+                setTool('select');
+            });
             
             function handleImageInsert(file) {
                 if (!file || !activeId) return; const reader = new FileReader();
                 reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
-
-            // --- GROUPING LOGIC ---
-            function groupObjects() {
-                if (!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'activeSelection') return;
-                activeObj.toGroup();
-                canvas.requestRenderAll();
-                markDirty();
-                saveHistory();
-            }
-
-            function ungroupObjects() {
-                if (!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'group') return;
-                activeObj.toActiveSelection();
-                canvas.requestRenderAll();
-                markDirty();
-                saveHistory();
-            }
-
-            $('#menu-group').click(groupObjects);
-            $('#menu-ungroup').click(ungroupObjects);
 
             // --- ADVANCED IMAGE MASKING ---
             $('#tool-mask-image').click(function() {
@@ -1021,7 +865,7 @@
                 
                 const objs = activeSelection.getObjects();
                 const img = objs.find(o => o.type === 'image');
-                const shape = objs.find(o => o.type === 'rect' || o.type === 'circle');
+                const shape = objs.find(o => o.type === 'rect' || o.type === 'circle' || o.type === 'polygon');
 
                 if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
 
@@ -1044,15 +888,65 @@
                 if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
             });
 
-            // --- TOOLS, PAN & ZOOM ---
+            // --- DYNAMIC TEXT ---
+            $('#btn-insert-page-num').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
+                else { alert("Please select a text box first to turn it into a dynamic page number."); }
+            });
+            function updateDynamicText() {
+                if (!activeId) return; const p = projects[activeId];
+                canvas.getObjects().forEach(obj => {
+                    if (obj.type === 'textbox' && obj.isDynamicText) {
+                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
+                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
+                    }
+                });
+            }
+
+            // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
-                if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
-                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
+                if(tool==='select') $('#tool-select').addClass('active-state'); 
+                if(tool==='pan') $('#tool-pan').addClass('active-state'); 
+                if(tool==='zoom') $('#tool-zoom').addClass('active-state');
+                if(['rect', 'circle', 'polygon'].includes(tool)) $(`#add-${tool}`).addClass('active-state');
+
+                if (tool !== 'select') { 
+                    canvas.selection = false; 
+                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); 
+                    
+                    if (tool === 'pan') canvas.defaultCursor = 'grab';
+                    else if (tool === 'zoom') canvas.defaultCursor = 'zoom-in';
+                    else canvas.defaultCursor = 'crosshair'; // For Rect, Circle, Polygon
+                } 
+                else { 
+                    canvas.selection = true; 
+                    canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); 
+                    canvas.defaultCursor = 'default'; 
+                }
                 canvas.discardActiveObject(); canvas.requestRenderAll();
             }
-            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
+
+            $('#tool-select').click(() => setTool('select')); 
+            $('#tool-pan').click(() => setTool('pan')); 
+            $('#tool-zoom').click(() => setTool('zoom'));
+            $('#add-rect').click(() => setTool('rect'));
+            $('#add-circle').click(() => setTool('circle'));
+            
+            $('#add-polygon').click(() => {
+                let sides = prompt("Enter number of sides for the polygon (3-20):", polygonSides);
+                if (sides !== null && !isNaN(parseInt(sides))) {
+                    let parsedSides = parseInt(sides);
+                    if (parsedSides >= 3 && parsedSides <= 20) {
+                        polygonSides = parsedSides;
+                        setTool('polygon');
+                    } else {
+                        alert("Please enter a valid number between 3 and 20.");
+                    }
+                }
+            });
 
             function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
             function fitWholePage() {
@@ -1066,48 +960,38 @@
 
             let isDragging = false; let lastPosX, lastPosY;
             
-            // --- KEYBOARD SHORTCUTS (WITH INPUT PROTECTION) ---
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
-                
-                // Block shortcuts if user is typing in an input or a canvas text box
                 if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                if (canvas.getActiveObject()?.isEditing) return; 
-
+                
                 if(e.code === 'Space') {
                     isSpaceDown = true;
-                    if(activeTool !== 'zoom') {
+                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
                         canvas.defaultCursor = 'grab'; e.preventDefault();
                     }
                 }
-                
-                if (e.ctrlKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
-                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
-                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) ungroupObjects(); else groupObjects(); return; }
-                    if (key === 'r') { e.preventDefault(); $('#menu-toggle-rulers').click(); return; }
-                    if (key === 'i') { e.preventDefault(); $('#place-image-input').click(); return; }
-                    if (key === 'e') { e.preventDefault(); $('#menu-export').click(); return; }
-                    if (key === 's') { e.preventDefault(); $('#menu-save').click(); return; }
-                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
-                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
-                    if (key === 'v') { 
-                        e.preventDefault(); 
-                        if (e.shiftKey) pasteObjects(true); // Paste in place
-                        else pasteObjects(false); // Standard Paste
-                        return; 
-                    }
-                    if (key === 'f') { e.preventDefault(); $('#menu-find-replace').click(); return; }
-                }
 
-                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
-                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
-                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
-                if (e.key.toLowerCase() === 'w') $('#menu-toggle-preview').click(); 
-                if (e.key.toLowerCase() === 'm') $('#menu-toggle-margins').click(); 
-                if (e.key.toLowerCase() === 'b') $('#menu-toggle-bleed').click(); 
-                if (e.key === ';') $('#menu-toggle-guides').click(); 
+                if (canvas.getActiveObject()?.isEditing) return; 
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
+                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'h') setTool('pan'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
+                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey) $('#add-polygon').click();
+                
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
             
             $(window).keyup(function(e) { 
@@ -1119,39 +1003,92 @@
 
             canvas.on('mouse:down', function(opt) {
                 if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                
                 if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
                     isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; 
                     lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
                 }
+
+                // Initialize shape drawing
+                if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
+                    isDrawingShape = true;
+                    isDragging = false; // Prevent panning
+                    const pointer = canvas.getPointer(opt.e);
+                    origX = pointer.x;
+                    origY = pointer.y;
+
+                    if (activeTool === 'rect') {
+                        drawingObject = new fabric.Rect({ left: origX, top: origY, width: 0, height: 0, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight, originX: 'left', originY: 'top' });
+                    } else if (activeTool === 'circle') {
+                        drawingObject = new fabric.Circle({ left: origX, top: origY, radius: 0, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight, originX: 'center', originY: 'center' });
+                    } else if (activeTool === 'polygon') {
+                        const points = getPolygonPoints(polygonSides, 50); // Create standard polygon of radius 50
+                        drawingObject = new fabric.Polygon(points, { left: origX, top: origY, scaleX: 0.01, scaleY: 0.01, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight, originX: 'center', originY: 'center' });
+                    }
+                    
+                    if (projects[activeId].isMasterMode) { drawingObject.set({ isMasterSource: true }); } else { drawingObject.set({ isRegular: true }); }
+                    canvas.add(drawingObject);
+                }
             });
-            canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
             
+            canvas.on('mouse:move', function(opt) { 
+                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
+                
+                // Update shape dimensions while dragging
+                if (isDrawingShape && drawingObject) {
+                    const pointer = canvas.getPointer(opt.e);
+                    if (activeTool === 'rect') {
+                        drawingObject.set({
+                            width: Math.abs(pointer.x - origX),
+                            height: Math.abs(pointer.y - origY),
+                            left: Math.min(origX, pointer.x),
+                            top: Math.min(origY, pointer.y)
+                        });
+                    } else if (activeTool === 'circle') {
+                        const radius = Math.max(Math.abs(pointer.x - origX), Math.abs(pointer.y - origY)) / 2;
+                        drawingObject.set({ 
+                            radius: radius,
+                            left: origX + (pointer.x - origX)/2,
+                            top: origY + (pointer.y - origY)/2
+                        });
+                    } else if (activeTool === 'polygon') {
+                        const dx = pointer.x - origX;
+                        const dy = pointer.y - origY;
+                        const radius = Math.sqrt(dx * dx + dy * dy);
+                        const scale = radius / 50; // Scale relative to initial 50 radius
+                        drawingObject.set({ scaleX: scale, scaleY: scale });
+                    }
+                    canvas.requestRenderAll();
+                }
+            });
+
             canvas.on('mouse:up', function(opt) { 
                 canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
+                
                 if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
                 else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                
+                // Finalize shape drawing
+                if (isDrawingShape) {
+                    isDrawingShape = false;
+                    
+                    // If shape is too small (e.g., user just clicked without dragging), delete it to prevent tiny invisible artifacts
+                    if ((drawingObject.width * drawingObject.scaleX < 2) && (drawingObject.height * drawingObject.scaleY < 2)) {
+                        canvas.remove(drawingObject);
+                    } else {
+                        drawingObject.setCoords();
+                        canvas.setActiveObject(drawingObject);
+                        sortLayers(); markDirty(); saveHistory();
+                    }
+                    
+                    setTool('select');
+                    drawingObject = null;
+                }
+
                 if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
-            
-            canvas.on('mouse:wheel', function(opt) { 
-                opt.e.preventDefault();
-                opt.e.stopPropagation();
-                
-                if(opt.e.ctrlKey) { 
-                    let zoom = canvas.getZoom();
-                    zoom *= 0.999 ** opt.e.deltaY;
-                    if (zoom > 20) zoom = 20;
-                    if (zoom < 0.05) zoom = 0.05;
-                    canvas.zoomToPoint({x: opt.e.offsetX, y: opt.e.offsetY}, zoom);
-                } else { 
-                    canvas.viewportTransform[5] -= opt.e.deltaY; 
-                    canvas.viewportTransform[4] -= opt.e.deltaX; 
-                    canvas.requestRenderAll(); 
-                } 
-                
-                maintainHairlines();
-                if(!isPreviewMode) drawRulers(); 
-            });
+
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
 
             // --- EXPORT & SAVE ---
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
@@ -1164,37 +1101,20 @@
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
                 canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                
-                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed || o.excludeFromExport) o.set('visible', false); });
+                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
+                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
                 
                 let pagesToExport = [];
-                if (range === 'all') { 
-                    for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); 
-                } else { 
-                    const centerY = (-canvas.viewportTransform[5] + (canvas.height / 2)) / canvas.getZoom();
-                    const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
-                    let currentPage = Math.floor((centerY - MARGIN_TOP) / pageHeightWithGap);
-                    pagesToExport.push(Math.max(0, Math.min(currentPage, p.totalPages - 1)));
-                }
+                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
 
                 if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: p.config.widthPx > p.config.heightPx ? 'l' : 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { 
-                        const pg = pagesToExport[i]; if (i > 0) pdf.addPage([p.config.widthPx, p.config.heightPx]); 
-                        const pos = getPagePosition(pg, p.config); 
-                        const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 3, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }); 
-                        pdf.addImage(dataUrl, 'PNG', 0, 0, p.config.widthPx, p.config.heightPx, null, 'FAST'); 
-                    }
-                    pdf.save(`${p.name}.pdf`);
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
+                    pdf.save(`${p.name}_Export.pdf`);
                 } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { 
-                        const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); 
-                        const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }); 
-                        a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); 
-                        await new Promise(r => setTimeout(r, 300)); 
-                    }
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
                 }
-                canvas.getObjects().forEach(o => o.set('visible', true)); drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
+                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
             });
 
             // --- UI PROPERTIES PANEL ---
@@ -1309,12 +1229,7 @@
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
-            
-            $('#delete-obj').click(deleteActive); 
-            $('html').keyup(function(e) { 
-                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); 
-            });
+            $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing && e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
             // --- TYPOGRAPHY CONVERTER UI ---
