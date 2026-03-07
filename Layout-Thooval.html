@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v1.9</title>
+    <title>Thooval Workspace v4.1</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -45,7 +45,7 @@
         .menu-bar { display: flex; list-style: none; }
         .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; }
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
-        .dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; }
+        .dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--bg-panel); min-width: 250px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; }
         .menu-item:hover .dropdown { display: block; }
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
@@ -78,7 +78,6 @@
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
-        /* Global Palette in Left Toolbar */
         .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
         .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
         .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
@@ -151,7 +150,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v4</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v1.9</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -170,6 +169,13 @@
                     <ul class="dropdown">
                         <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
                         <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-cut"><span>Cut</span> <span class="shortcut">Ctrl+X</span></li>
+                        <li id="menu-copy"><span>Copy</span> <span class="shortcut">Ctrl+C</span></li>
+                        <li id="menu-paste"><span>Paste</span> <span class="shortcut">Ctrl+V</span></li>
+                        <li id="menu-paste-in-place"><span>Paste in Place</span> <span class="shortcut">Ctrl+Shift+V</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-find-replace"><span>Find & Replace Text...</span> <span class="shortcut">Ctrl+F</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
@@ -393,6 +399,24 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="find-replace-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Find and Replace Text</h2>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Find what:</label>
+                <input type="text" id="find-text-input" placeholder="Text to search for...">
+            </div>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Replace with:</label>
+                <input type="text" id="replace-text-input" placeholder="Replacement text...">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#find-replace-modal').hide()">Close</button>
+                <button class="btn-primary" id="btn-replace-all">Replace All</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="export-modal">
         <div class="modal" style="width: 350px;">
             <h2>Export Document</h2>
@@ -459,6 +483,9 @@
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let pagesActionType = null; let isEditingDoc = false;
 
+            // --- CLIPBOARD STATE ---
+            let clipboard = null;
+
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
@@ -488,7 +515,7 @@
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
             });
 
-            // --- MALAYALAM SMART FONT TOGGLE (NEW ADDITION) ---
+            // --- MALAYALAM SMART FONT TOGGLE ---
             canvas.on('text:changed', function(e) {
                 const obj = e.target;
                 const malayalamRegex = /[\u0D00-\u0D7F]/;
@@ -661,7 +688,7 @@
                 canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
             }
 
-            // --- OPTIMIZED LAYER SORTING (NEW ADDITION) ---
+            // --- OPTIMIZED LAYER SORTING ---
             function sortLayers() {
                 canvas._objects.sort((a, b) => {
                     const getZ = (o) => { 
@@ -706,6 +733,100 @@
                 canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
                 sortLayers();
             }
+
+            // --- CLIPBOARD (COPY, CUT, PASTE) ---
+            function copyObjects() {
+                if (!activeId) return;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject) {
+                    activeObject.clone(function(cloned) {
+                        clipboard = cloned;
+                    }, CUSTOM_PROPS);
+                }
+            }
+
+            function cutObjects() {
+                if (!activeId) return;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && !activeObject.isEditing) {
+                    copyObjects();
+                    deleteActive();
+                }
+            }
+
+            function pasteObjects(inPlace = false) {
+                if (!activeId || !clipboard) return;
+                
+                clipboard.clone(function(clonedObj) {
+                    canvas.discardActiveObject();
+                    
+                    // Standard paste offsets by 20px so user sees it. Paste in place stays at 0.
+                    const offset = inPlace ? 0 : 20;
+                    
+                    clonedObj.set({
+                        left: clonedObj.left + offset,
+                        top: clonedObj.top + offset,
+                        evented: true,
+                    });
+
+                    if (clonedObj.type === 'activeSelection') {
+                        clonedObj.canvas = canvas;
+                        clonedObj.forEachObject(function(obj) {
+                            canvas.add(obj);
+                        });
+                        clonedObj.setCoords();
+                    } else {
+                        canvas.add(clonedObj);
+                    }
+                    
+                    clipboard.top += offset;
+                    clipboard.left += offset;
+                    
+                    canvas.setActiveObject(clonedObj);
+                    sortLayers();
+                    markDirty();
+                    saveHistory();
+                }, CUSTOM_PROPS);
+            }
+
+            $('#menu-copy').click(copyObjects);
+            $('#menu-cut').click(cutObjects);
+            $('#menu-paste').click(() => pasteObjects(false));
+            $('#menu-paste-in-place').click(() => pasteObjects(true));
+
+            // --- FIND AND REPLACE ---
+            $('#menu-find-replace').click(() => {
+                if(!activeId) return;
+                $('#find-text-input').val('');
+                $('#replace-text-input').val('');
+                $('#find-replace-modal').css('display', 'flex');
+            });
+
+            $('#btn-replace-all').click(() => {
+                const findStr = $('#find-text-input').val();
+                const replaceStr = $('#replace-text-input').val();
+                if (!findStr) return;
+                
+                let count = 0;
+                canvas.getObjects().forEach(obj => {
+                    if (obj.type === 'textbox') {
+                        if (obj.text.includes(findStr)) {
+                            obj.set('text', obj.text.split(findStr).join(replaceStr));
+                            count++;
+                        }
+                    }
+                });
+                
+                if (count > 0) {
+                    canvas.requestRenderAll();
+                    markDirty();
+                    saveHistory();
+                    alert(`Successfully replaced ${count} occurrence(s).`);
+                } else {
+                    alert("Text not found in any active text box.");
+                }
+                $('#find-replace-modal').hide();
+            });
 
             // --- TOGGLES & PREVIEW MODE ---
             function updateVisibilityToggles() {
@@ -778,7 +899,7 @@
                 });
             });
 
-            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
+            // --- TEXT SCALING FIX ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -846,7 +967,6 @@
                 if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
                 
-                // Inherit Global Defaults
                 if (obj.type !== 'image') {
                     obj.set('fill', globalFill);
                     if (globalStroke !== 'transparent' && globalStrokeWeight > 0) {
@@ -868,7 +988,7 @@
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
-            // --- GROUPING LOGIC (NEW ADDITIONS) ---
+            // --- GROUPING LOGIC ---
             function groupObjects() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
@@ -924,23 +1044,6 @@
                 if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
             });
 
-            // --- DYNAMIC TEXT ---
-            $('#btn-insert-page-num').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
-                else { alert("Please select a text box first to turn it into a dynamic page number."); }
-            });
-            function updateDynamicText() {
-                if (!activeId) return; const p = projects[activeId];
-                canvas.getObjects().forEach(obj => {
-                    if (obj.type === 'textbox' && obj.isDynamicText) {
-                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
-                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
-                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
-                    }
-                });
-            }
-
             // --- TOOLS, PAN & ZOOM ---
             function setTool(tool) {
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
@@ -963,34 +1066,48 @@
 
             let isDragging = false; let lastPosX, lastPosY;
             
+            // --- KEYBOARD SHORTCUTS (WITH INPUT PROTECTION) ---
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 
+                // Block shortcuts if user is typing in an input or a canvas text box
+                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+                if (canvas.getActiveObject()?.isEditing) return; 
+
                 if(e.code === 'Space') {
                     isSpaceDown = true;
-                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
+                    if(activeTool !== 'zoom') {
                         canvas.defaultCursor = 'grab'; e.preventDefault();
                     }
                 }
-
-                if (canvas.getActiveObject()?.isEditing) return; 
                 
-                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+                if (e.ctrlKey) {
+                    const key = e.key.toLowerCase();
+                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
+                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
+                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) ungroupObjects(); else groupObjects(); return; }
+                    if (key === 'r') { e.preventDefault(); $('#menu-toggle-rulers').click(); return; }
+                    if (key === 'i') { e.preventDefault(); $('#place-image-input').click(); return; }
+                    if (key === 'e') { e.preventDefault(); $('#menu-export').click(); return; }
+                    if (key === 's') { e.preventDefault(); $('#menu-save').click(); return; }
+                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
+                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
+                    if (key === 'v') { 
+                        e.preventDefault(); 
+                        if (e.shiftKey) pasteObjects(true); // Paste in place
+                        else pasteObjects(false); // Standard Paste
+                        return; 
+                    }
+                    if (key === 'f') { e.preventDefault(); $('#menu-find-replace').click(); return; }
+                }
 
-                if (e.key.toLowerCase() === 'v') setTool('select'); 
-                if (e.key.toLowerCase() === 'h') setTool('pan'); 
-                if (e.key.toLowerCase() === 'z') setTool('zoom');
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
+                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
+                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
+                if (e.key.toLowerCase() === 'w') $('#menu-toggle-preview').click(); 
+                if (e.key.toLowerCase() === 'm') $('#menu-toggle-margins').click(); 
+                if (e.key.toLowerCase() === 'b') $('#menu-toggle-bleed').click(); 
+                if (e.key === ';') $('#menu-toggle-guides').click(); 
             });
             
             $(window).keyup(function(e) { 
@@ -1016,7 +1133,6 @@
                 if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
             });
             
-            // --- ZOOM (REFINED ADDITION) ---
             canvas.on('mouse:wheel', function(opt) { 
                 opt.e.preventDefault();
                 opt.e.stopPropagation();
@@ -1037,7 +1153,7 @@
                 if(!isPreviewMode) drawRulers(); 
             });
 
-            // --- EXPORT & SAVE (HIGH RES ADDITIONS INCLUDED) ---
+            // --- EXPORT & SAVE ---
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
             $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
 
@@ -1193,7 +1309,12 @@
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
-            $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
+            
+            $('#delete-obj').click(deleteActive); 
+            $('html').keyup(function(e) { 
+                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+                if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); 
+            });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
             // --- TYPOGRAPHY CONVERTER UI ---
