@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6</title>
+    <title>Thooval Workspace v6.16</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -47,7 +47,7 @@
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
         
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
@@ -122,10 +122,11 @@
         .swatch-box { width: 100%; aspect-ratio: 1; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); transition: 0.1s; }
         .swatch-box:hover { transform: scale(1.15); box-shadow: 0 0 0 1px var(--accent); z-index: 2; position: relative;}
         
-        .layer-list { list-style: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: var(--bg-base); border-radius: 6px; padding: 4px; }
-        .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 2px; border-radius: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .layer-list { list-style: none; margin-top: 8px; max-height: 250px; overflow-y: auto; background: var(--bg-base); border-radius: 6px; padding: 4px; }
+        .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 2px; border-radius: 4px; cursor: grab; transition: border 0.1s, background 0.2s; border: 1px solid transparent; }
         .layer-item:hover { background: var(--bg-surface-hover); }
         .layer-item.active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
+        .layer-item.drag-over { border-top: 2px solid var(--accent) !important; } /* Drag and Drop visual cue */
         .layer-info { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 8px; font-size: 11px; }
         .layer-actions { display: flex; gap: 8px; color: var(--text-muted); }
         .layer-action-btn { cursor: pointer; transition: 0.2s; font-size: 10px; }
@@ -186,7 +187,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v5.9</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.0</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -345,12 +346,13 @@
                     <option value="Ocean">Ocean Palette</option>
                     <option value="Sunset">Sunset Palette</option>
                     <option value="Vintage">Vintage Palette</option>
+                    <option value="Gradients">Gradients (New)</option>
                 </select>
                 <div class="swatch-grid" id="swatch-grid-container"></div>
             </div>
 
             <div class="panel-section" id="panel-layers">
-                <h3>Layers</h3>
+                <h3>Layers (Drag to reorder)</h3>
                 <ul id="layer-list" class="layer-list"></ul>
             </div>
 
@@ -374,6 +376,21 @@
                         <button class="doc-btn" id="btn-edit-mask" style="color: #60a5fa; border-color: #3b82f6;"><i class="fa-solid fa-crop"></i> Adjust Crop</button>
                         <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Unmask</button>
                     </div>
+                </div>
+
+                <div class="panel-section" id="appearance-properties" style="display: none;">
+                    <h3>Appearance</h3>
+                    <div class="prop-row">
+                        <div class="prop-col">
+                            <label>Fill Type</label>
+                            <select id="obj-fill-type">
+                                <option value="solid">Solid</option>
+                                <option value="linear">Linear Gradient</option>
+                                <option value="radial">Radial Gradient</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="doc-btn" id="btn-open-gradient-editor" style="display: none; margin-top: 8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Edit Gradient...</button>
                 </div>
 
                 <div class="panel-section" id="geometry-properties">
@@ -452,7 +469,14 @@
 
                 <div class="panel-section">
                     <h3>Arrange Layer</h3>
-                    <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
+                    <div class="btn-group" style="margin-bottom: 8px;">
+                        <button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button>
+                        <button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button>
+                    </div>
+                    <div class="btn-group">
+                        <button id="dist-h" title="Distribute Horizontally"><i class="fa-solid fa-arrows-left-right"></i> Distribute H</button>
+                        <button id="dist-v" title="Distribute Vertically"><i class="fa-solid fa-arrows-up-down"></i> Distribute V</button>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -490,6 +514,26 @@
                         <button class="btn-primary" id="btn-apply-color">OK</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="gradient-editor-modal">
+        <div class="modal" style="width: 320px;">
+            <h2>Advanced Gradient Editor</h2>
+            <div class="prop-row">
+                <div class="prop-col"><label>Color 1 (Start)</label><input type="color" id="grad-c1" value="#ff0000"></div>
+                <div class="prop-col"><label>Color 2 (End)</label><input type="color" id="grad-c2" value="#0000ff"></div>
+            </div>
+            <div class="prop-row" style="margin-top: 12px;">
+                <div class="prop-col"><label>Type</label>
+                    <select id="grad-type"><option value="linear">Linear</option><option value="radial">Radial</option></select>
+                </div>
+                <div class="prop-col"><label>Angle (Linear)</label><input type="number" id="grad-angle" value="0" min="-180" max="180"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="$('#gradient-editor-modal').hide()">Cancel</button>
+                <button class="btn-primary" id="apply-adv-gradient-btn">Apply Gradient</button>
             </div>
         </div>
     </div>
@@ -582,7 +626,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked']; 
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked', 'layerName']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -660,8 +704,8 @@
 
             function openAdvancedPicker() {
                 const currentColor = focusedColorType === 'fill' ? globalFill : globalStroke;
-                if (currentColor !== 'transparent') { colorPicker.color.hexString = currentColor; }
-                $('#picker-old-color').css('background-color', currentColor);
+                if (currentColor !== 'transparent' && !currentColor.includes('gradient')) { colorPicker.color.hexString = currentColor; }
+                $('#picker-old-color').css('background', currentColor);
                 $('#advanced-color-modal').css('display', 'flex');
             }
 
@@ -680,36 +724,64 @@
                 $('#advanced-color-modal').hide();
             });
 
-            // --- SWATCHES INITIALIZATION ---
+            // --- SWATCHES INITIALIZATION (UPDATED WITH GRADIENTS) ---
             const palettes = {
                 'Basic RGB': ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff', '#000000', '#888888', '#cccccc', '#990000', '#009900', '#000099', '#999900', '#009999', '#990099', '#ff6600', '#ff0066', '#66ff00', '#00ff66', '#0066ff', '#6600ff', '#ff9900', '#0099ff'],
                 'Basic CMYK': ['#00aeef', '#ec008c', '#fff200', '#231f20', '#ed1c24', '#00a651', '#2e3192', '#e6e7e8', '#808285', '#c1272d', '#8cc63f', '#1b1464', '#f7931e', '#8c6239', '#0072bc', '#f15a24', '#c1272d', '#009245', '#0071bc', '#29abe2', '#9e005d', '#d9e021', '#c69c6d', '#ffffff'],
                 'Garden': ['#2d5a27', '#8e9a22', '#cbce91', '#e8f0c3', '#f2aaaa', '#e16552', '#c72e45', '#8f1d2c', '#4b7f52', '#7dd181', '#96e8bc', '#b6f9c9', '#f9a03f', '#f7d08a', '#f4f4f4'],
                 'Ocean': ['#03045e', '#023e8a', '#0077b6', '#0096c7', '#00b4d8', '#48cae4', '#90e0ef', '#ade8f4', '#caf0f8', '#007ea7', '#00a8e8', '#118ab2', '#06d6a0', '#073b4c'],
                 'Sunset': ['#ff7b54', '#ffb26b', '#ffd56b', '#939b62', '#e05d5d', '#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#f4a261', '#e76f51', '#d62828', '#264653'],
-                'Vintage': ['#cb997e', '#eddcd2', '#fff1e6', '#f0efeb', '#ddbea9', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189']
+                'Vintage': ['#cb997e', '#eddcd2', '#fff1e6', '#f0efeb', '#ddbea9', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189'],
+                'Gradients': [ 
+                    { c1: '#ff9a9e', c2: '#fecfef', type: 'linear' },
+                    { c1: '#a18cd1', c2: '#fbc2eb', type: 'linear' },
+                    { c1: '#84fab0', c2: '#8fd3f4', type: 'linear' },
+                    { c1: '#ffecd2', c2: '#fcb69f', type: 'radial' },
+                    { c1: '#cfd9df', c2: '#e2ebf0', type: 'linear' },
+                    { c1: '#fccb90', c2: '#d57eeb', type: 'linear' }
+                ]
             };
 
             function loadSwatchCategory(category) {
                 const grid = $('#swatch-grid-container');
                 grid.empty();
                 if (palettes[category]) {
-                    palettes[category].forEach(c => grid.append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
+                    palettes[category].forEach(c => {
+                        if (typeof c === 'string') {
+                            grid.append(`<div class="swatch-box" style="background:${c};" data-color="${c}" data-type="solid"></div>`);
+                        } else {
+                            const bg = c.type === 'linear' ? `linear-gradient(45deg, ${c.c1}, ${c.c2})` : `radial-gradient(circle, ${c.c1}, ${c.c2})`;
+                            grid.append(`<div class="swatch-box" style="background:${bg};" data-type="gradient" data-c1="${c.c1}" data-c2="${c.c2}" data-gtype="${c.type}"></div>`);
+                        }
+                    });
                 }
             }
 
             $('#swatch-category').change(function() { loadSwatchCategory($(this).val()); });
 
             $(document).on('click', '.swatch-box', function() {
-                const col = $(this).data('color');
-                if(focusedColorType === 'fill') {
-                    globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
-                } else {
-                    globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
-                    const obj = canvas.getActiveObject();
-                    if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') {
-                        globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight);
+                const type = $(this).data('type');
+                
+                if (type === 'solid') {
+                    const col = $(this).data('color');
+                    if(focusedColorType === 'fill') {
+                        globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
+                    } else {
+                        globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
+                        const obj = canvas.getActiveObject();
+                        if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); }
                     }
+                } else if (type === 'gradient' && focusedColorType === 'fill') {
+                    const c1 = $(this).data('c1'); const c2 = $(this).data('c2'); const gtype = $(this).data('gtype');
+                    const bg = gtype === 'linear' ? `linear-gradient(45deg, ${c1}, ${c2})` : `radial-gradient(circle, ${c1}, ${c2})`;
+                    $('#fill-focus').css('background', bg).removeClass('none');
+                    
+                    const gradient = new fabric.Gradient({
+                        type: gtype, gradientUnits: 'percentage',
+                        coords: gtype === 'linear' ? { x1: 0, y1: 0, x2: 1, y2: 1 } : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 },
+                        colorStops: [ { offset: 0, color: c1 }, { offset: 1, color: c2 } ]
+                    });
+                    updateObj('fill', gradient);
                 }
             });
 
@@ -977,32 +1049,61 @@
                 sortLayers(); canvas.requestRenderAll();
             }
 
-            // --- LAYERS PANEL ENGINE ---
+            // --- ADVANCED LAYERS PANEL (NO MASTERS, PREVIEWS, DRAG&DROP) ---
             function updateLayersPanel() {
                 if (!activeId) return;
                 const list = $('#layer-list');
                 list.empty();
                 
+                // Filter out environment AND Master components
                 const objects = canvas.getObjects().filter(o => 
-                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource
                 );
 
                 const activeObjs = canvas.getActiveObjects();
 
+                // Assign persistent incremental names
+                let layerCounter = 1;
+                objects.forEach(obj => {
+                    if (obj.type !== 'textbox' && !obj.layerName) {
+                        obj.layerName = "Layer " + layerCounter;
+                    }
+                    if (obj.type !== 'textbox') layerCounter++;
+                });
+
                 for (let i = objects.length - 1; i >= 0; i--) {
                     const obj = objects[i];
-                    let typeName = obj.type.charAt(0).toUpperCase() + obj.type.slice(1);
-                    if (obj.type === 'textbox') typeName = `Text: "${obj.text.substring(0, 10)}${obj.text.length > 10 ? '...' : ''}"`;
-                    if (obj.isMasterClone) typeName = `[Master] ${typeName}`;
+                    
+                    let typeName = '';
+                    if (obj.type === 'textbox') {
+                        typeName = obj.text.substring(0, 15) + (obj.text.length > 15 ? '...' : '');
+                    } else {
+                        typeName = obj.layerName;
+                    }
                     if (obj.clipPath) typeName = `[Masked] ${typeName}`;
                     
+                    let imgSrc = '';
+                    try {
+                        if (obj.width > 0 && obj.height > 0) {
+                            const cloneFactor = 24 / Math.max(obj.getScaledWidth(), obj.getScaledHeight(), 1);
+                            imgSrc = obj.toDataURL({ format: 'png', multiplier: cloneFactor });
+                        }
+                    } catch(e) { }
+
+                    const previewHTML = imgSrc 
+                        ? `<img src="${imgSrc}" style="width:20px; height:20px; object-fit:contain; background:var(--bg-surface); border-radius:3px; border:1px solid var(--border-light);">` 
+                        : `<div style="width:20px; height:20px; background:var(--bg-surface); border-radius:3px; border:1px solid var(--border-light);"></div>`;
+
                     const isActive = activeObjs.includes(obj) ? 'active' : '';
                     const visIcon = obj.visible !== false ? 'fa-eye' : 'fa-eye-slash';
                     const lockIcon = obj.locked ? 'fa-lock' : 'fa-lock-open';
 
                     const li = $(`
-                        <li class="layer-item ${isActive}" data-index="${i}">
-                            <div class="layer-info">${typeName}</div>
+                        <li class="layer-item ${isActive}" data-index="${i}" draggable="true">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
+                                ${previewHTML}
+                                <div class="layer-info" style="margin: 0;">${typeName}</div>
+                            </div>
                             <div class="layer-actions">
                                 <i class="fa-solid ${lockIcon} layer-action-btn btn-lock" title="Toggle Lock"></i>
                                 <i class="fa-solid ${visIcon} layer-action-btn btn-vis" title="Toggle Visibility"></i>
@@ -1018,12 +1119,53 @@
             canvas.on('selection:updated', updateLayersPanel);
             canvas.on('selection:cleared', updateLayersPanel);
 
+            // Drag and Drop Layer Reordering Logic
+            let draggedLayerIdx = null;
+            $(document).on('dragstart', '.layer-item', function(e) {
+                draggedLayerIdx = $(this).data('index');
+                $(this).css('opacity', '0.4');
+                e.originalEvent.dataTransfer.effectAllowed = 'move';
+            });
+            $(document).on('dragover', '.layer-item', function(e) {
+                e.preventDefault();
+                $(this).addClass('drag-over');
+            });
+            $(document).on('dragleave', '.layer-item', function(e) {
+                $(this).removeClass('drag-over');
+            });
+            $(document).on('dragend', '.layer-item', function(e) {
+                $(this).css('opacity', '1');
+                $('.layer-item').removeClass('drag-over');
+            });
+            $(document).on('drop', '.layer-item', function(e) {
+                e.preventDefault();
+                $('.layer-item').removeClass('drag-over');
+                const targetIdx = $(this).data('index');
+                if (draggedLayerIdx === null || draggedLayerIdx === targetIdx) return;
+
+                const objects = canvas.getObjects().filter(o => 
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource
+                );
+                
+                const draggedObj = objects[draggedLayerIdx];
+                const targetObj = objects[targetIdx];
+                
+                if (draggedObj && targetObj) {
+                    const realTargetIndex = canvas.getObjects().indexOf(targetObj);
+                    canvas.moveTo(draggedObj, realTargetIndex);
+                    sortLayers(); // Resets bounds while keeping user-arranged stable sort
+                    canvas.requestRenderAll();
+                    markDirty();
+                    saveHistory();
+                }
+            });
+
             $(document).on('click', '.layer-item', function(e) {
                 if ($(e.target).hasClass('layer-action-btn')) return; 
                 const idx = $(this).data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
                 const obj = objects[idx];
-                if (obj && !obj.locked && obj.visible !== false && !obj.isMasterClone) {
+                if (obj && !obj.locked && obj.visible !== false) {
                     canvas.setActiveObject(obj);
                     canvas.requestRenderAll();
                 }
@@ -1032,7 +1174,7 @@
             $(document).on('click', '.btn-lock', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
                 const obj = objects[idx];
                 
                 obj.locked = !obj.locked;
@@ -1052,7 +1194,7 @@
             $(document).on('click', '.btn-vis', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
                 const obj = objects[idx];
                 
                 obj.visible = obj.visible === false ? true : false;
@@ -1306,7 +1448,7 @@
             $('#menu-cut').click(cutObjects);
             $('#menu-paste').click(() => pasteObjects(false));
 
-            // --- IMPROVED MULTI-DELETE ---
+            // --- MULTI-DELETE ---
             function deleteActive() { 
                 const activeObjects = canvas.getActiveObjects();
                 if (activeObjects.length) {
@@ -1321,18 +1463,117 @@
             }
 
             $('#delete-obj, #menu-delete-action').click(deleteActive); 
+            
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                if (canvas.getActiveObject()?.isEditing) return;
-
+                
                 if (e.key === 'Delete' || e.key === 'Backspace') {
+                    if (canvas.getActiveObject()?.isEditing) return;
                     deleteActive();
                     e.preventDefault();
+                    return;
                 }
+
+                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } return;}
+
+                if (canvas.getActiveObject()?.isEditing) return; 
+
+                // --- FEATURE: KEYBOARD NUDGING ---
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    const step = e.shiftKey ? 10 : 1;
+                    let moved = false;
+
+                    if (e.key === 'ArrowLeft') { activeObj.set('left', activeObj.left - step); moved = true; }
+                    if (e.key === 'ArrowRight') { activeObj.set('left', activeObj.left + step); moved = true; }
+                    if (e.key === 'ArrowUp') { activeObj.set('top', activeObj.top - step); moved = true; }
+                    if (e.key === 'ArrowDown') { activeObj.set('top', activeObj.top + step); moved = true; }
+
+                    if (moved) {
+                        e.preventDefault(); // Stop browser scrolling
+                        activeObj.setCoords();
+                        canvas.requestRenderAll();
+                        updateTransformUI({ target: activeObj });
+                        markDirty();
+                        return; 
+                    }
+                }
+
+                // --- LAYER ARRANGEMENT SHORTCUTS ---
+                if (e.ctrlKey) {
+                    const key = e.key.toLowerCase();
+                    if (key === '[') { $('#send-backward').click(); e.preventDefault(); return; }
+                    if (key === ']') { $('#bring-forward').click(); e.preventDefault(); return; }
+                    if (key === '1') { e.preventDefault(); fitWholePage(); return; }
+                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
+                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
+                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
+                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
+                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
+                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
+                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
+                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
+                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
+                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
+                }
+
+                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
+                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
+                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
+                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
+                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
+                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
+                
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
 
-            // --- IMPROVED GROUPING LOGIC ---
+            // --- FEATURE: OBJECT DISTRIBUTION LOGIC ---
+            $('#dist-h, #dist-v').click(function() {
+                if (!activeId) return;
+                const activeSelection = canvas.getActiveObject();
+                
+                if (!activeSelection || activeSelection.type !== 'activeSelection') {
+                    alert("Please select at least 3 objects to distribute.");
+                    return;
+                }
+                
+                const items = activeSelection.getObjects();
+                if (items.length < 3) {
+                     alert("Please select at least 3 objects to distribute.");
+                     return;
+                }
+
+                const isHoriz = $(this).attr('id') === 'dist-h';
+                const prop = isHoriz ? 'left' : 'top';
+
+                items.sort((a, b) => a[prop] - b[prop]);
+
+                const first = items[0];
+                const last = items[items.length - 1];
+                
+                const totalDistance = last[prop] - first[prop];
+                const spacing = totalDistance / (items.length - 1);
+
+                items.forEach((obj, i) => {
+                    if (i > 0 && i < items.length - 1) {
+                        obj.set(prop, first[prop] + (spacing * i));
+                        obj.setCoords();
+                    }
+                });
+                
+                activeSelection.addWithUpdate(); 
+                canvas.requestRenderAll();
+                markDirty(); 
+                saveHistory();
+            });
+
+            // --- GROUPING LOGIC ---
             function groupObjects() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
@@ -1359,7 +1600,7 @@
             $('#menu-group').click(groupObjects);
             $('#menu-ungroup').click(ungroupObjects);
 
-            // --- ADVANCED IMAGE MASKING & CROPPING ---
+            // --- IMAGE MASKING & CROPPING ---
             function applyMask(img, shape) {
                 const imgCenter = img.getCenterPoint();
                 const shapeCenter = shape.getCenterPoint();
@@ -1463,7 +1704,7 @@
                 }, CUSTOM_PROPS);
             });
 
-            // --- FABRIC.JS NODE EDITING ENGINE ---
+            // --- NODE EDITING ENGINE ---
             function getObjectSizeWithStroke(object) {
                 let stroke = new fabric.Point( object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1 ).multiply(object.strokeWidth || 0);
                 return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
@@ -1501,7 +1742,6 @@
 
             $('#btn-edit-nodes').click(function() {
                 let poly = canvas.getActiveObject();
-                // Support both standard polygons and drawn Paths
                 if(!poly || (!['polygon', 'polyline', 'path'].includes(poly.type))) return;
                 
                 poly.edit = !poly.edit;
@@ -1529,7 +1769,6 @@
                             return acc;
                         }, {});
                     } else if (poly.type === 'path') {
-                        // Advanced Path Editing 
                         poly.controls = poly.path.reduce(function(acc, seg, index) {
                             let isCurve = seg[0] === 'Q' || seg[0] === 'C';
                             let xIdx = isCurve ? seg.length - 2 : (seg[0] === 'H' ? null : 1);
@@ -1706,7 +1945,6 @@
                 }
             });
 
-            // Convert free-drawn paths into real Thooval objects
             canvas.on('path:created', function(opt) {
                 const path = opt.path;
                 path.set({
@@ -1729,44 +1967,6 @@
             $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
 
             let isDragging = false; let lastPosX, lastPosY;
-            
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible')) return;
-                
-                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                
-                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
-
-                if (canvas.getActiveObject()?.isEditing) return; 
-
-                if (e.ctrlKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
-                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
-                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
-                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
-                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
-                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
-                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
-                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
-                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
-                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
-                }
-
-                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
-                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
-                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
-                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
-                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
-                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
-            });
             
             $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
 
@@ -1856,6 +2056,15 @@
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
+                $('#appearance-properties').show();
+                if (obj.fill && typeof obj.fill === 'object' && obj.fill.type) {
+                    $('#obj-fill-type').val(obj.fill.type);
+                    $('#btn-open-gradient-editor').show();
+                } else {
+                    $('#obj-fill-type').val('solid');
+                    $('#btn-open-gradient-editor').hide();
+                }
+
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
                 if (obj.type === 'rect' && !obj.clipPath) { 
@@ -1888,19 +2097,101 @@
             }
 
             function updateColorsUI(obj) {
-                const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                let fillVal = 'transparent';
+                if (obj.fill) {
+                    fillVal = typeof obj.fill === 'string' ? obj.fill : (obj.fill.colorStops ? obj.fill.colorStops[0].color : '#cbfb45');
+                }
+                const strokeVal = obj.stroke || 'transparent';
                 
                 globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
 
-                $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
+                $('#fill-focus').css('background', typeof obj.fill === 'object' ? 'linear-gradient(45deg, #ccc, #fff)' : fillVal).removeClass('none'); 
+                $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
+                
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
                 
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
-                if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+                if(focusCol !== 'transparent' && typeof focusCol === 'string') $('#unified-color-picker').val(focusCol);
                 
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
+
+            $('#obj-fill-type').on('change', function() {
+                const type = $(this).val();
+                const obj = canvas.getActiveObject();
+                
+                if (type === 'linear' || type === 'radial') {
+                    $('#btn-open-gradient-editor').show();
+                } else {
+                    $('#btn-open-gradient-editor').hide();
+                }
+
+                if (!obj) return;
+
+                if (type === 'solid') {
+                    updateObj('fill', typeof globalFill === 'string' ? globalFill : '#3f3f46');
+                } else {
+                    const baseColor = (globalFill === 'transparent' || typeof globalFill === 'object') ? '#cbfb45' : globalFill;
+                    const gradient = new fabric.Gradient({
+                        type: type,
+                        gradientUnits: 'percentage',
+                        coords: type === 'linear' 
+                            ? { x1: 0, y1: 0, x2: 1, y2: 0 } 
+                            : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 },
+                        colorStops: [
+                            { offset: 0, color: baseColor },
+                            { offset: 1, color: '#ffffff' }
+                        ]
+                    });
+                    updateObj('fill', gradient);
+                }
+            });
+
+            // Advanced Gradient Editor Tool logic
+            $('#btn-open-gradient-editor').click(function() {
+                const obj = canvas.getActiveObject();
+                if (obj && obj.fill && obj.fill.colorStops) {
+                    $('#grad-c1').val(obj.fill.colorStops[0].color);
+                    $('#grad-c2').val(obj.fill.colorStops[1].color);
+                    $('#grad-type').val(obj.fill.type);
+                }
+                $('#gradient-editor-modal').css('display', 'flex');
+            });
+
+            $('#apply-adv-gradient-btn').click(function() {
+                const obj = canvas.getActiveObject();
+                if (!obj) return;
+                
+                const c1 = $('#grad-c1').val();
+                const c2 = $('#grad-c2').val();
+                const type = $('#grad-type').val();
+                const angle = parseInt($('#grad-angle').val()) || 0;
+                
+                let coords = {};
+                if (type === 'linear') {
+                    const rad = angle * (Math.PI / 180);
+                    const rx = Math.cos(rad) * 0.5 + 0.5;
+                    const ry = Math.sin(rad) * 0.5 + 0.5;
+                    const rx2 = Math.cos(rad + Math.PI) * 0.5 + 0.5;
+                    const ry2 = Math.sin(rad + Math.PI) * 0.5 + 0.5;
+                    coords = { x1: rx2, y1: ry2, x2: rx, y2: ry };
+                } else {
+                    coords = { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 };
+                }
+                
+                const gradient = new fabric.Gradient({
+                    type: type,
+                    gradientUnits: 'percentage',
+                    coords: coords,
+                    colorStops: [ { offset: 0, color: c1 }, { offset: 1, color: c2 } ]
+                });
+                
+                updateObj('fill', gradient);
+                const bg = type === 'linear' ? `linear-gradient(${angle}deg, ${c1}, ${c2})` : `radial-gradient(circle, ${c1}, ${c2})`;
+                $('#fill-focus').css('background', bg).removeClass('none');
+                $('#gradient-editor-modal').hide();
+            });
 
             function updateObj(prop, val) { 
                 const sel = canvas.getActiveObject(); 
@@ -1917,10 +2208,7 @@
             }
             
             // --- SHAPE PROPERTIES BINDINGS ---
-            $('#obj-rx').on('input', function() {
-                updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0);
-            });
-
+            $('#obj-rx').on('input', function() { updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0); });
             $('#obj-poly-sides').on('change', function() {
                 const sides = parseInt($(this).val());
                 if (sides >= 3 && sides <= 30) {
@@ -1957,7 +2245,8 @@
 
             $('.swap-fill-stroke').click(() => {
                 let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
-                $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
+                $('#fill-focus').css('background', typeof globalFill === 'object' ? 'linear-gradient(45deg, #ccc, #fff)' : globalFill).removeClass('none'); 
+                $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
                 const sel = canvas.getActiveObject(); 
                 if (sel) { 
                     if (sel.type === 'activeSelection') {
