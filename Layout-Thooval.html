@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v2.2</title>
+    <title>Thooval Workspace v3.1</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -140,26 +140,28 @@
         .small-icon-btn { min-width: 18px; min-height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
         .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
 
-        /* --- NEW: LAYER & STYLES STYLES --- */
+        /* --- NEW: LAYER PANEL STYLES --- */
         .layer-list { margin-top: 8px; max-height: 300px; overflow-y: auto; }
-        .layer-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg-base); border-radius: 4px; margin-bottom: 4px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .layer-item.active { border-color: var(--accent); background: rgba(203, 251, 69, 0.05); }
+        .layer-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; margin-bottom: 2px; cursor: default; }
         .layer-item i { cursor: pointer; color: var(--text-muted); width: 16px; text-align: center; }
         .layer-item i:hover { color: var(--text-main); }
         .layer-item .drag-handle { margin-left: auto; cursor: grab; color: var(--text-muted); }
         .layer-item .drag-handle:active { cursor: grabbing; }
         .layer-item .layer-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+        /* --- NEW: STYLES PANEL --- */
         .style-preset-list { margin-bottom: 8px; max-height: 150px; overflow-y: auto; }
-        .style-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg-base); border-radius: 4px; margin-bottom: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .style-item:hover { border-color: var(--border-light); }
-        .style-item.active { border-color: var(--accent); background: rgba(203, 251, 69, 0.05); }
+        .style-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; margin-bottom: 2px; cursor: pointer; }
+        .style-item:hover { background: var(--bg-surface); }
+        .style-item.active { background: var(--bg-surface-hover); border-left: 2px solid var(--accent); }
 
-        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); }
-        .sidebar-tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; transition: 0.2s; }
-        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .sidebar-pane { display: none; flex-direction: column; }
-        .sidebar-pane.active { display: flex; }
+        /* Sidebar Tabs */
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg-base); }
+        .sidebar-tab { flex: 1; padding: 10px 0; text-align: center; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .sidebar-tab:hover { color: var(--text-main); background: var(--bg-panel); }
+        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
+        .sidebar-pane { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+        .sidebar-pane.active { display: block; }
 
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
@@ -174,7 +176,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v2.0</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v3.1</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -193,6 +195,10 @@
                     <ul class="dropdown">
                         <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
                         <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-cut"><span>Cut</span> <span class="shortcut">Ctrl+X</span></li>
+                        <li id="menu-copy"><span>Copy</span> <span class="shortcut">Ctrl+C</span></li>
+                        <li id="menu-paste"><span>Paste</span> <span class="shortcut">Ctrl+V</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
@@ -217,9 +223,9 @@
                         <li class="divider-li"></li>
                         <li><span>Snap to</span>
                             <ul style="margin-left:20px; list-style:none;">
-                                <li><label><input type="checkbox" id="snap-page-center" checked> Page Center</label></li>
-                                <li><label><input type="checkbox" id="snap-margins" checked> Margins</label></li>
-                                <li><label><input type="checkbox" id="snap-objects" checked> Other Objects</label></li>
+                                <li><label style="cursor: pointer; display: block; padding: 4px 0;"><input type="checkbox" id="snap-page-center" checked> Page Center</label></li>
+                                <li><label style="cursor: pointer; display: block; padding: 4px 0;"><input type="checkbox" id="snap-margins" checked> Margins</label></li>
+                                <li><label style="cursor: pointer; display: block; padding: 4px 0;"><input type="checkbox" id="snap-objects" checked> Other Objects</label></li>
                             </ul>
                         </li>
                         <li class="divider-li"></li>
@@ -228,8 +234,6 @@
                         <li id="menu-toggle-guides"><span>Toggle Guides</span> <span class="shortcut">;</span></li>
                         <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">M</span></li>
                         <li id="menu-toggle-bleed"><span>Toggle Bleed</span> <span class="shortcut">B</span></li>
-                        <li class="divider-li"></li>
-                        <li id="menu-toggle-baseline"><span>Toggle Baseline Grid</span> <span class="shortcut">Alt+B</span></li>
                     </ul>
                 </li>
             </ul>
@@ -248,13 +252,9 @@
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
-                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
-                
                 <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
-                
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
-                
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
@@ -311,9 +311,9 @@
         <aside class="panel-right" id="sidebar-right">
             
             <div class="sidebar-tabs">
-                <div class="sidebar-tab active" data-target="tab-properties">Props</div>
-                <div class="sidebar-tab" data-target="tab-layers">Layers</div>
-                <div class="sidebar-tab" data-target="tab-styles">Styles</div>
+                <button class="sidebar-tab active" data-target="tab-properties">Props</button>
+                <button class="sidebar-tab" data-target="tab-layers">Layers</button>
+                <button class="sidebar-tab" data-target="tab-styles">Styles</button>
             </div>
             
             <div class="sidebar-pane active" id="tab-properties">
@@ -354,7 +354,7 @@
                     
                     <div id="text-properties" style="display: none;">
                         <div class="panel-section">
-                            <h3>Character</h3>
+                            <h3>Typography</h3>
                             <div class="prop-col" style="margin-bottom: 12px;">
                                 <select id="obj-font-family"></select>
                             </div>
@@ -393,8 +393,8 @@
                                 </div>
                             </div>
                             
-                            <div class="prop-row" id="text-overflow-warning" style="display: none; margin-bottom: 12px;">
-                                <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-plus"></i> Split Overflow to Next Page</button>
+                            <div class="prop-row" style="margin-top: 16px;">
+                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
                             </div>
                         </div>
                     </div>
@@ -407,7 +407,7 @@
             </div>
 
             <div id="tab-layers" class="sidebar-pane">
-                <div class="panel-section" id="panel-layers">
+                <div class="panel-section" style="border-bottom: none;">
                     <h3>Layers <span class="small-icon-btn" id="refresh-layers" title="Refresh" style="float: right;"><i class="fa-solid fa-rotate"></i></span></h3>
                     <div class="layer-list" id="layer-list"></div>
                 </div>
@@ -416,28 +416,22 @@
             <div id="tab-styles" class="sidebar-pane">
                 <div class="panel-section">
                     <h3>Global Styles</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 12px;">Save a text box's formatting to reuse.</p>
-                    
-                    <div class="prop-col" style="margin-bottom: 16px;">
-                        <label>Select Style</label>
-                        <select id="global-style-select">
-                            <option value="">-- None --</option>
-                        </select>
-                    </div>
-                    <div class="prop-row">
-                        <button class="doc-btn" id="btn-apply-style">Apply to Selection</button>
-                    </div>
-                    
-                    <div style="height: 1px; background: var(--border); margin: 24px 0;"></div>
-                    
-                    <h3 style="margin-bottom: 12px;">Create New Style</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Save a text box's format to apply it elsewhere.</p>
                     <div class="prop-col" style="margin-bottom: 12px;">
-                        <input type="text" id="new-style-name" placeholder="e.g. Chapter Heading">
+                        <input type="text" id="new-style-name" placeholder="New Style Name (e.g. Heading 1)">
+                        <button class="doc-btn" id="btn-save-style" style="margin-top: 4px;">Save from Selection</button>
                     </div>
-                    <button class="doc-btn" id="btn-save-style" style="background: transparent; border-color: var(--border);">Save from Selection</button>
+                    <div style="height: 1px; background: var(--border); margin: 16px 0;"></div>
+                    <div class="prop-col">
+                        <label>Apply Style</label>
+                        <select id="global-style-select">
+                            <option value="">-- Choose Style --</option>
+                        </select>
+                        <button class="doc-btn" id="btn-apply-style" style="margin-top: 4px;">Apply to Selection</button>
+                    </div>
                 </div>
             </div>
-            
+
         </aside>
     </div>
 
@@ -489,6 +483,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="$('#find-replace-modal').hide()">Cancel</button>
+                <button class="btn-primary" id="btn-find-next" style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main);">Find Next</button>
                 <button class="btn-primary" id="find-replace-btn">Replace All</button>
             </div>
         </div>
@@ -528,6 +523,9 @@
     </div>
 
     <script>
+        // Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
+        fabric.Object.prototype.objectCaching = false;
+
         $(document).ready(function() {
             
             // --- CORE STATE ---
@@ -538,18 +536,29 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'isGrid']; 
+            // Added explicit custom variables to save the simulated paragraph options
+            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'styleId']; 
             
-            let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; 
-            let showBaselineGrid = false; const baselineGridHeight = 15;
-            let isPreviewMode = false; let pagesActionType = null; let isEditingDoc = false;
+            const SNAP_THRESHOLD = 8;
+            let isHistoryProcessing = false;
+            let isPreviewMode = false;
+            
+            let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
+            let pagesActionType = null; let isEditingDoc = false;
 
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
             let globalStrokeWeight = 0;
 
-            // --- COPY / PASTE CLIPBOARD ---
+            // --- SNAP SETTINGS ---
+            let snapSettings = {
+                toPageCenter: true,
+                toMargins: true,
+                toObjects: true
+            };
+
+            // --- CLIPBOARD ---
             let _clipboard = null;
 
             const wrapper = $('#workspace-wrapper');
@@ -557,16 +566,6 @@
             
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
-
-            // --- SIDEBAR TABS ---
-            $('.sidebar-tab').click(function() {
-                $('.sidebar-tab').removeClass('active');
-                $(this).addClass('active');
-                $('.sidebar-pane').removeClass('active');
-                $('#' + $(this).data('target')).addClass('active');
-                if($(this).data('target') === 'tab-layers') refreshLayerPanel();
-                if($(this).data('target') === 'tab-styles') refreshStyleList();
-            });
 
             // --- GOOGLE FONTS INJECTION & PREVIEWS ---
             const curatedFonts = [
@@ -615,22 +614,30 @@
             }
 
             // --- HISTORY STACK ---
-            let isHistoryProcessing = false;
+            let historyTimeout = null;
             function saveHistory() {
                 if (!activeId || isHistoryProcessing) return;
-                const p = projects[activeId];
-                if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
-                
-                p.history.push(canvas.toJSON(CUSTOM_PROPS));
-                p.historyIndex++;
-                if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
+                clearTimeout(historyTimeout);
+                historyTimeout = setTimeout(() => {
+                    const p = projects[activeId];
+                    if (!p.history) { p.history = []; p.historyIndex = -1; }
+                    if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
+                    
+                    // BULLETPROOF FIX: Strip layout environment items out before saving to history memory
+                    const state = canvas.toJSON(CUSTOM_PROPS);
+                    state.objects = state.objects.filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide);
+                    
+                    p.history.push(state);
+                    p.historyIndex++;
+                    if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
+                }, 150);
             }
             
             function performUndo() {
                 if (!activeId) return; const p = projects[activeId];
                 if (p.history && p.historyIndex > 0) {
                     isHistoryProcessing = true; p.historyIndex--;
+                    canvas.clear();
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
                         drawDocumentEnvironment(); 
                         maintainHairlines();
@@ -645,6 +652,7 @@
                 if (!activeId) return; const p = projects[activeId];
                 if (p.history && p.historyIndex < p.history.length - 1) {
                     isHistoryProcessing = true; p.historyIndex++;
+                    canvas.clear();
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
                         drawDocumentEnvironment(); 
                         maintainHairlines();
@@ -678,14 +686,25 @@
                 activeId = id; const p = projects[id]; canvas.clear();
                 
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (!p.styles) { p.styles = []; }
+                if (!p.styles) { p.styles = {}; }
 
-                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); refreshStyleList(); }); } 
-                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); refreshStyleList(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); }
+                if (p.canvasData) { 
+                    canvas.loadFromJSON(p.canvasData, function() { 
+                        canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); 
+                        drawDocumentEnvironment(); maintainHairlines(); 
+                        if(showRulers && !isPreviewMode) drawRulers(); 
+                        refreshStyleList(); 
+                        if($('#tab-layers').hasClass('active')) refreshLayerPanel(); 
+                    }); 
+                } else { 
+                    canvas.viewportTransform = [1,0,0,1,0,0]; 
+                    drawDocumentEnvironment(); refreshStyleList(); 
+                    if($('#tab-layers').hasClass('active')) refreshLayerPanel(); 
+                }
                 
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
-                renderTabs();
+                renderTabs(); setTool('select');
             }
 
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
@@ -695,14 +714,13 @@
 
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
-            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData, styles: p.styles })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
+            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
-            canvas.on('object:modified', () => { markDirty(); saveHistory(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide && !e.target.isGrid) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.isPaper && !e.target.isMask && !e.target.isMargin && !e.target.isBleed && !e.target.isGuide && !e.target.isGrid) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
-
+            canvas.on('object:modified', () => { markDirty(); updateDynamicText(); saveHistory(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -731,14 +749,14 @@
                 if (isEditingDoc && activeId) {
                     projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
-                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: [] };
+                    const newId = generateId(); 
+                    projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: {} };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
                 $('#new-doc-modal').hide();
             });
 
-
-            // --- SPATIAL MATH & MASKING ---
+            // --- SPATIAL MATH & ENVIRONMENT ---
             function getPagePosition(index, pConf) {
                 if (!pConf.facingPages) return { x: MARGIN_LEFT, y: MARGIN_TOP + (index * (pConf.heightPx + PAGE_GAP)) };
                 if (index === 0) return { x: MARGIN_LEFT + pConf.widthPx, y: MARGIN_TOP };
@@ -749,13 +767,13 @@
 
             function maintainHairlines() {
                 if(!activeId) return; const z = canvas.getZoom();
-                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isGrid) o.set('strokeWidth', 1 / z); });
+                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
             }
 
             function sortLayers() {
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
-                    const getZ = (o) => { if (o.isGrid) return -6; if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
+                    const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
                     return getZ(a) - getZ(b);
                 });
                 objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
@@ -764,7 +782,7 @@
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 
-                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask || obj.isGrid);
+                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
                 envItems.forEach(obj => canvas.remove(obj));
                 
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
@@ -777,22 +795,16 @@
                     const bx = pos.x - conf.bleedPx; const by = pos.y - conf.bleedPx; const bw = conf.widthPx + (conf.bleedPx*2); const bh = conf.heightPx + (conf.bleedPx*2);
                     maskPathStr += `M ${bx} ${by} L ${bx} ${by+bh} L ${bx+bw} ${by+bh} L ${bx+bw} ${by} Z `; 
                     
-                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true }));
+                    canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
                     
-                    if (showBaselineGrid && !isPreviewMode) {
-                        for(let lineY = pos.y + conf.marginsPx.t; lineY < pos.y + conf.heightPx - conf.marginsPx.b; lineY += baselineGridHeight) {
-                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1/initZoom, selectable: false, evented: false, isGrid: true, opacity: 0.5, excludeFromExport: true }));
-                        }
-                    }
-
-                    if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8 }));
+                    if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
                     if (showMargins && !isPreviewMode) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8 }));
+                        canvas.add(new fabric.Rect({ left: pos.x + aL, top: pos.y + m.t, width: conf.widthPx - aL - aR, height: conf.heightPx - m.t - m.b, fill: 'transparent', stroke: '#ff00ff', strokeWidth: 1/initZoom, selectable: false, evented: false, isMargin: true, opacity: 0.8, excludeFromExport: true }));
                     }
                 }
-                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false }));
+                canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
                 sortLayers(); canvas.requestRenderAll();
             }
 
@@ -800,14 +812,13 @@
             function updateVisibilityToggles() {
                 if (isPreviewMode) {
                     $('#ruler-h, #ruler-v').hide();
-                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed || o.isGrid) o.set('opacity', 0); });
+                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
                 } else {
                     if(showRulers) $('#ruler-h, #ruler-v').show();
                     canvas.getObjects().forEach(o => {
                        if(o.isGuide && showGuides) o.set('opacity', 1);
                        if(o.isMargin && showMargins) o.set('opacity', 0.8);
                        if(o.isBleed && showBleed) o.set('opacity', 0.8);
-                       if(o.isGrid && showBaselineGrid) o.set('opacity', 0.5);
                     });
                 }
                 canvas.requestRenderAll();
@@ -818,7 +829,11 @@
             $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-guides').click(() => { showGuides = !showGuides; updateVisibilityToggles(); });
-            $('#menu-toggle-baseline').click(() => { showBaselineGrid = !showBaselineGrid; drawDocumentEnvironment(); updateVisibilityToggles(); });
+
+            // Snap settings from checkboxes
+            $('#snap-page-center').change(function() { snapSettings.toPageCenter = this.checked; });
+            $('#snap-margins').change(function() { snapSettings.toMargins = this.checked; });
+            $('#snap-objects').change(function() { snapSettings.toObjects = this.checked; });
 
             // --- DRAGGABLE RULERS ---
             function drawRulers() {
@@ -839,9 +854,6 @@
 
             let draggingGuideType = null;
             $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
-            
-            // --- NATIVE MOUSE / DRAG LOGIC (COMPLETELY REWRITTEN FOR STABILITY) ---
-            
             $(window).mouseup((e) => {
                 if (draggingGuideType && activeId && !isPreviewMode) {
                     const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
@@ -854,162 +866,193 @@
                 draggingGuideType = null;
             });
 
-            // 3. Zoom via wheel ONLY
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey || opt.e.altKey || opt.e.metaKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
-                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
-                opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); 
-            });
-
-            // 4. Object movement and safe snapping
+            // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
-                if (!activeId || isPreviewMode) return;
+                if (!activeId || !showGuides || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
                 
-                if (showBaselineGrid && obj.type === 'textbox') {
-                    // Safely snap top based on bounding calculation
-                    let relativeTop = obj.top - MARGIN_TOP;
-                    let remainder = relativeTop % baselineGridHeight;
-                    if (remainder < 0) remainder += baselineGridHeight; // handle negative remainder properly
-                    
-                    if (remainder < SNAP_THRESHOLD / zoom) {
-                        obj.set('top', obj.top - remainder).setCoords();
-                    } else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) {
-                        obj.set('top', obj.top + (baselineGridHeight - remainder)).setCoords();
+                // Snap to guides
+                const guides = canvas.getObjects().filter(o => o.isGuide);
+                guides.forEach(guide => {
+                    if (guide.lockMovementX) { 
+                        if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
+                        if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
+                    }
+                    if (guide.lockMovementY) {
+                        if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
+                        if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
+                    }
+                });
+
+                // Snap to page bounds
+                const p = projects[activeId];
+                const conf = p.config;
+                const pageIndex = getPageIndexForObject(obj);
+                if (pageIndex === null) return;
+                const pos = p.isMasterMode ? getMasterPos(obj.left < MARGIN_LEFT + conf.widthPx ? 'left' : 'right', conf) : getPagePosition(pageIndex, conf);
+                
+                if (snapSettings.toPageCenter) {
+                    const pageCenterX = pos.x + conf.widthPx/2;
+                    const pageCenterY = pos.y + conf.heightPx/2;
+                    if (Math.abs(obj.left + obj.getScaledWidth()/2 - pageCenterX) < SNAP_THRESHOLD / zoom) {
+                        obj.set('left', pageCenterX - obj.getScaledWidth()/2).setCoords();
+                    }
+                    if (Math.abs(obj.top + obj.getScaledHeight()/2 - pageCenterY) < SNAP_THRESHOLD / zoom) {
+                        obj.set('top', pageCenterY - obj.getScaledHeight()/2).setCoords();
                     }
                 }
-                
-                if (showGuides) {
-                    const guides = canvas.getObjects().filter(o => o.isGuide);
-                    guides.forEach(guide => {
-                        if (guide.lockMovementX) { 
-                            if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
-                            if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
-                        }
-                        if (guide.lockMovementY) {
-                            if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
-                            if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
-                        }
+
+                if (snapSettings.toMargins) {
+                    const m = conf.marginsPx;
+                    const leftMargin = pos.x + (conf.facingPages && pageIndex > 0 && (pageIndex-1)%2===0 ? m.r : m.l);
+                    const rightMargin = pos.x + conf.widthPx - (conf.facingPages && pageIndex>0 && (pageIndex-1)%2===0 ? m.l : m.r);
+                    const topMargin = pos.y + m.t;
+                    const bottomMargin = pos.y + conf.heightPx - m.b;
+                    if (Math.abs(obj.left - leftMargin) < SNAP_THRESHOLD / zoom) obj.set('left', leftMargin);
+                    if (Math.abs(obj.left + obj.getScaledWidth() - rightMargin) < SNAP_THRESHOLD / zoom) obj.set('left', rightMargin - obj.getScaledWidth());
+                    if (Math.abs(obj.top - topMargin) < SNAP_THRESHOLD / zoom) obj.set('top', topMargin);
+                    if (Math.abs(obj.top + obj.getScaledHeight() - bottomMargin) < SNAP_THRESHOLD / zoom) obj.set('top', bottomMargin - obj.getScaledHeight());
+                }
+
+                if (snapSettings.toObjects) {
+                    const others = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide && o !== obj);
+                    others.forEach(other => {
+                        if (Math.abs(obj.left - other.left) < SNAP_THRESHOLD / zoom) obj.set('left', other.left);
+                        if (Math.abs(obj.left - (other.left + other.getScaledWidth())) < SNAP_THRESHOLD / zoom) obj.set('left', other.left + other.getScaledWidth());
+                        if (Math.abs(obj.left + obj.getScaledWidth() - other.left) < SNAP_THRESHOLD / zoom) obj.set('left', other.left - obj.getScaledWidth());
+                        if (Math.abs(obj.left + obj.getScaledWidth() - (other.left + other.getScaledWidth())) < SNAP_THRESHOLD / zoom) obj.set('left', other.left + other.getScaledWidth() - obj.getScaledWidth());
+                        
+                        if (Math.abs(obj.top - other.top) < SNAP_THRESHOLD / zoom) obj.set('top', other.top);
+                        if (Math.abs(obj.top - (other.top + other.getScaledHeight())) < SNAP_THRESHOLD / zoom) obj.set('top', other.top + other.getScaledHeight());
+                        if (Math.abs(obj.top + obj.getScaledHeight() - other.top) < SNAP_THRESHOLD / zoom) obj.set('top', other.top - obj.getScaledHeight());
+                        if (Math.abs(obj.top + obj.getScaledHeight() - (other.top + other.getScaledHeight())) < SNAP_THRESHOLD / zoom) obj.set('top', other.top + other.getScaledHeight() - obj.getScaledHeight());
                     });
                 }
             });
 
-            // --- TEXT OVERFLOW SPLITTER ---
-            function checkTextOverflow(obj) {
-                if (obj && obj.type === 'textbox') {
-                    const totalHeight = obj.lineHeight * obj.fontSize * (obj._textLines ? obj._textLines.length : 1);
-                    if (totalHeight > obj.getScaledHeight()) {
-                        $('#text-overflow-warning').show();
-                    } else {
-                        $('#text-overflow-warning').hide();
+            function getPageIndexForObject(obj) {
+                if (!activeId) return null;
+                const p = projects[activeId];
+                const conf = p.config;
+                for (let i = 0; i < p.totalPages; i++) {
+                    const pos = getPagePosition(i, conf);
+                    if (obj.left >= pos.x - 10 && obj.left <= pos.x + conf.widthPx + 10 && obj.top >= pos.y - 10 && obj.top <= pos.y + conf.heightPx + 10) {
+                        return i;
                     }
                 }
+                return null;
             }
 
+            // --- TEXT SCALING FIX & SPLITTER ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
                     var w = obj.width * obj.scaleX;
                     var h = obj.height * obj.scaleY;
                     obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
-                    checkTextOverflow(obj);
                 }
             });
-            canvas.on('text:changed', e => checkTextOverflow(e.target));
 
-            $('#btn-split-overflow').click(function() {
-                const obj = canvas.getActiveObject();
-                if (!obj || obj.type !== 'textbox' || !obj._textLines) return;
-                
-                const linesThatFit = Math.floor(obj.getScaledHeight() / (obj.lineHeight * obj.fontSize));
-                if (linesThatFit >= obj._textLines.length || linesThatFit <= 0) return;
-
-                const keptText = obj._textLines.slice(0, linesThatFit).join('\n');
-                const overflowText = obj._textLines.slice(linesThatFit).join('\n');
-
-                obj.set('text', keptText);
-                checkTextOverflow(obj);
-
-                const p = projects[activeId];
-                let currentPage = Math.max(0, Math.floor((obj.top - MARGIN_TOP) / (p.config.heightPx + PAGE_GAP)));
-                
-                // Add new page if necessary
-                if (currentPage + 1 >= p.totalPages) {
-                    p.totalPages++;
-                    $('#page-count-display').text(p.totalPages);
-                    drawDocumentEnvironment();
-                }
-                
-                const nextPos = getPagePosition(currentPage + 1, p.config);
-                const margins = p.config.marginsPx;
-                let isLeftPage = p.config.facingPages && (currentPage + 1) > 0 && ((currentPage + 1) - 1) % 2 === 0;
-                let aL = isLeftPage ? margins.r : margins.l;
-
-                const newTextBox = new fabric.Textbox(overflowText, {
-                    left: nextPos.x + aL,
-                    top: nextPos.y + margins.t,
-                    width: obj.width,
-                    fontFamily: obj.fontFamily,
-                    fontSize: obj.fontSize,
-                    lineHeight: obj.lineHeight,
-                    charSpacing: obj.charSpacing,
-                    textAlign: obj.textAlign,
-                    fill: obj.fill,
-                    splitByGrapheme: true,
-                    isRegular: true,
-                    id: generateId()
-                });
-                
-                canvas.add(newTextBox);
-                sortLayers();
-                canvas.requestRenderAll();
-                markDirty(); saveHistory();
-                if($('#tab-layers').hasClass('active')) refreshLayerPanel();
-            });
-
-            // --- COPY / PASTE LOGIC ---
+            // --- COPY / PASTE / CUT LOGIC ---
             function copy() {
                 const activeObject = canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.clone(function(cloned) {
-                        _clipboard = cloned;
-                    }, CUSTOM_PROPS);
-                }
+                if (activeObject) { activeObject.clone(function(cloned) { _clipboard = cloned; }, CUSTOM_PROPS); }
             }
-
+            function cut() {
+                copy(); deleteActive();
+            }
             function paste() {
                 if (!_clipboard) return;
                 _clipboard.clone(function(clonedObj) {
                     canvas.discardActiveObject();
-                    clonedObj.set({
-                        left: clonedObj.left + 20,
-                        top: clonedObj.top + 20,
-                        evented: true,
-                        id: generateId()
-                    });
+                    clonedObj.set({ left: clonedObj.left + 20, top: clonedObj.top + 20, evented: true, id: generateId() });
                     if (clonedObj.type === 'activeSelection') {
                         clonedObj.canvas = canvas;
                         clonedObj.forEachObject(function(obj) { obj.id = generateId(); canvas.add(obj); });
                         clonedObj.setCoords();
-                    } else {
-                        canvas.add(clonedObj);
-                    }
-                    _clipboard.top += 20;
-                    _clipboard.left += 20;
+                    } else { canvas.add(clonedObj); }
+                    _clipboard.top += 20; _clipboard.left += 20;
                     canvas.setActiveObject(clonedObj);
-                    canvas.requestRenderAll();
-                    sortLayers(); markDirty(); saveHistory();
+                    canvas.requestRenderAll(); sortLayers(); markDirty(); saveHistory();
                     if($('#tab-layers').hasClass('active')) refreshLayerPanel();
                 }, CUSTOM_PROPS);
             }
 
-            // Keyboard Shortcuts
+            // --- FIND & REPLACE LOGIC ---
+            let foundObjects = []; let findIndex = -1;
+            $('#menu-find-replace').click(() => {
+                if(!activeId) return; $('#find-text').val(''); $('#replace-text').val(''); $('#find-case-sensitive').prop('checked', false); $('#find-whole-word').prop('checked', false);
+                foundObjects = []; findIndex = -1; $('#find-replace-modal').css('display', 'flex');
+            });
+
+            $('#btn-find-next').click(() => {
+                const findText = $('#find-text').val(); if(!findText) return;
+                const caseSensitive = $('#find-case-sensitive').is(':checked'); const wholeWord = $('#find-whole-word').is(':checked');
+                let flags = 'g'; if (!caseSensitive) flags += 'i';
+                let pattern = findText; if (wholeWord) pattern = '\\b' + pattern + '\\b';
+                const regex = new RegExp(pattern, flags);
+
+                foundObjects = canvas.getObjects().filter(o => o.type === 'textbox' && regex.test(o.text));
+                if(foundObjects.length === 0) { alert("No matches found."); return; }
+
+                findIndex = (findIndex + 1) % foundObjects.length;
+                canvas.setActiveObject(foundObjects[findIndex]);
+                canvas.requestRenderAll();
+            });
+
+            $('#find-replace-btn').click(() => {
+                const find = $('#find-text').val(); const replace = $('#replace-text').val(); if (!find) return;
+                const caseSensitive = $('#find-case-sensitive').is(':checked'); const wholeWord = $('#find-whole-word').is(':checked');
+                let flags = 'g'; if (!caseSensitive) flags += 'i';
+                let pattern = find; if (wholeWord) pattern = '\\b' + pattern + '\\b';
+                const regex = new RegExp(pattern, flags);
+                const objects = canvas.getObjects().filter(o => o.type === 'textbox');
+                let modified = false;
+                objects.forEach(obj => {
+                    if (regex.test(obj.text)) { obj.set('text', obj.text.replace(regex, replace)); modified = true; }
+                });
+                if (modified) { canvas.renderAll(); markDirty(); saveHistory(); refreshLayerPanel(); }
+                $('#find-replace-modal').hide();
+            });
+
+            // --- NATIVE ZOOM LOGIC ONLY ---
+            function setTool(tool) {
+                activeTool = tool; $('.tool-btn').removeClass('active-state');
+                $('#tool-' + tool).addClass('active-state');
+                
+                if (tool === 'select') { 
+                    canvas.defaultCursor = 'default'; 
+                    canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('selectable', true); });
+                } else {
+                    canvas.defaultCursor = 'zoom-in'; 
+                    canvas.getObjects().forEach(o => o.set('selectable', false));
+                    canvas.discardActiveObject(); 
+                }
+                canvas.requestRenderAll();
+            }
+            $('#tool-select').click(() => setTool('select')); $('#tool-zoom').click(() => setTool('zoom'));
+
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
+            function fitWholePage() {
+                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
+                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
+                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
+                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+            }
+            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
+            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
+
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); }
+            });
+
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
                 
                 if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copy(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'x') { e.preventDefault(); cut(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'v') { e.preventDefault(); paste(); return; }
-
+                
                 if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
                 if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
@@ -1018,11 +1061,21 @@
                 if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
                 if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
                 if (e.ctrlKey && e.key.toLowerCase() === 'f') { $('#menu-find-replace').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
                 
                 if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
                 if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
                 if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
                 if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            });
+
+            // Native mouse wheel override ONLY for Zoom & Pan - does not break object logic
+            canvas.on('mouse:wheel', function(opt) { 
+                if(opt.e.ctrlKey || opt.e.altKey || opt.e.metaKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
+                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
+                opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); 
             });
 
             // --- PAGES MANAGER ---
@@ -1051,18 +1104,18 @@
             // --- MASTER TEMPLATES ---
             $('#toggle-master-btn').click(function() {
                 if(!activeId) return; const p = projects[activeId];
-                p.isMasterMode = true; canvas.discardActiveObject();
+                p.isMasterMode = true; canvas.discardActiveObject(); setTool('select');
                 $('#master-banner').css('display', 'flex');
                 
                 const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
-                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isGrid) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 
                 drawDocumentEnvironment(); markDirty();
             });
 
             $('#exit-master-btn').click(function() {
                 if(!activeId) return; const p = projects[activeId];
-                p.isMasterMode = false; canvas.discardActiveObject();
+                p.isMasterMode = false; canvas.discardActiveObject(); setTool('select');
                 $('#master-banner').hide(); 
                 
                 canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
@@ -1088,7 +1141,7 @@
             $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
             
             $('#add-text').click(() => {
-                const text = new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true }); 
+                const text = new fabric.Textbox('Double-click to edit.\nWraps text perfectly.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true }); 
                 processNewObject(text);
             });
             
@@ -1130,16 +1183,6 @@
                 if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
             });
 
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
-            function fitWholePage() {
-                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
-                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
-                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
-            }
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
-
             // --- EXPORT & SAVE ---
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
             
@@ -1147,8 +1190,9 @@
                 if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
                 $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
                 canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
-                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                
+                const oldGuides = showGuides; const oldBleed = showBleed; 
+                showGuides = false; showBleed = false; updateVisibilityToggles();
                 
                 let pagesToExport = [];
                 if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
@@ -1169,14 +1213,12 @@
             canvas.on('selection:created', updateUI); 
             canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); 
-            // Removed rotation/scaling from here to avoid recursive event loops during drag
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
             function updateUI(event) {
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
-                checkTextOverflow(obj);
 
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
@@ -1185,6 +1227,13 @@
                     let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
                     $('.p-align').removeClass('active');
                     if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
+                    
+                    // Populate stored simulated states
+                    $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
+                    $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
+                    $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
+                    $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
+                    $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
                 } else { $('#text-properties').hide(); }
             }
 
@@ -1206,7 +1255,7 @@
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
             }
 
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); } }
+            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
             
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
@@ -1225,13 +1274,13 @@
                 const oldFill = obj.fill; const oldStroke = obj.stroke;
                 obj.set('fill', oldStroke); obj.set('stroke', oldFill);
                 if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
-                canvas.renderAll(); updateColorsUI(obj); markDirty();
+                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
             });
 
             $('#apply-none').click(() => {
                 const obj = canvas.getActiveObject(); if (!obj) return;
                 if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                canvas.renderAll(); updateColorsUI(obj); markDirty();
+                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
@@ -1239,7 +1288,7 @@
             $('#obj-w, #obj-h').on('input', function() {
                 const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1;
                 if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
-                canvas.renderAll(); markDirty();
+                canvas.renderAll(); markDirty(); saveHistory();
             });
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
@@ -1247,12 +1296,24 @@
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
+            $('#obj-space-before').on('input', function() { updateObj('spaceBefore', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-right').on('input', function() { updateObj('indentRight', parseFloat($(this).val()) || 0); });
+            $('#obj-space-after').on('input', function() { updateObj('spaceAfter', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-left').on('input', function() { updateObj('indentLeft', parseFloat($(this).val()) || 0); });
+            $('#obj-indent-first').on('input', function() { updateObj('textIndent', parseFloat($(this).val()) || 0); });
+            $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
+            $('#obj-drop-cap-lines').on('input', function() { updateObj('dropCapLines', parseInt($(this).val()) || 0); });
+            $('#obj-drop-cap-chars').on('input', function() { updateObj('dropCapChars', parseInt($(this).val()) || 0); });
+
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } }); 
             $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
             
+            $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
+            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } }
+
             // --- LAYERS PANEL ---
             function refreshLayerPanel() {
-                if (!activeId) return;
+                if (!activeId || !$('#tab-layers').hasClass('active')) return;
                 $('#layer-list').empty();
                 const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
                 [...objs].reverse().forEach((obj, index) => {
@@ -1276,9 +1337,7 @@
                             newOrder.push(objs[idx]);
                         });
                         newOrder.reverse().forEach((obj, i) => obj.moveTo(i));
-                        canvas.renderAll();
-                        refreshLayerPanel();
-                        markDirty(); saveHistory();
+                        canvas.renderAll(); refreshLayerPanel(); markDirty(); saveHistory();
                     }
                 });
             }
@@ -1286,97 +1345,35 @@
 
             $(document).on('click', '.layer-item', function(e) {
                 if($(e.target).closest('.btn-lock, .btn-vis').length) return;
-                const idx = $(this).data('index');
-                const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                const obj = objs[idx];
-                if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); }
+                const idx = $(this).data('index'); const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                const obj = objs[idx]; if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); }
             });
             $(document).on('click', '.btn-lock', function(e) {
-                e.stopPropagation();
-                const idx = $(this).closest('.layer-item').data('index');
-                const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                const obj = objs[idx];
-                if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
+                e.stopPropagation(); const idx = $(this).closest('.layer-item').data('index'); const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                const obj = objs[idx]; if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
             });
             $(document).on('click', '.btn-vis', function(e) {
-                e.stopPropagation();
-                const idx = $(this).closest('.layer-item').data('index');
-                const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                const obj = objs[idx];
-                if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
+                e.stopPropagation(); const idx = $(this).closest('.layer-item').data('index'); const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                const obj = objs[idx]; if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
             });
 
             // --- STYLES SYSTEM ---
             function refreshStyleList() {
                 if(!activeId) return;
                 const p = projects[activeId];
-                const styles = p.styles || [];
-                let html = '';
-                styles.forEach(style => {
-                    html += `<div class="style-item" data-id="${style.id}"><span>${style.name}</span></div>`;
-                });
-                $('#style-list').html(html);
-                $('.style-item').click(function() {
-                    const styleId = $(this).data('id');
-                    applyStyle(styleId);
-                });
+                $('#global-style-select').empty().append('<option value="">-- Choose Style --</option>');
+                for(let styleName in p.styles) { $('#global-style-select').append(`<option value="${styleName}">${styleName}</option>`); }
             }
-
-            $('#style-create').click(() => {
-                const obj = canvas.getActiveObject();
-                if (!obj || obj.type !== 'textbox') { alert('Select a text box first.'); return; }
-                $('#style-modal-title').text('New Style');
-                $('#style-modal-name').val('');
-                $('#style-name-modal').css('display', 'flex');
-                $('#style-modal-save').off('click').on('click', function() {
-                    const name = $('#style-modal-name').val().trim();
-                    if (!name) return;
-                    const p = projects[activeId];
-                    if (!p.styles) p.styles = [];
-                    const newStyle = {
-                        id: generateId(),
-                        name: name,
-                        props: { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing, fill: obj.fill, textAlign: obj.textAlign }
-                    };
-                    p.styles.push(newStyle);
-                    refreshStyleList();
-                    $('#style-name-modal').hide();
-                    markDirty(); saveHistory();
-                });
+            $('#btn-save-style').click(() => {
+                let name = $('#new-style-name').val(); let obj = canvas.getActiveObject();
+                if (name && obj && obj.type === 'textbox') {
+                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing || 0, textAlign: obj.textAlign, fill: obj.fill };
+                    refreshStyleList(); $('#new-style-name').val(''); alert('Style Saved!'); markDirty(); saveHistory();
+                } else { alert("Select a text box and enter a name."); }
             });
-
-            function applyStyle(styleId) {
-                const obj = canvas.getActiveObject();
-                if (!obj || obj.type !== 'textbox') return;
-                const p = projects[activeId];
-                const style = p.styles.find(s => s.id === styleId);
-                if (style) {
-                    obj.set(style.props);
-                    canvas.renderAll(); markDirty(); saveHistory(); updateUI({selected: [obj]});
-                }
-            }
-
-            // --- FIND & REPLACE ---
-            $('#menu-find-replace').click(() => {
-                if(!activeId) return;
-                $('#find-text').val(''); $('#replace-text').val('');
-                $('#find-case-sensitive').prop('checked', false); $('#find-whole-word').prop('checked', false);
-                $('#find-replace-modal').css('display', 'flex');
-            });
-            $('#find-replace-btn').click(() => {
-                const find = $('#find-text').val(); const replace = $('#replace-text').val();
-                if (!find) return;
-                const caseSensitive = $('#find-case-sensitive').is(':checked'); const wholeWord = $('#find-whole-word').is(':checked');
-                let flags = 'g'; if (!caseSensitive) flags += 'i';
-                let pattern = find; if (wholeWord) pattern = '\\b' + pattern + '\\b';
-                const regex = new RegExp(pattern, flags);
-                const objects = canvas.getObjects().filter(o => o.type === 'textbox');
-                let modified = false;
-                objects.forEach(obj => {
-                    if (regex.test(obj.text)) { obj.set('text', obj.text.replace(regex, replace)); modified = true; }
-                });
-                if (modified) { canvas.renderAll(); markDirty(); saveHistory(); }
-                $('#find-replace-modal').hide();
+            $('#btn-apply-style').click(() => {
+                let name = $('#global-style-select').val(); let obj = canvas.getActiveObject();
+                if (name && obj && obj.type === 'textbox') { obj.set(projects[activeId].styles[name]); canvas.requestRenderAll(); markDirty(); saveHistory(); }
             });
 
             // --- TYPOGRAPHY CONVERTER UI ---
