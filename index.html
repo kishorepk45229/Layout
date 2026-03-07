@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.13</title>
+    <title>Thooval Workspace v5.14</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -81,9 +81,9 @@
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
-        .sub-icon { position: absolute; bottom: 4px; right: 4px; font-size: 8px; }
+        .sub-icon { position: absolute; bottom: 4px; right: 4px; font-size: 9px; }
 
-        /* Global Palette in Left Toolbar */
+        /* Global Palette */
         .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
         .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
         .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
@@ -105,8 +105,7 @@
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
         input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
-
+        
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
         .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .btn-group button:hover { background: var(--bg-surface); color: var(--text-main); }
@@ -149,9 +148,6 @@
         .action-card i { font-size: 20px; color: var(--text-main); }
         .disabled-ui { opacity: 0.3; pointer-events: none; user-select: none; }
 
-        .small-icon-btn { min-width: 18px; min-height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
-        .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
-
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -171,13 +167,6 @@
         .color-input-group { display: flex; align-items: center; gap: 8px; }
         .color-input-group label { width: 12px; color: var(--text-muted); font-weight: 600; }
         .color-input-group input { width: 100%; }
-        
-        /* PEN TOOL UI OVERLAYS */
-        .node-overlay { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 500; }
-        .node-anchor { position: absolute; width: 8px; height: 8px; background: #fff; border: 1px solid #000; transform: translate(-4px, -4px); pointer-events: all; cursor: pointer; }
-        .node-anchor.active { background: #00ffcc; border-color: #000; }
-        .node-handle { position: absolute; width: 6px; height: 6px; background: #ff00ff; border-radius: 50%; transform: translate(-3px, -3px); pointer-events: all; cursor: grab; }
-        .node-handle-line { position: absolute; height: 1px; background: #a1a1aa; transform-origin: left center; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -261,16 +250,16 @@
                 
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 
-                <button class="tool-btn" id="add-freehand" title="Freehand Brush (F)"><i class="fa-solid fa-paintbrush"></i></button>
-                <button class="tool-btn" id="add-rect" title="Rectangle Tool (R)"><i class="fa-regular fa-square"></i></button>
-                <button class="tool-btn" id="add-circle" title="Ellipse Tool (O)"><i class="fa-regular fa-circle"></i></button>
-                <button class="tool-btn" id="add-polygon" title="Polygon Tool (Shift+P)"><i class="fa-solid fa-draw-polygon"></i></button>
+                <button class="tool-btn" id="tool-pen" title="Bezier Pen Tool (P)"><i class="fa-solid fa-pen-nib"></i></button>
+                <button class="tool-btn" id="tool-add-node" title="Add Anchor Point (+)"><i class="fa-solid fa-pen-nib"></i><i class="fa-solid fa-plus sub-icon" style="color: #00ff00;"></i></button>
+                <button class="tool-btn" id="tool-del-node" title="Delete Anchor Point (-)"><i class="fa-solid fa-pen-nib"></i><i class="fa-solid fa-minus sub-icon" style="color: #ff0000;"></i></button>
+                <button class="tool-btn" id="add-freehand" title="Freehand Scribble (F)"><i class="fa-solid fa-paintbrush"></i></button>
                 
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 
-                <button class="tool-btn" id="tool-pen" title="Bezier Pen Tool (P)"><i class="fa-solid fa-pen-nib"></i></button>
-                <button class="tool-btn" id="tool-add-node" title="Add Anchor Point"><i class="fa-solid fa-pen-nib"></i><i class="fa-solid fa-plus sub-icon"></i></button>
-                <button class="tool-btn" id="tool-del-node" title="Delete Anchor Point"><i class="fa-solid fa-pen-nib"></i><i class="fa-solid fa-minus sub-icon"></i></button>
+                <button class="tool-btn" id="add-rect" title="Rectangle Tool (R)"><i class="fa-regular fa-square"></i></button>
+                <button class="tool-btn" id="add-circle" title="Ellipse Tool (O)"><i class="fa-regular fa-circle"></i></button>
+                <button class="tool-btn" id="add-polygon" title="Polygon Tool (Shift+P)"><i class="fa-solid fa-draw-polygon"></i></button>
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Selected Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
@@ -308,7 +297,6 @@
                 <canvas class="ruler-v" id="ruler-v"></canvas>
                 <main class="canvas-container-wrapper" id="workspace-wrapper">
                     <canvas id="layout-canvas"></canvas>
-                    <div id="node-overlay-container" class="node-overlay"></div>
                     
                     <div id="inner-welcome">
                         <i class="fa-solid fa-feather-pointed logo-huge"></i>
@@ -534,38 +522,6 @@
             <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
         </div>
     </div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
-    <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
-    
-    <div class="modal-overlay" id="typography-modal">
-        <div class="modal" style="width: 400px;">
-            <h2>Malayalam Font Converter (Unicode ↔ FML)</h2>
-            <div class="prop-col" style="margin-bottom: 16px;">
-                <label>Source Text</label>
-                <textarea id="typo-source-text" rows="4" style="background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
-            </div>
-            <div class="prop-row" style="margin-bottom: 16px;">
-                <div class="prop-col">
-                    <label>Conversion Type</label>
-                    <select id="typo-convert-type">
-                        <option value="uni2fml">Unicode to FML</option>
-                        <option value="fml2uni">FML to Unicode</option>
-                    </select>
-                </div>
-                <div class="prop-col" style="justify-content: flex-end;">
-                    <button class="btn-primary" id="btn-run-conversion" style="width: 100%; justify-content: center;"><i class="fa-solid fa-language"></i> Convert</button>
-                </div>
-            </div>
-            <div class="prop-col">
-                <label>Output</label>
-                <textarea id="typo-output-text" rows="4" readonly style="background: var(--bg-surface); color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 8px; width: 100%; resize: none;"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#typography-modal').hide()">Close</button>
-                <button class="btn-primary" id="btn-apply-text-canvas">Apply to Selected Text</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         fabric.Object.prototype.objectCaching = false;
@@ -580,7 +536,6 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            // Added penPoints to custom properties so paths are re-editable after saving
             const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked', 'penPoints']; 
             
             const SNAP_THRESHOLD = 8;
@@ -593,7 +548,7 @@
             let snapLines = []; 
             let pagesActionType = null; let isEditingDoc = false;
 
-            // Global State for Draw Tools & Cropping
+            // Global State for Draw Tools
             let isDrawingShape = false;
             let drawingObject = null;
             let origX = 0, origY = 0;
@@ -605,18 +560,20 @@
             let clipboard = null;
 
             // --- BEZIER PEN TOOL STATE ---
-            let penPoints = [];
+            let isDrawingPen = false;
+            let penPoints = [];      
             let activePenPath = null;
+            let activePenPreview = null;
             let isDraggingPenHandle = false;
 
-            // --- NODE EDITING STATE ---
             let isNodeEditing = false;
-            let editingOriginalObj = null;
+            let editingOriginalPath = null;
 
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
             let globalStrokeWeight = 0;
+            let colorPickerTarget = 'fill';
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -624,7 +581,7 @@
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
-            // --- COLOR MATH UTILS (RGB <-> CMYK) ---
+            // --- COLOR MATH UTILS ---
             function rgb2cmyk(r, g, b) {
                 let c = 1 - (r / 255); let m = 1 - (g / 255); let y = 1 - (b / 255);
                 let k = Math.min(c, Math.min(m, y));
@@ -639,9 +596,7 @@
 
             // --- IRO.JS ADVANCED COLOR PICKER ---
             const colorPicker = new iro.ColorPicker("#iro-picker-container", {
-                width: 200,
-                color: "#ff0000",
-                layoutDirection: "horizontal",
+                width: 200, color: "#ff0000", layoutDirection: "horizontal",
                 layout: [ { component: iro.ui.Box }, { component: iro.ui.Slider, options: { sliderType: 'hue' } } ]
             });
 
@@ -709,12 +664,13 @@
 
             $(document).on('click', '.swatch-box', function() {
                 const col = $(this).data('color');
+                const sel = canvas.getActiveObject();
+                
                 if(focusedColorType === 'fill') {
                     globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
                 } else {
                     globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
-                    const obj = canvas.getActiveObject();
-                    if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') {
+                    if(sel && !sel.strokeWidth && sel.type !== 'activeSelection') {
                         globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight);
                     }
                 }
@@ -737,33 +693,12 @@
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
             });
 
-            // --- MALAYALAM CONVERTER ---
-            const uniToFmlDict = [
-                { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
-                { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
-                { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
-                { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
-                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sெ" } 
-            ];
-            const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
-
-            function convertUnicodeToFml(text) {
-                let processedText = text;
-                const preBaseVowels = /([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g;
-                processedText = processedText.replace(preBaseVowels, function(match, p1, p2, p3) { return p3 + p1 + (p2 || ""); });
-                uniToFmlDict.forEach(mapping => { const regex = new RegExp(mapping.uni, "g"); processedText = processedText.replace(regex, mapping.fml); });
-                return processedText;
-            }
-            function convertFmlToUnicode(text) {
-                let processedText = text;
-                fmlToUniDict.forEach(mapping => {
-                    const escapedFml = mapping.fml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(escapedFml, "g"); processedText = processedText.replace(regex, mapping.uni);
-                });
-                const reversePreBase = /([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g;
-                processedText = processedText.replace(reversePreBase, function(match, p1, p2, p3) { return p2 + (p3 || "") + p1; });
-                return processedText;
-            }
+            // --- MENU FIX ---
+            $('.dropdown li').on('click', function() {
+                const $dropdown = $(this).closest('.dropdown');
+                $dropdown.hide();
+                setTimeout(() => $dropdown.css('display', ''), 150);
+            });
 
             // --- HISTORY STACK ---
             function saveHistory() {
@@ -858,8 +793,8 @@
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
             canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); updateLayersPanel(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide && !e.target.isPreviewNode) { markDirty(); saveHistory(); updateLayersPanel(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide && !e.target.isPreviewNode) { markDirty(); saveHistory(); updateLayersPanel(); } });
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide && !e.target.isPreviewNode && !e.target.isPenTemp) { markDirty(); saveHistory(); updateLayersPanel(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide && !e.target.isPreviewNode && !e.target.isPenTemp) { markDirty(); saveHistory(); updateLayersPanel(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -941,7 +876,7 @@
                         if (o.isMargin) return 0; 
                         if (o.isGuide || o.isMaskGuide) return 1; 
                         if (o.isSnapGuide) return 2;
-                        if (o.isPreviewNode) return 10;
+                        if (o.isPreviewNode || o.isPenTemp) return 10;
                         return -3; 
                     };
                     return getZ(a) - getZ(b);
@@ -985,7 +920,7 @@
                 list.empty();
                 
                 const objects = canvas.getObjects().filter(o => 
-                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && !o.isPenTemp
                 );
 
                 const activeObjs = canvas.getActiveObjects();
@@ -994,6 +929,7 @@
                     const obj = objects[i];
                     let typeName = obj.type.charAt(0).toUpperCase() + obj.type.slice(1);
                     if (obj.type === 'textbox') typeName = `Text: "${obj.text.substring(0, 10)}${obj.text.length > 10 ? '...' : ''}"`;
+                    if (obj.type === 'path' && obj.penPoints) typeName = `Pen Path`;
                     if (obj.isMasterClone) typeName = `[Master] ${typeName}`;
                     if (obj.clipPath) typeName = `[Masked] ${typeName}`;
                     
@@ -1010,7 +946,6 @@
                             </div>
                         </li>
                     `);
-                    
                     list.append(li);
                 }
             }
@@ -1022,7 +957,7 @@
             $(document).on('click', '.layer-item', function(e) {
                 if ($(e.target).hasClass('layer-action-btn')) return; 
                 const idx = $(this).data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && !o.isPenTemp);
                 const obj = objects[idx];
                 if (obj && !obj.locked && obj.visible !== false && !obj.isMasterClone) {
                     canvas.setActiveObject(obj);
@@ -1033,7 +968,7 @@
             $(document).on('click', '.btn-lock', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && !o.isPenTemp);
                 const obj = objects[idx];
                 
                 obj.locked = !obj.locked;
@@ -1053,7 +988,7 @@
             $(document).on('click', '.btn-vis', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && !o.isPenTemp);
                 const obj = objects[idx];
                 
                 obj.visible = obj.visible === false ? true : false;
@@ -1127,14 +1062,14 @@
 
             canvas.on('object:moving', function(options) {
                 clearSnapLines();
-                if (!activeId || !showGuides || isPreviewMode || isCropMode || !enableSmartSnap || isNodeEditing) return;
+                if (!activeId || !showGuides || isPreviewMode || isCropMode || isNodeEditing || !enableSmartSnap) return;
                 
                 const obj = options.target; 
                 const zoom = canvas.getZoom();
                 const snapThreshold = SNAP_THRESHOLD / zoom;
 
                 const snapTargets = canvas.getObjects().filter(o => 
-                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && o.visible !== false
+                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && !o.isPreviewNode && !o.isPenTemp && o.visible !== false
                 );
 
                 const objB = obj.getBoundingRect(true, true); 
@@ -1261,238 +1196,63 @@
                 drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- CLIPBOARD (Cut/Copy/Paste) ---
-            function copyObjects() {
-                if (!activeId || isNodeEditing) return;
-                const activeObject = canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.clone(function(cloned) {
-                        clipboard = cloned;
-                    }, CUSTOM_PROPS);
-                }
-            }
-
-            function cutObjects() {
-                if (!activeId || isNodeEditing) return;
-                const activeObject = canvas.getActiveObject();
-                if (activeObject && !activeObject.isEditing) {
-                    activeObject.clone(function(cloned) {
-                        clipboard = cloned;
-                        deleteActive(); 
-                    }, CUSTOM_PROPS);
-                }
-            }
-
-            function pasteObjects(inPlace = false) {
-                if (!activeId || !clipboard || isNodeEditing) return;
-                clipboard.clone(function(clonedObj) {
-                    canvas.discardActiveObject();
-                    const offset = inPlace ? 0 : 20;
-                    clonedObj.set({ left: clonedObj.left + offset, top: clonedObj.top + offset, evented: true });
-                    
-                    if (clonedObj.type === 'activeSelection') {
-                        clonedObj.canvas = canvas;
-                        clonedObj.forEachObject(function(obj) { canvas.add(obj); });
-                        clonedObj.setCoords();
-                    } else {
-                        canvas.add(clonedObj);
-                    }
-                    clipboard.top += offset; clipboard.left += offset;
-                    canvas.setActiveObject(clonedObj);
-                    sortLayers(); markDirty(); saveHistory();
-                }, CUSTOM_PROPS);
-            }
-            
-            $('#menu-copy').click(copyObjects);
-            $('#menu-cut').click(cutObjects);
-            $('#menu-paste').click(() => pasteObjects(false));
-
-            // --- MULTI-DELETE ---
-            function deleteActive() { 
-                if (isNodeEditing) return; // Prevent deleting whole path while in node edit
-                const activeObjects = canvas.getActiveObjects();
-                if (activeObjects.length) {
-                    canvas.discardActiveObject();
-                    activeObjects.forEach(function(obj) {
-                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone && !obj.isPreviewNode) {
-                            canvas.remove(obj);
-                        }
-                    });
-                    markDirty(); saveHistory(); 
-                }
-            }
-
-            $('#delete-obj, #menu-delete-action').click(deleteActive); 
-
-            // --- GROUPING LOGIC ---
-            function groupObjects() {
-                if (!activeId || isNodeEditing) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'activeSelection') return;
-                
-                const newGroup = activeObj.toGroup();
-                if (projects[activeId].isMasterMode) { newGroup.set({ isMasterSource: true }); } else { newGroup.set({ isRegular: true }); }
-                
-                canvas.requestRenderAll();
-                markDirty(); saveHistory();
-            }
-
-            function ungroupObjects() {
-                if (!activeId || isNodeEditing) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'group') return;
-                
-                activeObj.toActiveSelection();
-                
-                canvas.requestRenderAll();
-                markDirty(); saveHistory();
-            }
-
-            $('#menu-group').click(groupObjects);
-            $('#menu-ungroup').click(ungroupObjects);
-
-            // --- ADVANCED IMAGE MASKING ---
-            function applyMask(img, shape) {
-                const imgCenter = img.getCenterPoint();
-                const shapeCenter = shape.getCenterPoint();
-                
-                shape.clone(function(cloneShape) {
-                    cloneShape.set({
-                        originX: 'center', originY: 'center',
-                        left: shapeCenter.x - imgCenter.x,
-                        top: shapeCenter.y - imgCenter.y,
-                        scaleX: cloneShape.scaleX / img.scaleX,
-                        scaleY: cloneShape.scaleY / img.scaleY,
-                        angle: cloneShape.angle - img.angle
-                    });
-                    
-                    img.set('clipPath', cloneShape);
-                    canvas.remove(shape);
-                    canvas.setActiveObject(img);
-                    canvas.requestRenderAll();
-                    markDirty(); saveHistory();
-                });
-            }
-
-            $('#tool-mask-image').click(function() {
-                const activeSelection = canvas.getActiveObject();
-                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
-                    alert("Please select exactly ONE image and ONE shape to mask."); return;
-                }
-                const objs = activeSelection.getObjects();
-                const img = objs.find(o => o.type === 'image');
-                const shape = objs.find(o => ['rect', 'circle', 'polygon', 'path'].includes(o.type));
-                if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
-
-                canvas.discardActiveObject();
-                applyMask(img, shape);
-            });
-
-            $('#btn-edit-mask').click(function() {
-                const img = canvas.getActiveObject();
-                if (!img || !img.clipPath) return;
-                
-                isCropMode = true; cropImage = img;
-                const imgCenter = img.getCenterPoint();
-                
-                img.clipPath.clone(function(restoredShape) {
-                    restoredShape.set({
-                        left: imgCenter.x + img.clipPath.left, top: imgCenter.y + img.clipPath.top,
-                        scaleX: img.clipPath.scaleX * img.scaleX, scaleY: img.clipPath.scaleY * img.scaleY,
-                        angle: img.clipPath.angle + img.angle,
-                        originX: 'center', originY: 'center',
-                        fill: 'rgba(0,0,0,0)', stroke: '#3b82f6', strokeWidth: 2 / canvas.getZoom(),
-                        strokeDashArray: [5, 5], selectable: false, evented: false, isMaskGuide: true
-                    });
-                    cropShape = restoredShape;
-                    canvas.add(cropShape);
-                    img.set('clipPath', null); img.set('opacity', 0.5); 
-                    canvas.requestRenderAll();
-                    $('#crop-mode-banner').css('display', 'flex'); $('#properties-form').hide();
-                    setTool('select');
-                });
-            });
-
-            $('#exit-crop-btn').click(function() {
-                if (!isCropMode) return;
-                isCropMode = false; $('#crop-mode-banner').hide();
-                cropImage.set('opacity', 1);
-                applyMask(cropImage, cropShape);
-                cropShape = null; cropImage = null; $('#properties-form').show();
-            });
-
-            $('#btn-unmask').click(function() {
-                const img = canvas.getActiveObject();
-                if (img && img.clipPath) { 
-                    const imgCenter = img.getCenterPoint();
-                    img.clipPath.clone(function(restoredShape) {
-                        restoredShape.set({
-                            left: imgCenter.x + img.clipPath.left, top: imgCenter.y + img.clipPath.top,
-                            scaleX: img.clipPath.scaleX * img.scaleX, scaleY: img.clipPath.scaleY * img.scaleY,
-                            angle: img.clipPath.angle + img.angle, originX: 'center', originY: 'center',
-                            fill: '#3f3f46', stroke: null
-                        });
-                        if (projects[activeId].isMasterMode) restoredShape.set('isMasterSource', true);
-                        else restoredShape.set('isRegular', true);
-                        
-                        canvas.add(restoredShape);
-                        img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); 
-                    });
-                }
-            });
-            
-            $('#menu-paste-into').click(function() {
-                if (!activeId || !clipboard || clipboard.type !== 'image') { alert("Please copy an image first to use Paste Into."); return; }
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || !['rect', 'circle', 'polygon', 'path'].includes(activeObj.type)) { alert("Please select a shape to paste the image into."); return; }
-                
-                clipboard.clone(function(clonedImg) {
-                    const center = activeObj.getCenterPoint();
-                    clonedImg.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
-                    if (projects[activeId].isMasterMode) { clonedImg.set({ isMasterSource: true }); } else { clonedImg.set({ isRegular: true }); }
-                    canvas.add(clonedImg);
-                    applyMask(clonedImg, activeObj);
-                }, CUSTOM_PROPS);
-            });
-
             // --- TRUE BEZIER PEN TOOL ---
             function generateSVGString(points, previewPoint) {
                 if (points.length === 0) return '';
                 let svg = `M ${points[0].x} ${points[0].y} `;
                 for (let i = 1; i < points.length; i++) {
-                    svg += `Q ${points[i-1].cOutX} ${points[i-1].cOutY} ${points[i].x} ${points[i].y} `;
+                    svg += `C ${points[i-1].cOutX} ${points[i-1].cOutY}, ${points[i].cInX} ${points[i].cInY}, ${points[i].x} ${points[i].y} `;
                 }
                 if (previewPoint) {
                     let lastPt = points[points.length - 1];
-                    svg += `Q ${lastPt.cOutX} ${lastPt.cOutY} ${previewPoint.x} ${previewPoint.y} `;
+                    svg += `C ${lastPt.cOutX} ${lastPt.cOutY}, ${previewPoint.x} ${previewPoint.y}, ${previewPoint.x} ${previewPoint.y} `;
                 }
                 return svg;
             }
 
-            function finishPen(close = false) {
-                if (!isDrawingPen || penPoints.length < 2) {
+            function updatePenPath(previewPointer) {
+                if (activePenPath) canvas.remove(activePenPath);
+                if (activePenPreview) canvas.remove(activePenPreview);
+                
+                let pathStr = generateSVGString(penPoints, null);
+                if (pathStr) {
+                    activePenPath = new fabric.Path(pathStr, {
+                        fill: 'transparent', stroke: globalStroke !== 'transparent' ? globalStroke : '#000', strokeWidth: globalStrokeWeight || 2,
+                        selectable: false, evented: false, isPenTemp: true, excludeFromExport: true, objectCaching: false
+                    });
+                    canvas.add(activePenPath);
+                }
+
+                if (previewPointer && penPoints.length > 0) {
+                    let lastPt = penPoints[penPoints.length - 1];
+                    let prevStr = `M ${lastPt.x} ${lastPt.y} C ${lastPt.cOutX} ${lastPt.cOutY}, ${previewPointer.x} ${previewPointer.y}, ${previewPointer.x} ${previewPointer.y}`;
+                    activePenPreview = new fabric.Path(prevStr, {
+                        fill: 'transparent', stroke: '#00ffcc', strokeWidth: 1/canvas.getZoom(), strokeDashArray: [5,5], selectable: false, evented: false, isPenTemp: true, excludeFromExport: true, objectCaching: false
+                    });
+                    canvas.add(activePenPreview);
+                }
+                canvas.requestRenderAll();
+            }
+
+            function finishPen(close) {
+                if (penPoints.length < 2) {
                     resetPen(); return;
                 }
-                
                 if (close) {
-                    // Pull the last control point out for smoothness, and join to start.
-                    let startPt = penPoints[0];
-                    penPoints.push({ x: startPt.x, y: startPt.y, cInX: startPt.cInX, cInY: startPt.cInY, cOutX: startPt.cOutX, cOutY: startPt.cOutY });
+                    let start = penPoints[0];
+                    penPoints.push({ x: start.x, y: start.y, cInX: start.cInX, cInY: start.cInY, cOutX: start.cOutX, cOutY: start.cOutY });
                 }
-
-                let finalPathStr = generateSVGString(penPoints, null);
-                let finalPath = new fabric.Path(finalPathStr, {
-                    fill: globalFill,
-                    stroke: globalStroke !== 'transparent' ? globalStroke : null,
-                    strokeWidth: globalStrokeWeight || 0,
+                
+                let pathStr = generateSVGString(penPoints, null);
+                let finalObj = new fabric.Path(pathStr, {
+                    fill: globalFill, stroke: globalStroke !== 'transparent' ? globalStroke : null, strokeWidth: globalStrokeWeight || 0,
                     objectCaching: false
                 });
-
                 // Attach custom point data for node editing later!
-                finalPath.penPoints = JSON.parse(JSON.stringify(penPoints)); 
-
+                finalObj.penPoints = JSON.parse(JSON.stringify(penPoints)); 
+                
                 resetPen();
-                processNewObject(finalPath);
+                processNewObject(finalObj);
                 setTool('select');
             }
 
@@ -1500,20 +1260,21 @@
                 isDrawingPen = false;
                 isDraggingPenHandle = false;
                 penPoints = [];
-                if (activePenPath) { canvas.remove(activePenPath); activePenPath = null; }
-                canvas.getObjects().forEach(o => { if (o.isPreviewNode) canvas.remove(o); });
+                canvas.getObjects().forEach(o => { if (o.isPenTemp) canvas.remove(o); });
+                activePenPath = null;
+                activePenPreview = null;
                 canvas.requestRenderAll();
             }
 
             // --- BEZIER NODE EDITOR OVERLAY ---
             function enterNodeEdit(pathObj) {
                 if (!pathObj.penPoints || pathObj.penPoints.length < 2) {
-                    alert("This object was not drawn with the Pen tool or cannot be edited.");
+                    alert("This object was not drawn with the Bezier Pen tool.");
                     return;
                 }
 
                 isNodeEditing = true;
-                editingOriginalObj = pathObj;
+                editingOriginalPath = pathObj;
                 pathObj.set('opacity', 0.2);
                 pathObj.set('selectable', false);
                 pathObj.set('evented', false);
@@ -1521,114 +1282,103 @@
                 renderNodeOverlay();
                 
                 $('#btn-edit-nodes').html('<i class="fa-solid fa-check"></i> Apply Path Changes').addClass('master-active');
-                setTool('select'); // Ensure we are in select mode so we can drag the overlay nodes
+                setTool('select'); 
             }
 
             function exitNodeEdit() {
                 if (!isNodeEditing) return;
 
-                // Re-build original object from updated points
-                let finalPathStr = generateSVGString(editingOriginalObj.penPoints, null);
+                let finalPathStr = generateSVGString(editingOriginalPath.penPoints, null);
                 
-                // We recreate the path to avoid bounding box issues
                 let updatedPath = new fabric.Path(finalPathStr, {
-                    fill: editingOriginalObj.fill,
-                    stroke: editingOriginalObj.stroke,
-                    strokeWidth: editingOriginalObj.strokeWidth,
+                    fill: editingOriginalPath.fill,
+                    stroke: editingOriginalPath.stroke,
+                    strokeWidth: editingOriginalPath.strokeWidth,
                     objectCaching: false,
-                    isRegular: editingOriginalObj.isRegular,
-                    isMasterSource: editingOriginalObj.isMasterSource,
-                    penPoints: JSON.parse(JSON.stringify(editingOriginalObj.penPoints)) // save new points
+                    isRegular: editingOriginalPath.isRegular,
+                    isMasterSource: editingOriginalPath.isMasterSource,
+                    penPoints: JSON.parse(JSON.stringify(editingOriginalPath.penPoints)) 
                 });
 
-                // Maintain Z-Index
-                const zIndex = canvas.getObjects().indexOf(editingOriginalObj);
-                canvas.remove(editingOriginalObj);
+                const zIndex = canvas.getObjects().indexOf(editingOriginalPath);
+                canvas.remove(editingOriginalPath);
                 canvas.insertAt(updatedPath, zIndex, false);
 
-                // Clean up overlay
                 canvas.getObjects().forEach(o => { if(o.isPreviewNode) canvas.remove(o); });
 
                 isNodeEditing = false;
-                editingOriginalObj = null;
+                editingOriginalPath = null;
                 
                 $('#btn-edit-nodes').html('<i class="fa-solid fa-draw-polygon"></i> Toggle Node Edit').removeClass('master-active');
                 canvas.setActiveObject(updatedPath);
-                markDirty(); saveHistory();
+                markDirty(); saveHistory(); updateLayersPanel();
             }
 
             function renderNodeOverlay() {
-                // Clear old overlay
                 canvas.getObjects().forEach(o => { if (o.isPreviewNode) canvas.remove(o); });
 
-                const pts = editingOriginalObj.penPoints;
+                const pts = editingOriginalPath.penPoints;
                 const zoom = canvas.getZoom();
-
-                // Draw Path preview
+                
                 let previewPathObj = new fabric.Path(generateSVGString(pts, null), {
-                    fill: 'transparent',
-                    stroke: '#00ffcc',
-                    strokeWidth: 2 / zoom,
-                    selectable: false,
-                    evented: false,
-                    isPreviewNode: true,
-                    excludeFromExport: true
+                    fill: 'transparent', stroke: '#00ffcc', strokeWidth: 1.5 / zoom,
+                    selectable: false, evented: false, isPreviewNode: true, excludeFromExport: true, objectCaching: false
                 });
                 canvas.add(previewPathObj);
 
-                // Draw Controls
                 pts.forEach((p, index) => {
-                    // Handle Line
-                    let handleLine = new fabric.Line([p.x, p.y, p.cOutX, p.cOutY], {
-                        stroke: '#a1a1aa', strokeWidth: 1 / zoom, selectable: false, evented: false, isPreviewNode: true, excludeFromExport: true
-                    });
-                    canvas.add(handleLine);
+                    // Draw Out-Handle
+                    if (p.cOutX !== p.x || p.cOutY !== p.y) {
+                        let hLineOut = new fabric.Line([p.x, p.y, p.cOutX, p.cOutY], { stroke: '#a1a1aa', strokeWidth: 1 / zoom, selectable: false, evented: false, isPreviewNode: true, excludeFromExport: true });
+                        canvas.add(hLineOut);
+                        let hControlOut = new fabric.Circle({ left: p.cOutX, top: p.cOutY, radius: 4 / zoom, originX: 'center', originY: 'center', fill: '#ff00ff', hasControls: false, hasBorders: false, isPreviewNode: true, isHandle: true, handleType: 'out', pointIndex: index, excludeFromExport: true });
+                        canvas.add(hControlOut);
+                    }
+                    
+                    // Draw In-Handle
+                    if (p.cInX !== p.x || p.cInY !== p.y) {
+                        let hLineIn = new fabric.Line([p.x, p.y, p.cInX, p.cInY], { stroke: '#a1a1aa', strokeWidth: 1 / zoom, selectable: false, evented: false, isPreviewNode: true, excludeFromExport: true });
+                        canvas.add(hLineIn);
+                        let hControlIn = new fabric.Circle({ left: p.cInX, top: p.cInY, radius: 4 / zoom, originX: 'center', originY: 'center', fill: '#00ffff', hasControls: false, hasBorders: false, isPreviewNode: true, isHandle: true, handleType: 'in', pointIndex: index, excludeFromExport: true });
+                        canvas.add(hControlIn);
+                    }
 
-                    // Anchor Point (Blue Square)
-                    let anchorControl = new fabric.Rect({
-                        left: p.x, top: p.y, width: 8 / zoom, height: 8 / zoom, originX: 'center', originY: 'center',
-                        fill: '#fff', stroke: '#000', strokeWidth: 1/zoom,
-                        hasControls: false, hasBorders: false,
-                        isPreviewNode: true, isAnchor: true, pointIndex: index, excludeFromExport: true
-                    });
+                    // Draw Anchor
+                    let anchorControl = new fabric.Rect({ left: p.x, top: p.y, width: 8 / zoom, height: 8 / zoom, originX: 'center', originY: 'center', fill: '#fff', stroke: '#000', strokeWidth: 1/zoom, hasControls: false, hasBorders: false, isPreviewNode: true, isAnchor: true, pointIndex: index, excludeFromExport: true });
                     canvas.add(anchorControl);
-
-                    // Handle Point (Pink Circle)
-                    let handleControl = new fabric.Circle({
-                        left: p.cOutX, top: p.cOutY, radius: 4 / zoom, originX: 'center', originY: 'center',
-                        fill: '#ff00ff', hasControls: false, hasBorders: false,
-                        isPreviewNode: true, isHandle: true, pointIndex: index, excludeFromExport: true
-                    });
-                    canvas.add(handleControl);
                 });
             }
 
-            // Node Editing Drag Logic
             canvas.on('object:moving', function(e) {
                 if (!isNodeEditing) return;
                 const target = e.target;
                 if (!target.isPreviewNode) return;
 
                 const idx = target.pointIndex;
-                const pts = editingOriginalObj.penPoints;
+                const pts = editingOriginalPath.penPoints;
 
                 if (target.isAnchor) {
-                    // Move anchor and shift its handle to keep relative distance
                     let dx = target.left - pts[idx].x;
                     let dy = target.top - pts[idx].y;
                     pts[idx].x = target.left;
                     pts[idx].y = target.top;
-                    pts[idx].cOutX += dx;
-                    pts[idx].cOutY += dy;
+                    pts[idx].cOutX += dx; pts[idx].cOutY += dy;
+                    pts[idx].cInX += dx; pts[idx].cInY += dy;
                 } else if (target.isHandle) {
-                    // Move just the handle
-                    pts[idx].cOutX = target.left;
-                    pts[idx].cOutY = target.top;
+                    if (target.handleType === 'out') {
+                        pts[idx].cOutX = target.left; pts[idx].cOutY = target.top;
+                        // Mirror opposite handle for smooth curve
+                        pts[idx].cInX = pts[idx].x - (target.left - pts[idx].x);
+                        pts[idx].cInY = pts[idx].y - (target.top - pts[idx].y);
+                    } else {
+                        pts[idx].cInX = target.left; pts[idx].cInY = target.top;
+                        // Mirror opposite handle
+                        pts[idx].cOutX = pts[idx].x - (target.left - pts[idx].x);
+                        pts[idx].cOutY = pts[idx].y - (target.top - pts[idx].y);
+                    }
                 }
-                
-                // Real-time update visual overlay (lazy approach: just re-render on move)
                 renderNodeOverlay();
-                canvas.setActiveObject(target); // maintain selection
+                canvas.setActiveObject(target); 
             });
 
             $('#btn-edit-nodes').click(function() {
@@ -1639,384 +1389,31 @@
                 }
             });
 
-
-            // --- DRAWING SHAPES & TEXT CREATION ---
-            function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
-            
-            function processNewObject(obj) { 
-                if(!activeId) return; 
-                if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
-                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
+            function getDistToSegment(p, v, w) {
+                let l2 = (w.x - v.x)**2 + (w.y - v.y)**2;
+                if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+                let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+                t = Math.max(0, Math.min(1, t));
+                return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
             }
-
-            $('#add-text').click(() => {
-                const txt = new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight });
-                processNewObject(txt); setTool('select');
-            });
-            
-            function handleImageInsert(file) {
-                if (!file || !activeId) return;
-                const activeObj = canvas.getActiveObject();
-                const isShapeSelected = activeObj && ['rect', 'circle', 'polygon', 'path'].includes(activeObj.type) && !activeObj.clipPath;
-
-                const reader = new FileReader();
-                reader.onload = function(f) { 
-                    fabric.Image.fromURL(f.target.result, function(img) { 
-                        if (isShapeSelected) {
-                            const center = activeObj.getCenterPoint();
-                            img.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
-                            const scale = Math.max(activeObj.getScaledWidth() / img.width, activeObj.getScaledHeight() / img.height);
-                            img.scale(scale);
-                            if (projects[activeId].isMasterMode) { img.set({ isMasterSource: true }); } else { img.set({ isRegular: true }); }
-                            canvas.add(img); applyMask(img, activeObj);
-                        } else {
-                            const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; 
-                            if (img.width > maxW) img.scaleToWidth(maxW); 
-                            img.set({ left: c.x, top: c.y }); processNewObject(img); 
-                        }
-                    }); 
-                }; 
-                reader.readAsDataURL(file);
-            }
-            $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
-
-            // --- DYNAMIC TEXT ---
-            $('#btn-insert-page-num').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
-                else { alert("Please select a text box first to turn it into a dynamic page number."); }
-            });
-            function updateDynamicText() {
-                if (!activeId) return; const p = projects[activeId];
-                canvas.getObjects().forEach(obj => {
-                    if (obj.type === 'textbox' && obj.isDynamicText) {
-                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
-                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
-                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
-                    }
-                });
-            }
-
-            // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
-            function setTool(tool) {
-                if (isCropMode) { alert("Please Apply Crop first."); return; }
-                if (isDrawingPen && tool !== 'pen') finishPen(false);
-                if (isNodeEditing && tool !== 'select' && tool !== 'add-node' && tool !== 'delete-node' && tool !== 'pan' && tool !== 'zoom') exitNodeEdit();
-
-                activeTool = tool; $('.tool-btn').removeClass('active-state');
-                if(tool==='select') $('#tool-select').addClass('active-state'); 
-                if(tool==='pan') $('#tool-pan').addClass('active-state'); 
-                if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if(['rect', 'circle', 'polygon', 'pen', 'add-node', 'delete-node'].includes(tool)) {
-                    $(`#tool-${tool}`).length ? $(`#tool-${tool}`).addClass('active-state') : $(`#add-${tool}`).addClass('active-state');
-                }
-
-                if (tool === 'freehand') {
-                    $('#add-freehand').addClass('active-state');
-                    canvas.isDrawingMode = true;
-                    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-                    canvas.freeDrawingBrush.color = globalStroke !== 'transparent' ? globalStroke : (globalFill !== 'transparent' ? globalFill : '#000000');
-                    canvas.freeDrawingBrush.width = globalStrokeWeight > 0 ? globalStrokeWeight : 2;
-                    canvas.discardActiveObject();
-                    canvas.requestRenderAll();
-                    return;
-                } else {
-                    canvas.isDrawingMode = false;
-                }
-
-                if (tool !== 'select' && tool !== 'add-node' && tool !== 'delete-node') { 
-                    canvas.selection = false; 
-                    canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide && !o.isPreviewNode) o.set({selectable: false, evented: false}); 
-                    }); 
-                    if (tool === 'pan') canvas.defaultCursor = 'grab';
-                    else if (tool === 'zoom') canvas.defaultCursor = 'zoom-in';
-                    else if (tool === 'pen') canvas.defaultCursor = 'crosshair';
-                    else canvas.defaultCursor = 'crosshair';
-                } else { 
-                    canvas.selection = true; 
-                    canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide && !o.isPreviewNode) {
-                            if (o.isMasterClone || o.locked) {
-                                o.set({selectable: false, evented: false});
-                            } else {
-                                o.set({selectable: true, evented: true});
-                            }
-                        } 
-                    }); 
-                    canvas.defaultCursor = (tool === 'add-node' || tool === 'delete-node') ? 'cell' : 'default'; 
-                }
-                if (tool !== 'add-node' && tool !== 'delete-node' && !isNodeEditing) canvas.discardActiveObject(); 
-                canvas.requestRenderAll();
-            }
-
-            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
-            $('#add-rect').click(() => setTool('rect')); $('#add-circle').click(() => setTool('circle'));
-            $('#add-freehand').click(() => setTool('freehand'));
-            $('#tool-pen').click(() => setTool('pen'));
-            $('#tool-add-node').click(() => {
-                if (!isNodeEditing) alert("Please enter Node Edit mode on a Path first.");
-                else setTool('add-node');
-            });
-            $('#tool-del-node').click(() => {
-                if (!isNodeEditing) alert("Please enter Node Edit mode on a Path first.");
-                else setTool('delete-node');
-            });
-            
-            $('#add-polygon').click(() => {
-                let sides = prompt("Enter number of sides for the polygon (3-30):", polygonSides);
-                if (sides !== null && !isNaN(parseInt(sides))) {
-                    let parsedSides = parseInt(sides);
-                    if (parsedSides >= 3 && parsedSides <= 30) { polygonSides = parsedSides; setTool('polygon'); } 
-                    else { alert("Please enter a valid number between 3 and 30."); }
-                }
-            });
-
-            // Convert free-drawn paths into real Thooval objects
-            canvas.on('path:created', function(opt) {
-                const path = opt.path;
-                path.set({
-                    fill: globalFill,
-                    stroke: globalStroke !== 'transparent' ? globalStroke : null,
-                    strokeWidth: globalStrokeWeight || 0
-                });
-                if (projects[activeId].isMasterMode) { path.set({ isMasterSource: true }); } else { path.set({ isRegular: true }); }
-                sortLayers(); markDirty(); saveHistory();
-            });
-
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
-            function fitWholePage() {
-                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
-                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
-                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
-            }
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
-
-            let isDragging = false; let lastPosX, lastPosY;
-            
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible')) return;
-                
-                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                
-                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
-
-                if (canvas.getActiveObject()?.isEditing) return; 
-
-                if (e.key === 'Escape' || e.key === 'Enter') {
-                    if (activeTool === 'pen' && isDrawingPen) { finishPen(false); e.preventDefault(); return; }
-                    if (isNodeEditing) { exitNodeEdit(); e.preventDefault(); return; }
-                }
-
-                if (e.ctrlKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
-                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
-                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
-                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
-                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
-                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
-                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
-                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
-                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
-                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
-                }
-
-                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
-                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
-                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
-                if (e.key.toLowerCase() === 'f' && !e.ctrlKey) setTool('freehand');
-                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
-                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
-                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
-            });
-            
-            $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
-
-            canvas.on('mouse:down', function(opt) {
-                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return; }
-
-                const pointer = canvas.getPointer(opt.e); 
-                origX = pointer.x; origY = pointer.y;
-
-                // NODE EDITING: Add or Delete Logic
-                if (isNodeEditing) {
-                    if (activeTool === 'delete-node') {
-                        if (opt.target && opt.target.isPreviewNode && opt.target.isAnchor) {
-                            editingOriginalObj.penPoints.splice(opt.target.pointIndex, 1);
-                            renderNodeOverlay();
-                        }
-                        return;
-                    }
-                    if (activeTool === 'add-node') {
-                        if (!opt.target || opt.target.isMaskGuide || opt.target.isPaper) {
-                            // Insert at end for simplicity in this implementation
-                            let lastPt = editingOriginalObj.penPoints[editingOriginalObj.penPoints.length - 1];
-                            editingOriginalObj.penPoints.push({ x: origX, y: origY, cInX: origX, cInY: origY, cOutX: origX, cOutY: origY });
-                            renderNodeOverlay();
-                        }
-                        return;
-                    }
-                }
-
-                // BEZIER PEN LOGIC
-                if (activeTool === 'pen' && !isSpaceDown) {
-                    
-                    if (penPoints.length > 0) {
-                        let start = penPoints[0];
-                        let dist = Math.hypot(origX - start.x, origY - start.y);
-                        if (dist < 10 / canvas.getZoom()) {
-                            finishPen(true); // close path
-                            return;
-                        }
-                    }
-
-                    isDrawingPen = true;
-                    isDraggingPenHandle = true;
-                    penPoints.push({ x: origX, y: origY, cInX: origX, cInY: origY, cOutX: origX, cOutY: origY });
-                    
-                    // Draw visual node
-                    let circle = new fabric.Circle({ radius: 3 / canvas.getZoom(), fill: '#00ffcc', left: origX, top: origY, originX: 'center', originY: 'center', selectable: false, evented: false, isPenTemp: true, excludeFromExport: true });
-                    canvas.add(circle);
-                    
-                    if (!activePenPath) {
-                        activePenPath = new fabric.Path(generateSVGString(penPoints, null), {
-                            fill: 'transparent', stroke: '#00ffcc', strokeWidth: 1.5 / canvas.getZoom(), selectable: false, evented: false, isPenTemp: true, excludeFromExport: true
-                        });
-                        canvas.add(activePenPath);
-                    }
-                    
-                    return;
-                }
-
-                if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
-                    isDrawingShape = true; isDragging = false;
-
-                    let shapeOpts = { left: origX, top: origY, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
-                    
-                    if (activeTool === 'rect') { drawingObject = new fabric.Rect(Object.assign({ width: 0, height: 0, originX: 'left', originY: 'top' }, shapeOpts)); } 
-                    else if (activeTool === 'circle') { drawingObject = new fabric.Circle(Object.assign({ radius: 0, originX: 'center', originY: 'center' }, shapeOpts)); } 
-                    else if (activeTool === 'polygon') { const points = getPolygonPoints(polygonSides, 50); drawingObject = new fabric.Polygon(points, Object.assign({ scaleX: 0.01, scaleY: 0.01, originX: 'center', originY: 'center' }, shapeOpts)); }
-                    
-                    if (projects[activeId].isMasterMode) { drawingObject.set({ isMasterSource: true }); } else { drawingObject.set({ isRegular: true }); }
-                    canvas.add(drawingObject);
-                }
-            });
-            
-            canvas.on('mouse:move', function(opt) { 
-                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return; } 
-                
-                const pointer = canvas.getPointer(opt.e);
-
-                if (activeTool === 'pen' && isDrawingPen) {
-                    if (isDraggingPenHandle) {
-                        // Dragging adjusts the curve handles
-                        let lastPt = penPoints[penPoints.length - 1];
-                        lastPt.cOutX = pointer.x;
-                        lastPt.cOutY = pointer.y;
-                        lastPt.cInX = lastPt.x - (pointer.x - lastPt.x);
-                        lastPt.cInY = lastPt.y - (pointer.y - lastPt.y);
-                    }
-                    if (activePenPath) {
-                        activePenPath.set({ path: fabric.util.parsePath(generateSVGString(penPoints, isDraggingPenHandle ? null : pointer)) });
-                        canvas.requestRenderAll();
-                    }
-                }
-
-                if (isDrawingShape && drawingObject) {
-                    if (activeTool === 'rect') { drawingObject.set({ width: Math.abs(pointer.x - origX), height: Math.abs(pointer.y - origY), left: Math.min(origX, pointer.x), top: Math.min(origY, pointer.y) }); } 
-                    else if (activeTool === 'circle') { const radius = Math.max(Math.abs(pointer.x - origX), Math.abs(pointer.y - origY)) / 2; drawingObject.set({ radius: radius, left: origX + (pointer.x - origX)/2, top: origY + (pointer.y - origY)/2 }); } 
-                    else if (activeTool === 'polygon') { const dx = pointer.x - origX; const dy = pointer.y - origY; const radius = Math.sqrt(dx * dx + dy * dy); const scale = radius / 50; drawingObject.set({ scaleX: scale, scaleY: scale }); }
-                    canvas.requestRenderAll();
-                }
-            });
-
-            canvas.on('mouse:up', function(opt) { 
-                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
-                
-                if (activeTool === 'pen' && isDrawingPen) {
-                    isDraggingPenHandle = false;
-                }
-
-                if (activeTool === 'select' && !isSpaceDown && !isNodeEditing) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
-                
-                if (isDrawingShape) {
-                    isDrawingShape = false;
-                    if ((drawingObject.width * drawingObject.scaleX < 2) && (drawingObject.height * drawingObject.scaleY < 2) && drawingObject.type !== 'polygon') { canvas.remove(drawingObject); } 
-                    else { drawingObject.setCoords(); canvas.setActiveObject(drawingObject); sortLayers(); markDirty(); saveHistory(); }
-                    setTool('select'); drawingObject = null;
-                }
-                
-                clearSnapLines();
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
-            });
-
-            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
-
-            // --- EXPORT & SAVE ---
-            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
-            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
-
-            $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
-            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
-            
-            $('#confirm-export-btn').click(async function() {
-                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
-                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
-                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
-                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
-                
-                let pagesToExport = [];
-                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
-
-                if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
-                    pdf.save(`${p.name}_Export.pdf`);
-                } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
-                }
-                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
-            });
 
             // --- UI PROPERTIES PANEL ---
             let focusedColorType = 'fill'; 
 
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
-            canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
             function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
+                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone || obj.isPreviewNode) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
-
-                if (obj.type === 'rect' && !obj.clipPath) { 
-                    $('#shape-properties, #prop-rx-row').show(); $('#prop-sides-row').hide(); $('#obj-rx').val(Math.round(obj.rx || 0));
-                } else if (obj.type === 'polygon' && !obj.clipPath) {
-                    $('#shape-properties, #prop-sides-row').show(); $('#prop-rx-row').hide(); $('#obj-poly-sides').val(obj.points.length);
-                } else {
-                    $('#shape-properties').hide();
-                }
-
-                if (obj.type === 'path' && obj.penPoints) {
-                    $('#node-edit-tools').show();
-                } else {
-                    $('#node-edit-tools').hide();
-                }
+                if (obj.type === 'rect' && !obj.clipPath) { $('#shape-properties, #prop-rx-row').show(); $('#prop-sides-row').hide(); $('#obj-rx').val(Math.round(obj.rx || 0)); } 
+                else if (obj.type === 'polygon' && !obj.clipPath) { $('#shape-properties, #prop-sides-row').show(); $('#prop-rx-row').hide(); $('#obj-poly-sides').val(obj.points.length); } 
+                else { $('#shape-properties').hide(); }
+                
+                if (obj.type === 'path' && obj.penPoints) { $('#node-edit-tools').show(); } else { $('#node-edit-tools').hide(); }
 
                 if (obj.type === 'textbox') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
@@ -2028,6 +1425,7 @@
 
             function updateTransformUI(e) {
                 const obj = e.target;
+                if (!obj || obj.isPreviewNode) return;
                 $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top));
                 $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight()));
                 $('#obj-rotation').val(Math.round(obj.angle % 360));
@@ -2035,7 +1433,6 @@
 
             function updateColorsUI(obj) {
                 if (!obj) return;
-                
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
                 
                 if (obj.type !== 'activeSelection') {
@@ -2067,10 +1464,7 @@
             }
             
             // --- SHAPE PROPERTIES BINDINGS ---
-            $('#obj-rx').on('input', function() {
-                updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0);
-            });
-
+            $('#obj-rx').on('input', function() { updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0); });
             $('#obj-poly-sides').on('change', function() {
                 const sides = parseInt($(this).val());
                 if (sides >= 3 && sides <= 30) {
