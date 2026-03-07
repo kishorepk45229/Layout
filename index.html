@@ -13,576 +13,412 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Additional Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.min.js"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
-            --bg-base: #0e0e11;
-            --bg-panel: #18181b;
-            --bg-surface: #27272a;
-            --bg-surface-hover: #3f3f46;
-            --border: #27272a;
-            --border-light: #3f3f46;
-            --text-main: #f4f4f5;
-            --text-muted: #a1a1aa;
-            
-            --accent: #cbfb45;
-            --accent-hover: #bceb35;
-            --accent-text: #1a2005;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --info: #3b82f6;
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #00ff88;
+            --accent-hover: #00cc6a;
+            --border: #404040;
+            --danger: #ff4444;
+            --success: #44ff44;
+            --warning: #ffaa44;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-            font-size: 11px; 
-        }
-        
-        body { 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            background: var(--bg-base); 
-            color: var(--text-main); 
-            overflow: hidden; 
-        }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--bg-surface-hover); border-radius: 3px; }
-
-        /* Modern UI Components */
-        .glass-effect {
-            background: rgba(24, 24, 27, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .neon-glow {
-            box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(203, 251, 69, 0.3);
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* Top Bar */
-        .top-bar { 
-            background: var(--bg-panel); 
-            border-bottom: 1px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            height: 48px; 
-            z-index: 200; 
-            position: relative; 
-            padding: 0 20px; 
-            flex-shrink: 0; 
+        .top-bar {
+            background: var(--bg-secondary);
+            height: 48px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
         }
 
-        .top-left { display: flex; align-items: center; gap: 20px; }
-        
-        .branding { 
-            font-weight: 600; 
-            font-size: 14px; 
-            color: var(--text-main); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        
-        .branding i { color: var(--accent); }
-        
-        .version-tag { 
-            font-size: 10px; 
-            color: var(--text-muted); 
-            background: var(--bg-surface); 
-            padding: 2px 8px; 
-            border-radius: 12px; 
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
         }
 
-        /* Modern Menu */
-        .menu-bar { display: flex; list-style: none; gap: 4px; }
-        
-        .menu-item { 
-            position: relative; 
-            padding: 6px 12px; 
-            cursor: pointer; 
-            color: var(--text-muted); 
-            font-weight: 500; 
-            border-radius: 6px; 
-            transition: all 0.2s;
-        }
-        
-        .menu-item:hover { 
-            background: var(--bg-surface); 
-            color: var(--text-main); 
+        .branding {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
         }
 
-        .dropdown { 
-            display: none; 
-            position: absolute; 
-            top: calc(100% + 4px); 
-            left: 0; 
-            background: var(--bg-panel); 
-            min-width: 240px; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.8); 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            z-index: 300; 
-            padding: 6px; 
-        }
-        
-        .menu-item:hover .dropdown { display: block; }
-        
-        .dropdown li { 
-            list-style: none; 
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 2px; 
-        }
-        
-        .dropdown li:hover { 
-            background: var(--accent); 
-            color: var(--accent-text); 
-            cursor: pointer; 
+        .branding i {
+            margin-right: 8px;
         }
 
-        /* Buttons */
-        .btn-primary { 
-            background: var(--accent); 
-            color: var(--accent-text); 
-            border: none; 
-            padding: 6px 16px; 
-            border-radius: 6px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-            transition: all 0.2s; 
-        }
-        
-        .btn-primary:hover { 
-            background: var(--accent-hover); 
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3);
+        .menu-bar {
+            display: flex;
+            list-style: none;
+            gap: 16px;
         }
 
-        .btn-secondary {
-            background: var(--bg-surface);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 6px;
+        .menu-item {
+            position: relative;
             cursor: pointer;
-            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 13px;
         }
-        
-        .btn-secondary:hover {
-            background: var(--bg-surface-hover);
-            border-color: var(--accent);
+
+        .menu-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            min-width: 200px;
+            z-index: 1000;
+            padding: 4px 0;
+        }
+
+        .menu-item:hover .dropdown {
+            display: block;
+        }
+
+        .dropdown li {
+            list-style: none;
+            padding: 8px 12px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .dropdown li:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .shortcut {
+            color: var(--text-secondary);
+            font-size: 11px;
         }
 
         /* Tabs */
-        .tabs-bar { 
-            display: flex; 
-            background: #121215; 
-            border-bottom: 1px solid var(--border); 
-            height: 40px; 
-            padding: 0 12px; 
-            align-items: flex-end; 
-            z-index: 150; 
-            flex-shrink: 0; 
+        .tabs-bar {
+            background: var(--bg-primary);
+            height: 36px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
             gap: 4px;
         }
-        
-        .tab { 
-            background: var(--bg-surface); 
-            color: var(--text-muted); 
-            padding: 8px 16px; 
-            border-radius: 8px 8px 0 0; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            cursor: pointer; 
-            border: 1px solid transparent; 
-            border-bottom: none; 
-            max-width: 200px; 
-            font-size: 11px;
-            transition: all 0.2s;
+
+        .tab {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 6px 16px;
+            border-radius: 4px 4px 0 0;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
         }
-        
-        .tab:hover { 
-            background: var(--bg-surface-hover); 
-            color: var(--text-main);
+
+        .tab.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border);
         }
-        
-        .tab.active { 
-            background: var(--bg-panel); 
-            color: var(--text-main); 
-            border-color: var(--border); 
-            border-top: 2px solid var(--accent); 
+
+        .tab-close {
+            font-size: 10px;
+            opacity: 0.5;
+        }
+
+        .tab-close:hover {
+            opacity: 1;
+            color: var(--danger);
+        }
+
+        .tab-new {
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tab-new:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         /* Workspace */
-        .workspace-container { 
-            flex: 1; 
-            display: flex; 
-            overflow: hidden; 
-            position: relative; 
-            min-height: 0; 
-            min-width: 0; 
+        .workspace-container {
+            display: flex;
+            height: calc(100vh - 84px);
         }
 
         /* Left Toolbar */
-        .toolbar-left { 
-            width: 120px; 
-            background: var(--bg-panel); 
-            border-right: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 16px 8px; 
-            z-index: 100; 
-            flex-shrink: 0; 
-            align-items: center; 
-            gap: 12px;
+        .toolbar-left {
+            width: 80px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 16px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
         }
 
-        .tool-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
-            width: 100%; 
-            justify-items: center; 
+        .tool-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
 
-        .tool-btn { 
-            width: 36px; 
-            height: 36px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            background: transparent; 
-            color: var(--text-muted); 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            cursor: pointer; 
-            transition: all 0.2s; 
+        .tool-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
-        
-        .tool-btn:hover { 
-            color: var(--text-main); 
-            background: var(--bg-surface); 
-            transform: scale(1.05);
-        }
-        
-        .tool-btn.active-state { 
-            background: var(--bg-surface-hover); 
-            color: var(--text-main); 
-            box-shadow: inset 2px 0 0 var(--accent); 
+
+        .tool-btn.active {
+            background: var(--bg-tertiary);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
         }
 
         /* Right Panel */
-        .panel-right { 
-            width: 320px; 
-            background: var(--bg-panel); 
-            border-left: 1px solid var(--border); 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 100; 
-            flex-shrink: 0; 
+        .panel-right {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
         }
 
-        .panel-section { 
-            padding: 16px; 
-            border-bottom: 1px solid var(--border); 
+        .panel-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .panel-section h3 { 
-            font-size: 11px; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            color: var(--text-muted); 
-            margin-bottom: 12px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+        .panel-section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
             letter-spacing: 0.5px;
         }
 
-        /* Modern Color Picker */
-        .color-palette-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            margin: 12px 0;
+        /* Editor Core */
+        .editor-core {
+            flex: 1;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-container-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: auto;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Welcome Screen */
+        #welcome-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 400px;
+        }
+
+        #welcome-screen i {
+            font-size: 64px;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        #welcome-screen h2 {
+            margin-bottom: 16px;
+            font-size: 24px;
+        }
+
+        #welcome-screen p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .welcome-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 8px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+        }
+
+        /* Forms */
+        input, select, textarea {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        /* Color Picker */
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .color-swatch {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 6px;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            border: 2px solid var(--border);
             cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .color-swatch:hover {
-            transform: scale(1.1);
-            border-color: var(--text-main);
         }
 
         .color-swatch.active {
             border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
         }
 
-        /* AI Assistant Panel */
-        .ai-assistant-panel {
-            background: linear-gradient(135deg, rgba(203, 251, 69, 0.1), rgba(59, 130, 246, 0.1));
-            border: 1px solid rgba(203, 251, 69, 0.2);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 12px 0;
-        }
-
-        .ai-suggestion-item {
-            background: var(--bg-base);
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .ai-suggestion-item:hover {
-            background: var(--bg-surface);
-            transform: translateX(4px);
-        }
-
-        /* Animation Panel */
-        .animation-timeline {
-            background: var(--bg-base);
-            border-radius: 6px;
-            padding: 8px;
-            margin: 12px 0;
-            min-height: 60px;
-            position: relative;
-        }
-
-        .keyframe {
-            width: 12px;
-            height: 12px;
-            background: var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .keyframe:hover {
-            transform: scale(1.5);
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        /* Collaboration Indicators */
-        .collaborator-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--bg-surface);
-            border: 2px solid var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            margin-right: -8px;
-        }
-
-        .collaborator-cursor {
-            width: 2px;
-            height: 20px;
-            background: var(--accent);
-            position: absolute;
-            pointer-events: none;
-        }
-
-        /* Asset Library */
-        .asset-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin: 12px 0;
-        }
-
-        .asset-item {
-            background: var(--bg-base);
-            border-radius: 6px;
-            padding: 8px;
-            cursor: grab;
-            transition: all 0.2s;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--border);
-        }
-
-        .asset-item:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .asset-item:active {
-            cursor: grabbing;
-        }
-
-        /* Version Control */
-        .version-timeline {
-            position: relative;
-            padding: 12px 0;
-        }
-
-        .version-item {
-            display: flex;
-            gap: 12px;
-            padding: 8px;
-            border-left: 2px solid var(--border);
-            margin-left: 12px;
-            position: relative;
-        }
-
-        .version-item::before {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            left: -6px;
-            top: 12px;
-        }
-
-        .version-item.current {
-            border-left-color: var(--accent);
-        }
-
-        /* Responsive Preview */
-        .device-preview-bar {
-            display: flex;
-            gap: 8px;
-            padding: 12px;
-            background: var(--bg-base);
-            border-radius: 8px;
-            margin: 12px 0;
-        }
-
-        .device-btn {
-            flex: 1;
-            padding: 6px;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .device-btn:hover {
-            background: var(--bg-surface);
-            color: var(--text-main);
-        }
-
-        .device-btn.active {
-            background: var(--accent);
-            color: var(--accent-text);
-            border-color: var(--accent);
-        }
-
-        /* Modal */
-        .modal-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.8); 
-            backdrop-filter: blur(8px); 
-            z-index: 1000; 
-            justify-content: center; 
-            align-items: center; 
-        }
-
-        .modal { 
-            background: var(--bg-panel); 
-            padding: 24px; 
-            border-radius: 12px; 
-            width: 90%; 
-            max-width: 500px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
-            max-height: 80vh;
+        /* Layer List */
+        .layer-list {
+            max-height: 200px;
             overflow-y: auto;
         }
 
-        .modal h2 { 
-            margin-bottom: 20px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 12px; 
+        .layer-item {
+            background: var(--bg-tertiary);
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: move;
+            border: 1px solid transparent;
         }
 
-        /* Inputs */
-        input, select, textarea {
-            background: var(--bg-base);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 6px;
-            width: 100%;
-            outline: none;
-            transition: all 0.2s;
-            font-size: 12px;
-        }
-
-        input:focus, select:focus, textarea:focus {
+        .layer-item:hover {
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(203, 251, 69, 0.1);
         }
 
-        input[type="range"] {
-            padding: 0;
-            height: 4px;
-            background: var(--bg-surface);
-            border-radius: 2px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--accent);
-            border-radius: 50%;
+        .layer-item i {
+            color: var(--text-secondary);
             cursor: pointer;
         }
 
+        .layer-item i:hover {
+            color: var(--accent);
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 12px;
+        }
+
         /* Toast Notifications */
-        .toast-container {
+        #toast-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -590,11 +426,11 @@
         }
 
         .toast {
-            background: var(--bg-panel);
-            border-left: 3px solid var(--accent);
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent);
             padding: 12px 20px;
-            border-radius: 8px;
-            margin-top: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
@@ -613,509 +449,380 @@
             }
         }
 
-        /* Loading Spinner */
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1500;
+            justify-content: center;
+            align-items: center;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            min-width: 400px;
+            max-width: 600px;
         }
 
-        /* Canvas */
-        .editor-core { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
-            background: var(--bg-base); 
-            min-width: 0; 
-            min-height: 0; 
+        .modal h2 {
+            margin-bottom: 20px;
+            font-size: 18px;
         }
 
-        .editor-body { 
-            flex: 1; 
-            display: flex; 
-            position: relative; 
-            overflow: hidden; 
-            min-height: 0;
-            min-width: 0;
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
         }
 
-        .canvas-container-wrapper { 
-            flex: 1; 
-            position: relative; 
-            overflow: hidden; 
-            min-width: 0; 
-            min-height: 0; 
+        /* Property Panel */
+        .property-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        .canvas-container { 
-            position: absolute !important; 
-            top: 0; 
-            left: 0; 
+        .property-col {
+            flex: 1;
+        }
+
+        /* Disabled State */
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Master Banner */
+        #master-banner {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg-primary);
+            padding: 8px 20px;
+            border-radius: 30px;
+            z-index: 100;
+            display: none;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #exit-master-btn {
+            background: var(--bg-primary);
+            color: var(--accent);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
         }
 
         /* High Contrast Mode */
         body.high-contrast {
-            --bg-base: #000000;
-            --bg-panel: #0a0a0a;
-            --bg-surface: #1a1a1a;
-            --bg-surface-hover: #2a2a2a;
-            --border: #ffffff;
-            --text-main: #ffffff;
-            --text-muted: #cccccc;
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #ffff00;
             --accent: #ffff00;
+            --border: #ffffff;
         }
     </style>
 </head>
 <body>
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toast-container"></div>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
     <!-- Top Bar -->
-    <header class="top-bar">
+    <div class="top-bar">
         <div class="top-left">
             <div class="branding">
-                <i class="fa-solid fa-feather-pointed"></i> 
-                Thooval 
-                <span class="version-tag">v3.0 Pro</span>
+                <i class="fas fa-feather"></i>
+                Thooval Pro
             </div>
-            
-            <!-- Main Menu -->
             <ul class="menu-bar">
                 <li class="menu-item">
-                    <i class="fa-regular fa-file"></i> File
+                    File
                     <ul class="dropdown">
-                        <li id="menu-new"><span>New Document...</span> <span class="shortcut">Ctrl+N</span></li>
-                        <li id="menu-open"><span>Open...</span> <span class="shortcut">Ctrl+O</span></li>
+                        <li id="menu-new"><span>New Document</span> <span class="shortcut">Ctrl+N</span></li>
+                        <li id="menu-open"><span>Open</span> <span class="shortcut">Ctrl+O</span></li>
                         <li class="divider"></li>
                         <li id="menu-save"><span>Save</span> <span class="shortcut">Ctrl+S</span></li>
-                        <li id="menu-save-cloud"><span><i class="fa-regular fa-cloud"></i> Save to Cloud</span></li>
-                        <li id="menu-load-cloud"><span><i class="fa-regular fa-cloud-arrow-down"></i> Load from Cloud</span></li>
-                        <li class="divider"></li>
-                        <li id="menu-export"><span>Export...</span> <span class="shortcut">Ctrl+E</span></li>
-                        <li id="menu-export-svg"><span>Export as SVG</span></li>
-                        <li id="menu-export-css"><span>Export as CSS</span></li>
+                        <li id="menu-export"><span>Export</span> <span class="shortcut">Ctrl+E</span></li>
                     </ul>
                 </li>
-                
                 <li class="menu-item">
-                    <i class="fa-regular fa-pen"></i> Edit
+                    Edit
                     <ul class="dropdown">
                         <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
                         <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
                         <li class="divider"></li>
                         <li id="menu-group"><span>Group</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup</span> <span class="shortcut">Ctrl+Shift+G</span></li>
-                        <li class="divider"></li>
-                        <li id="menu-find-replace"><span>Find & Replace</span> <span class="shortcut">Ctrl+F</span></li>
-                        <li id="menu-shortcuts"><span>Keyboard Shortcuts</span> <span class="shortcut">?</span></li>
                     </ul>
                 </li>
-                
                 <li class="menu-item">
-                    <i class="fa-regular fa-wand-magic"></i> AI Tools
-                    <ul class="dropdown">
-                        <li id="menu-ai-layout"><span>Suggest Layouts</span></li>
-                        <li id="menu-ai-align"><span>Smart Align</span></li>
-                        <li id="menu-ai-color"><span>Generate Color Palette</span></li>
-                        <li id="menu-ai-alt"><span>Generate Alt Text</span></li>
-                    </ul>
-                </li>
-                
-                <li class="menu-item">
-                    <i class="fa-regular fa-users"></i> Collaborate
-                    <ul class="dropdown">
-                        <li id="menu-collab-start"><span>Start Session</span></li>
-                        <li id="menu-collab-join"><span>Join Session</span></li>
-                        <li id="menu-collab-leave"><span>Leave Session</span></li>
-                        <li class="divider"></li>
-                        <li id="menu-collab-users"><span>Active Users</span></li>
-                    </ul>
-                </li>
-                
-                <li class="menu-item">
-                    <i class="fa-regular fa-clock"></i> Version
-                    <ul class="dropdown">
-                        <li id="menu-version-commit"><span>Commit Changes</span></li>
-                        <li id="menu-version-history"><span>Show History</span></li>
-                        <li id="menu-version-diff"><span>Compare Versions</span></li>
-                    </ul>
-                </li>
-                
-                <li class="menu-item">
-                    <i class="fa-regular fa-chart-line"></i> Data
-                    <ul class="dropdown">
-                        <li id="menu-chart-bar"><span>Create Bar Chart</span></li>
-                        <li id="menu-chart-pie"><span>Create Pie Chart</span></li>
-                        <li id="menu-chart-line"><span>Create Line Chart</span></li>
-                    </ul>
-                </li>
-                
-                <li class="menu-item">
-                    <i class="fa-regular fa-cube"></i> Assets
-                    <ul class="dropdown">
-                        <li id="menu-asset-icons"><span>Icon Library</span></li>
-                        <li id="menu-asset-illustrations"><span>Illustrations</span></li>
-                        <li id="menu-asset-templates"><span>Templates</span></li>
-                        <li id="menu-asset-gradients"><span>Gradients</span></li>
-                    </ul>
-                </li>
-                
-                <li class="menu-item">
-                    <i class="fa-regular fa-display"></i> View
+                    View
                     <ul class="dropdown">
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
+                        <li id="menu-fit"><span>Fit to Screen</span> <span class="shortcut">Ctrl+0</span></li>
                         <li class="divider"></li>
-                        <li id="menu-device-desktop"><span>Desktop Preview</span></li>
-                        <li id="menu-device-tablet"><span>Tablet Preview</span></li>
-                        <li id="menu-device-mobile"><span>Mobile Preview</span></li>
-                        <li class="divider"></li>
-                        <li id="menu-high-contrast"><span>High Contrast Mode</span></li>
+                        <li id="menu-high-contrast"><span>High Contrast</span></li>
+                    </ul>
+                </li>
+                <li class="menu-item">
+                    Help
+                    <ul class="dropdown">
+                        <li id="menu-shortcuts"><span>Keyboard Shortcuts</span> <span class="shortcut">?</span></li>
                     </ul>
                 </li>
             </ul>
         </div>
-        
-        <div class="top-right" style="display: flex; align-items: center; gap: 16px;">
-            <!-- Collaboration Status -->
-            <div id="collab-status" style="display: none; align-items: center; gap: 8px;">
-                <div class="spinner" style="width: 12px; height: 12px;"></div>
-                <span>2 active</span>
-            </div>
-            
-            <!-- Page Info -->
-            <span style="color: var(--text-muted);">
-                Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span>
-            </span>
-            
-            <!-- AI Assistant Toggle -->
-            <button class="btn-secondary" id="toggle-ai-assistant" style="padding: 4px 8px;">
-                <i class="fa-regular fa-robot"></i> AI
-            </button>
+        <div>
+            <span id="page-info">Page 1 of 1</span>
         </div>
-    </header>
+    </div>
 
-    <!-- Tabs Bar -->
+    <!-- Tabs -->
     <div class="tabs-bar" id="tabs-container">
-        <button class="tab-new" id="btn-new-tab" title="New Document">
-            <i class="fa-solid fa-plus"></i>
+        <button class="tab-new" id="btn-new-tab">
+            <i class="fas fa-plus"></i> New Tab
         </button>
     </div>
 
     <!-- Main Workspace -->
     <div class="workspace-container">
         <!-- Left Toolbar -->
-        <aside class="toolbar-left" id="sidebar-left">
-            <div class="tool-grid">
-                <button class="tool-btn active-state" id="tool-select" title="Select (V)">
-                    <i class="fa-solid fa-arrow-pointer"></i>
-                </button>
-                <button class="tool-btn" id="tool-pan" title="Pan (Space)">
-                    <i class="fa-regular fa-hand"></i>
-                </button>
-                
-                <button class="tool-btn" id="tool-zoom" title="Zoom (Z)">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
-                <button class="tool-btn" id="add-text" title="Text (T)">
-                    <i class="fa-solid fa-t"></i>
-                </button>
-                
-                <div class="tool-divider" style="grid-column: 1 / -1; height: 1px; background: var(--border); margin: 4px 0;"></div>
-                
-                <button class="tool-btn" id="add-rect" title="Rectangle (R)">
-                    <i class="fa-regular fa-square"></i>
-                </button>
-                <button class="tool-btn" id="add-circle" title="Circle (O)">
-                    <i class="fa-regular fa-circle"></i>
-                </button>
-                <button class="tool-btn" id="tool-mask" title="Mask">
-                    <i class="fa-solid fa-object-intersect"></i>
-                </button>
-                <button class="tool-btn" id="tool-animation" title="Animation">
-                    <i class="fa-solid fa-film"></i>
-                </button>
-            </div>
-            
-            <div class="tool-divider" style="flex: 1;"></div>
-            
-            <!-- Color Tools -->
-            <div class="global-palette-block" style="position: relative; width: 60px; height: 60px;">
-                <div class="fill-block" id="fill-focus" style="position: absolute; width: 40px; height: 40px; background: #3f3f46; border: 2px solid var(--accent); border-radius: 4px; top: 0; left: 0; cursor: pointer;"></div>
-                <div class="stroke-block" id="stroke-focus" style="position: absolute; width: 40px; height: 40px; background: transparent; border: 3px solid #3f3f46; border-radius: 4px; top: 18px; left: 18px; cursor: pointer;"></div>
-            </div>
-            
-            <div style="display: flex; gap: 4px;">
-                <button class="small-icon-btn" id="swap-colors" title="Swap Colors">
-                    <i class="fa-solid fa-repeat"></i>
-                </button>
-                <button class="small-icon-btn" id="no-color" title="No Color">
-                    <i class="fa-solid fa-slash"></i>
-                </button>
-            </div>
-            
-            <input type="color" id="color-picker" value="#3f3f46" style="width: 100%; height: 30px; border: none; border-radius: 4px; cursor: pointer;">
-            
-            <input type="range" id="stroke-weight" min="0" max="20" value="1" style="width: 100%;">
-            
-            <div class="tool-divider"></div>
-            
-            <button class="tool-btn" id="delete-obj" style="color: var(--danger);" title="Delete (Del)">
-                <i class="fa-regular fa-trash-can"></i>
+        <div class="toolbar-left">
+            <button class="tool-btn active" id="tool-select" title="Select (V)">
+                <i class="fas fa-mouse-pointer"></i>
             </button>
-        </aside>
+            <button class="tool-btn" id="tool-pan" title="Pan (H)">
+                <i class="fas fa-hand-paper"></i>
+            </button>
+            <button class="tool-btn" id="tool-zoom" title="Zoom (Z)">
+                <i class="fas fa-search"></i>
+            </button>
+            <div style="width: 100%; height: 1px; background: var(--border); margin: 8px 0;"></div>
+            <button class="tool-btn" id="add-rect" title="Rectangle (R)">
+                <i class="fas fa-square"></i>
+            </button>
+            <button class="tool-btn" id="add-circle" title="Circle (C)">
+                <i class="fas fa-circle"></i>
+            </button>
+            <button class="tool-btn" id="add-text" title="Text (T)">
+                <i class="fas fa-font"></i>
+            </button>
+            <button class="tool-btn" id="add-image" title="Image (I)">
+                <i class="fas fa-image"></i>
+            </button>
+            <div style="flex: 1;"></div>
+            <button class="tool-btn" id="delete-obj" title="Delete (Del)" style="color: var(--danger);">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
 
-        <!-- Main Editor -->
+        <!-- Editor Core -->
         <div class="editor-core">
             <!-- Master Banner -->
-            <div id="master-banner" style="display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 8px 20px; border-radius: 30px; z-index: 200; align-items: center; gap: 16px;">
-                <span><i class="fa-regular fa-crown"></i> Editing Master Template</span>
-                <button id="exit-master-btn" style="background: #1a2005; color: var(--accent); border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer;">Done</button>
+            <div id="master-banner">
+                <i class="fas fa-crown"></i> Editing Master Template
+                <button id="exit-master-btn">Done</button>
             </div>
-            
+
             <!-- Welcome Screen -->
-            <div id="inner-welcome" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 48px; text-align: center; z-index: 300; max-width: 500px;">
-                <i class="fa-solid fa-feather-pointed" style="font-size: 64px; color: var(--accent); margin-bottom: 24px;"></i>
-                <h2 style="font-size: 24px; margin-bottom: 12px;">Welcome to Thooval Pro</h2>
-                <p style="color: var(--text-muted); margin-bottom: 32px;">Professional design suite with AI-powered tools</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <button class="btn-primary" id="welcome-new" style="padding: 12px;">
-                        <i class="fa-regular fa-file"></i> New Project
-                    </button>
-                    <button class="btn-secondary" id="welcome-open" style="padding: 12px;">
-                        <i class="fa-regular fa-folder-open"></i> Open
-                    </button>
+            <div id="welcome-screen">
+                <i class="fas fa-feather"></i>
+                <h2>Welcome to Thooval Pro</h2>
+                <p>Create a new document or open an existing one to get started</p>
+                <div class="welcome-buttons">
+                    <button class="btn-primary" id="welcome-new">New Document</button>
+                    <button class="btn-secondary" id="welcome-open">Open File</button>
                 </div>
             </div>
-            
+
             <!-- Canvas Container -->
-            <div class="editor-body">
-                <main class="canvas-container-wrapper" id="workspace-wrapper">
-                    <canvas id="layout-canvas"></canvas>
-                </main>
+            <div class="canvas-container-wrapper" id="canvas-wrapper">
+                <canvas id="canvas"></canvas>
             </div>
         </div>
 
         <!-- Right Panel -->
-        <aside class="panel-right" id="sidebar-right">
-            <!-- Properties Panel (Dynamic) -->
-            <div id="properties-panel"></div>
-            
-            <!-- AI Assistant Panel -->
-            <div class="panel-section ai-assistant-panel" id="ai-assistant">
-                <h3>
-                    <span><i class="fa-regular fa-robot"></i> AI Assistant</span>
-                    <span class="spinner" style="display: none;" id="ai-spinner"></span>
-                </h3>
+        <div class="panel-right">
+            <!-- Properties Panel -->
+            <div class="panel-section" id="properties-panel" style="display: none;">
+                <h3><i class="fas fa-sliders"></i> Properties</h3>
                 
-                <div class="ai-suggestion-item" id="ai-suggest-layout">
-                    <i class="fa-regular fa-layout"></i> Suggest Layouts
-                </div>
-                <div class="ai-suggestion-item" id="ai-generate-palette">
-                    <i class="fa-regular fa-palette"></i> Generate Color Palette
-                </div>
-                <div class="ai-suggestion-item" id="ai-smart-align">
-                    <i class="fa-regular fa-arrows-maximize"></i> Smart Align
-                </div>
-                <div class="ai-suggestion-item" id="ai-generate-alt">
-                    <i class="fa-regular fa-universal-access"></i> Generate Alt Text
-                </div>
-            </div>
-            
-            <!-- Color Harmony Panel -->
-            <div class="panel-section" id="color-harmony">
-                <h3><i class="fa-regular fa-palette"></i> Color Harmony</h3>
-                <div class="color-palette-grid" id="harmony-palette"></div>
-                <select id="harmony-type" style="margin-top: 8px;">
-                    <option value="complementary">Complementary</option>
-                    <option value="analogous">Analogous</option>
-                    <option value="triadic">Triadic</option>
-                    <option value="monochromatic">Monochromatic</option>
-                </select>
-                <button class="btn-secondary" style="width: 100%; margin-top: 8px;" id="apply-harmony">
-                    Apply to Selection
-                </button>
-            </div>
-            
-            <!-- Asset Library -->
-            <div class="panel-section" id="asset-library">
-                <h3>
-                    <span><i class="fa-regular fa-cube"></i> Assets</span>
-                    <span class="small-icon-btn" id="refresh-assets">
-                        <i class="fa-regular fa-rotate"></i>
-                    </span>
-                </h3>
-                
-                <div style="margin-bottom: 12px;">
-                    <select id="asset-category" style="width: 100%;">
-                        <option value="icons">Icons</option>
-                        <option value="illustrations">Illustrations</option>
-                        <option value="templates">Templates</option>
-                        <option value="gradients">Gradients</option>
-                    </select>
-                </div>
-                
-                <div class="asset-grid" id="asset-grid"></div>
-                
-                <button class="btn-secondary" style="width: 100%; margin-top: 8px;" id="upload-asset">
-                    <i class="fa-regular fa-cloud-arrow-up"></i> Upload Asset
-                </button>
-            </div>
-            
-            <!-- Animation Panel -->
-            <div class="panel-section" id="animation-panel">
-                <h3><i class="fa-regular fa-film"></i> Animation</h3>
-                
-                <div class="animation-timeline" id="timeline">
-                    <div class="keyframe" style="left: 20%;" data-time="0.5"></div>
-                    <div class="keyframe" style="left: 50%;" data-time="1.5"></div>
-                    <div class="keyframe" style="left: 80%;" data-time="2.5"></div>
-                </div>
-                
-                <select id="animation-type" style="margin: 12px 0;">
-                    <option value="fade">Fade</option>
-                    <option value="slide">Slide</option>
-                    <option value="bounce">Bounce</option>
-                    <option value="rotate">Rotate</option>
-                </select>
-                
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-secondary" style="flex: 1;" id="play-animation">
-                        <i class="fa-regular fa-play"></i> Preview
-                    </button>
-                    <button class="btn-secondary" style="flex: 1;" id="add-keyframe">
-                        <i class="fa-regular fa-plus"></i> Keyframe
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Version Control -->
-            <div class="panel-section" id="version-control">
-                <h3><i class="fa-regular fa-clock"></i> Version History</h3>
-                
-                <div class="version-timeline" id="version-timeline"></div>
-                
-                <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <button class="btn-secondary" style="flex: 1;" id="commit-version">
-                        <i class="fa-regular fa-floppy-disk"></i> Commit
-                    </button>
-                    <button class="btn-secondary" style="flex: 1;" id="show-history">
-                        <i class="fa-regular fa-clock-rotate-left"></i> History
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Responsive Preview -->
-            <div class="panel-section" id="responsive-preview">
-                <h3><i class="fa-regular fa-display"></i> Device Preview</h3>
-                
-                <div class="device-preview-bar">
-                    <button class="device-btn active" data-device="desktop">
-                        <i class="fa-regular fa-display"></i>
-                    </button>
-                    <button class="device-btn" data-device="tablet">
-                        <i class="fa-regular fa-tablet"></i>
-                    </button>
-                    <button class="device-btn" data-device="mobile">
-                        <i class="fa-regular fa-mobile"></i>
-                    </button>
-                </div>
-                
-                <div style="margin-top: 12px;">
-                    <label>Width: <span id="device-width">1920</span>px</label>
-                    <input type="range" id="device-width-slider" min="320" max="1920" value="1920" style="width: 100%;">
-                </div>
-            </div>
-            
-            <!-- Layer Management -->
-            <div class="panel-section" id="layer-panel">
-                <h3>
-                    <span><i class="fa-regular fa-layer-group"></i> Layers</span>
-                    <span class="small-icon-btn" id="refresh-layers">
-                        <i class="fa-regular fa-rotate"></i>
-                    </span>
-                </h3>
-                <div class="layer-list" id="layer-list"></div>
-            </div>
-        </aside>
-    </div>
-
-    <!-- Modals -->
-    
-    <!-- Cloud Storage Modal -->
-    <div class="modal-overlay" id="cloud-modal">
-        <div class="modal">
-            <h2><i class="fa-regular fa-cloud"></i> Cloud Storage</h2>
-            
-            <div style="margin-bottom: 20px;">
-                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                    <button class="btn-primary" id="cloud-google">
-                        <i class="fa-brands fa-google-drive"></i> Google Drive
-                    </button>
-                    <button class="btn-primary" id="cloud-dropbox">
-                        <i class="fa-brands fa-dropbox"></i> Dropbox
-                    </button>
-                </div>
-                
-                <div id="cloud-files" style="max-height: 300px; overflow-y: auto;"></div>
-            </div>
-            
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#cloud-modal').hide()">Close</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Collaboration Modal -->
-    <div class="modal-overlay" id="collab-modal">
-        <div class="modal">
-            <h2><i class="fa-regular fa-users"></i> Collaboration</h2>
-            
-            <div style="margin-bottom: 20px;">
-                <div style="margin-bottom: 16px;">
-                    <label>Session ID</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="session-id" readonly>
-                        <button class="btn-secondary" id="copy-session">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
+                <div class="property-row">
+                    <div class="property-col">
+                        <label>X</label>
+                        <input type="number" id="prop-x" step="1">
+                    </div>
+                    <div class="property-col">
+                        <label>Y</label>
+                        <input type="number" id="prop-y" step="1">
                     </div>
                 </div>
                 
-                <div>
-                    <label>Active Users</label>
-                    <div id="active-users" style="margin-top: 8px;"></div>
+                <div class="property-row">
+                    <div class="property-col">
+                        <label>Width</label>
+                        <input type="number" id="prop-width" step="1">
+                    </div>
+                    <div class="property-col">
+                        <label>Height</label>
+                        <input type="number" id="prop-height" step="1">
+                    </div>
+                </div>
+                
+                <div class="property-row">
+                    <div class="property-col">
+                        <label>Rotation</label>
+                        <input type="number" id="prop-rotation" step="1" min="0" max="360">
+                    </div>
+                </div>
+                
+                <div class="color-picker-group">
+                    <div class="color-swatch" id="fill-swatch" style="background: #00ff88;"></div>
+                    <input type="color" id="fill-color" value="#00ff88">
+                </div>
+                
+                <div class="color-picker-group">
+                    <div class="color-swatch" id="stroke-swatch" style="background: #ffffff;"></div>
+                    <input type="color" id="stroke-color" value="#ffffff">
+                </div>
+                
+                <label>Stroke Width</label>
+                <input type="range" id="stroke-width" min="0" max="20" value="1">
+            </div>
+
+            <!-- No Selection Message -->
+            <div class="panel-section" id="no-selection">
+                <p style="color: var(--text-secondary); text-align: center;">
+                    <i class="fas fa-arrow-pointer"></i><br>
+                    Select an object to edit properties
+                </p>
+            </div>
+
+            <!-- Text Properties -->
+            <div class="panel-section" id="text-properties" style="display: none;">
+                <h3><i class="fas fa-font"></i> Text</h3>
+                
+                <label>Font Family</label>
+                <select id="font-family">
+                    <option value="Arial">Arial</option>
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                </select>
+                
+                <label>Font Size</label>
+                <input type="number" id="font-size" value="24" min="8" max="144">
+                
+                <label>Text Align</label>
+                <div style="display: flex; gap: 4px;">
+                    <button class="btn-secondary" id="align-left" style="flex: 1;"><i class="fas fa-align-left"></i></button>
+                    <button class="btn-secondary" id="align-center" style="flex: 1;"><i class="fas fa-align-center"></i></button>
+                    <button class="btn-secondary" id="align-right" style="flex: 1;"><i class="fas fa-align-right"></i></button>
                 </div>
             </div>
-            
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#collab-modal').hide()">Close</button>
+
+            <!-- Layers Panel -->
+            <div class="panel-section">
+                <h3><i class="fas fa-layers"></i> Layers</h3>
+                <div class="layer-list" id="layer-list"></div>
+            </div>
+
+            <!-- AI Assistant -->
+            <div class="panel-section">
+                <h3><i class="fas fa-robot"></i> AI Assistant</h3>
+                <button class="btn-secondary" style="width: 100%; margin-bottom: 8px;" id="ai-suggest">
+                    <i class="fas fa-magic"></i> Suggest Layout
+                </button>
+                <button class="btn-secondary" style="width: 100%;" id="ai-color">
+                    <i class="fas fa-palette"></i> Generate Colors
+                </button>
             </div>
         </div>
     </div>
-    
+
+    <!-- New Document Modal -->
+    <div class="modal-overlay" id="new-doc-modal">
+        <div class="modal">
+            <h2><i class="fas fa-file"></i> New Document</h2>
+            
+            <label>Document Name</label>
+            <input type="text" id="doc-name" value="Untitled">
+            
+            <label>Width (px)</label>
+            <input type="number" id="doc-width" value="800">
+            
+            <label>Height (px)</label>
+            <input type="number" id="doc-height" value="600">
+            
+            <label>Background Color</label>
+            <input type="color" id="doc-bg" value="#1a1a1a">
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="$('#new-doc-modal').hide()">Cancel</button>
+                <button class="btn-primary" id="create-doc">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal">
+            <h2><i class="fas fa-download"></i> Export</h2>
+            
+            <label>Format</label>
+            <select id="export-format">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="pdf">PDF</option>
+                <option value="svg">SVG</option>
+            </select>
+            
+            <label>Quality</label>
+            <select id="export-quality">
+                <option value="1">1x (Standard)</option>
+                <option value="2">2x (HD)</option>
+                <option value="3">3x (4K)</option>
+            </select>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="$('#export-modal').hide()">Cancel</button>
+                <button class="btn-primary" id="export-btn">Export</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Keyboard Shortcuts Modal -->
     <div class="modal-overlay" id="shortcuts-modal">
-        <div class="modal" style="max-width: 600px;">
-            <h2><i class="fa-regular fa-keyboard"></i> Keyboard Shortcuts</h2>
+        <div class="modal">
+            <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div>
                     <h3 style="color: var(--accent); margin-bottom: 8px;">Tools</h3>
                     <div>Select: <span class="shortcut">V</span></div>
-                    <div>Pan: <span class="shortcut">Space</span></div>
+                    <div>Pan: <span class="shortcut">H</span></div>
                     <div>Zoom: <span class="shortcut">Z</span></div>
-                    <div>Text: <span class="shortcut">T</span></div>
                     <div>Rectangle: <span class="shortcut">R</span></div>
-                    <div>Circle: <span class="shortcut">O</span></div>
+                    <div>Circle: <span class="shortcut">C</span></div>
+                    <div>Text: <span class="shortcut">T</span></div>
                 </div>
                 
                 <div>
@@ -1139,81 +846,46 @@
                     <h3 style="color: var(--accent); margin-bottom: 8px;">View</h3>
                     <div>Zoom In: <span class="shortcut">Ctrl++</span></div>
                     <div>Zoom Out: <span class="shortcut">Ctrl+-</span></div>
-                    <div>Fit Page: <span class="shortcut">Ctrl+1</span></div>
-                    <div>Preview: <span class="shortcut">W</span></div>
+                    <div>Fit: <span class="shortcut">Ctrl+0</span></div>
                 </div>
             </div>
             
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#shortcuts-modal').hide()">Close</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Chart Data Modal -->
-    <div class="modal-overlay" id="chart-modal">
-        <div class="modal">
-            <h2><i class="fa-regular fa-chart-line"></i> Create Chart</h2>
-            
-            <div style="margin-bottom: 16px;">
-                <label>Chart Type</label>
-                <select id="chart-type">
-                    <option value="bar">Bar Chart</option>
-                    <option value="line">Line Chart</option>
-                    <option value="pie">Pie Chart</option>
-                    <option value="scatter">Scatter Plot</option>
-                </select>
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-                <label>Data (JSON format)</label>
-                <textarea id="chart-data" rows="5" placeholder='{"labels": ["A","B","C"], "values": [10,20,30]}'></textarea>
-            </div>
-            
-            <div style="margin-bottom: 16px;">
-                <label>Title</label>
-                <input type="text" id="chart-title" placeholder="Chart Title">
-            </div>
-            
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="$('#chart-modal').hide()">Cancel</button>
-                <button class="btn-primary" id="create-chart">Create</button>
+                <button class="btn-primary" onclick="$('#shortcuts-modal').hide()">Close</button>
             </div>
         </div>
     </div>
 
     <script>
         $(document).ready(function() {
-            // Initialize Fabric Canvas
-            const wrapper = $('#workspace-wrapper');
-            const canvas = new fabric.Canvas('layout-canvas', {
-                width: wrapper.width(),
-                height: wrapper.height(),
-                selection: true,
+            // ========== INITIALIZATION ==========
+            const canvasWrapper = $('#canvas-wrapper');
+            const canvas = new fabric.Canvas('canvas', {
+                width: canvasWrapper.width(),
+                height: canvasWrapper.height(),
+                backgroundColor: '#1a1a1a',
                 preserveObjectStacking: true
             });
-            
-            // Core State Management
+
+            // State Management
             let projects = {};
-            let activeId = null;
+            let activeProject = null;
             let activeTool = 'select';
+            let isDirty = false;
+            let history = [];
+            let historyIndex = -1;
+
+            // ========== UTILITY FUNCTIONS ==========
             
-            // Modern Features State
-            let collabSession = null;
-            let animations = [];
-            let versions = [];
-            let assets = {
-                icons: ['fa-star', 'fa-heart', 'fa-user', 'fa-cog', 'fa-home'],
-                illustrations: [],
-                templates: [],
-                gradients: ['linear-gradient(45deg, #ff6b6b, #4ecdc4)', 'linear-gradient(135deg, #667eea, #764ba2)']
-            };
-            
-            // Toast Notification System
+            // Toast notifications
             function showToast(message, type = 'info', duration = 3000) {
+                const icon = type === 'success' ? 'fa-check-circle' : 
+                            type === 'error' ? 'fa-exclamation-circle' : 
+                            'fa-info-circle';
+                
                 const toast = $(`
                     <div class="toast">
-                        <i class="fa-regular ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle'}"></i>
+                        <i class="fas ${icon}" style="color: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--accent)'};"></i>
                         <span>${message}</span>
                     </div>
                 `);
@@ -1224,290 +896,224 @@
                     toast.fadeOut(300, function() { $(this).remove(); });
                 }, duration);
             }
-            
-            // --- 1. AI-Powered Features ---
-            class AILayoutAssistant {
-                constructor() {
-                    this.colorThief = new ColorThief();
+
+            // Generate unique ID
+            function generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            // Save history
+            function saveHistory() {
+                if (!activeProject) return;
+                
+                const state = canvas.toJSON();
+                if (historyIndex < history.length - 1) {
+                    history = history.slice(0, historyIndex + 1);
                 }
                 
-                async suggestLayouts() {
-                    showToast('AI is analyzing your layout...', 'info');
-                    
-                    // Simulate AI suggestions
-                    setTimeout(() => {
-                        const suggestions = [
-                            { name: 'Balanced Layout', description: 'Evenly distributed elements' },
-                            { name: 'Focused Layout', description: 'Center-weighted composition' },
-                            { name: 'Dynamic Layout', description: 'Asymmetrical arrangement' }
-                        ];
-                        
-                        $('#ai-assistant').append(`
-                            <div class="ai-suggestion-item">
-                                <strong>Layout Suggestions:</strong>
-                                ${suggestions.map(s => `<div>• ${s.name}: ${s.description}</div>`).join('')}
-                            </div>
-                        `);
-                        
-                        showToast('Layout suggestions ready!', 'success');
-                    }, 2000);
+                history.push(state);
+                historyIndex++;
+                
+                if (history.length > 50) {
+                    history.shift();
+                    historyIndex--;
                 }
                 
-                async extractColorsFromImage(imgElement) {
-                    try {
-                        const palette = this.colorThief.getPalette(imgElement, 5);
-                        return palette.map(color => `rgb(${color.join(',')})`);
-                    } catch (error) {
-                        console.error('Color extraction failed:', error);
-                        return null;
-                    }
-                }
-                
-                generateHarmony(baseColor, type) {
-                    // Convert hex to HSL
-                    let r = parseInt(baseColor.slice(1,3), 16) / 255;
-                    let g = parseInt(baseColor.slice(3,5), 16) / 255;
-                    let b = parseInt(baseColor.slice(5,7), 16) / 255;
-                    
-                    let max = Math.max(r, g, b);
-                    let min = Math.min(r, g, b);
-                    let h, s, l = (max + min) / 2;
-                    
-                    if (max === min) {
-                        h = s = 0;
-                    } else {
-                        let d = max - min;
-                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                        
-                        switch (max) {
-                            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                            case g: h = (b - r) / d + 2; break;
-                            case b: h = (r - g) / d + 4; break;
-                        }
-                        h /= 6;
-                    }
-                    
-                    // Generate harmony colors
-                    let colors = [];
-                    switch(type) {
-                        case 'complementary':
-                            colors = [baseColor, this.hslToHex((h + 0.5) % 1, s, l)];
-                            break;
-                        case 'analogous':
-                            colors = [
-                                baseColor,
-                                this.hslToHex((h + 0.083) % 1, s, l),
-                                this.hslToHex((h - 0.083 + 1) % 1, s, l)
-                            ];
-                            break;
-                        case 'triadic':
-                            colors = [
-                                baseColor,
-                                this.hslToHex((h + 0.333) % 1, s, l),
-                                this.hslToHex((h + 0.667) % 1, s, l)
-                            ];
-                            break;
-                        case 'monochromatic':
-                            colors = [
-                                this.hslToHex(h, s, Math.max(0.2, l - 0.2)),
-                                baseColor,
-                                this.hslToHex(h, s, Math.min(0.8, l + 0.2))
-                            ];
-                            break;
-                    }
-                    
-                    return colors;
-                }
-                
-                hslToHex(h, s, l) {
-                    let r, g, b;
-                    
-                    if (s === 0) {
-                        r = g = b = l;
-                    } else {
-                        const hue2rgb = (p, q, t) => {
-                            if (t < 0) t += 1;
-                            if (t > 1) t -= 1;
-                            if (t < 1/6) return p + (q - p) * 6 * t;
-                            if (t < 1/2) return q;
-                            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                            return p;
-                        };
-                        
-                        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                        const p = 2 * l - q;
-                        
-                        r = hue2rgb(p, q, h + 1/3);
-                        g = hue2rgb(p, q, h);
-                        b = hue2rgb(p, q, h - 1/3);
-                    }
-                    
-                    const toHex = (x) => {
-                        const hex = Math.round(x * 255).toString(16);
-                        return hex.length === 1 ? '0' + hex : hex;
-                    };
-                    
-                    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+                isDirty = true;
+            }
+
+            // Undo
+            function undo() {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    canvas.loadFromJSON(history[historyIndex], () => {
+                        canvas.renderAll();
+                        updateLayers();
+                        showToast('Undo', 'info');
+                    });
                 }
             }
-            
-            const aiAssistant = new AILayoutAssistant();
-            
-            // AI Event Handlers
-            $('#ai-suggest-layout').click(() => aiAssistant.suggestLayouts());
-            
-            $('#ai-generate-palette').click(async function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'image') {
-                    const imgElement = activeObj.getElement();
-                    const palette = await aiAssistant.extractColorsFromImage(imgElement);
-                    
-                    if (palette) {
-                        let html = '';
-                        palette.forEach(color => {
-                            html += `<div class="color-swatch" style="background: ${color};"></div>`;
-                        });
-                        $('#harmony-palette').html(html);
-                        showToast('Color palette extracted!', 'success');
-                    }
-                } else {
-                    showToast('Please select an image first', 'error');
+
+            // Redo
+            function redo() {
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    canvas.loadFromJSON(history[historyIndex], () => {
+                        canvas.renderAll();
+                        updateLayers();
+                        showToast('Redo', 'info');
+                    });
                 }
-            });
+            }
+
+            // ========== PROJECT MANAGEMENT ==========
             
-            $('#ai-smart-align').click(function() {
-                const objects = canvas.getActiveObjects();
-                if (objects.length < 2) {
-                    showToast('Select at least 2 objects', 'error');
-                    return;
-                }
+            function createNewProject(name = 'Untitled', width = 800, height = 600, bgColor = '#1a1a1a') {
+                const id = generateId();
                 
-                // Smart distribute horizontally
-                objects.sort((a, b) => a.left - b.left);
-                const totalWidth = objects[objects.length-1].left + objects[objects.length-1].width - objects[0].left;
-                const spacing = totalWidth / (objects.length - 1);
+                projects[id] = {
+                    id: id,
+                    name: name,
+                    width: width,
+                    height: height,
+                    backgroundColor: bgColor,
+                    objects: []
+                };
                 
-                objects.forEach((obj, i) => {
-                    if (i > 0) {
-                        obj.set('left', objects[0].left + spacing * i);
-                    }
-                });
+                activeProject = id;
                 
+                // Clear canvas
+                canvas.clear();
+                canvas.setWidth(width);
+                canvas.setHeight(height);
+                canvas.setBackgroundColor(bgColor);
                 canvas.renderAll();
-                showToast('Objects aligned smartly!', 'success');
-            });
-            
-            $('#ai-generate-alt').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'image') {
-                    // Simulate AI alt text generation
-                    const altText = 'Image with visual content for design';
-                    activeObj.set('alt', altText);
-                    showToast(`Alt text generated: "${altText}"`, 'success');
-                } else {
-                    showToast('Please select an image', 'error');
-                }
-            });
-            
-            // --- 2. Color Harmony Tools ---
-            $('#harmony-type').change(function() {
-                const type = $(this).val();
-                const baseColor = $('#color-picker').val();
-                const colors = aiAssistant.generateHarmony(baseColor, type);
                 
-                let html = '';
-                colors.forEach(color => {
-                    html += `<div class="color-swatch" style="background: ${color};" onclick="applyColor('${color}')"></div>`;
-                });
-                $('#harmony-palette').html(html);
-            });
-            
-            window.applyColor = function(color) {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj) {
-                    activeObj.set('fill', color);
-                    canvas.renderAll();
-                }
-            };
-            
-            $('#apply-harmony').click(function() {
-                const colors = [];
-                $('.color-swatch').each(function() {
-                    colors.push($(this).css('background-color'));
-                });
+                // Update UI
+                renderTabs();
+                $('#welcome-screen').hide();
+                $('#page-info').text(`Page 1 of 1`);
                 
-                if (colors.length > 0) {
-                    showToast('Harmony colors ready to use!', 'success');
-                }
-            });
-            
-            // --- 3. Asset Library ---
-            function refreshAssetGrid(category) {
-                let html = '';
-                assets[category].forEach(asset => {
-                    if (category === 'icons') {
-                        html += `<div class="asset-item" draggable="true" data-type="icon" data-icon="${asset}">
-                            <i class="fa-regular ${asset}" style="font-size: 24px;"></i>
-                        </div>`;
-                    } else if (category === 'gradients') {
-                        html += `<div class="asset-item" draggable="true" data-type="gradient" data-gradient="${asset}">
-                            <div style="width: 100%; height: 100%; background: ${asset}; border-radius: 4px;"></div>
-                        </div>`;
-                    }
-                });
-                $('#asset-grid').html(html);
+                // Reset history
+                history = [];
+                historyIndex = -1;
+                saveHistory();
                 
-                // Setup drag and drop
-                $('.asset-item').on('dragstart', function(e) {
-                    const type = $(this).data('type');
-                    const data = type === 'icon' ? $(this).data('icon') : $(this).data('gradient');
-                    e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({type, data}));
+                showToast(`Created new document: ${name}`, 'success');
+                
+                return id;
+            }
+
+            function switchProject(id) {
+                if (!projects[id]) return;
+                
+                activeProject = id;
+                const project = projects[id];
+                
+                canvas.clear();
+                canvas.setWidth(project.width);
+                canvas.setHeight(project.height);
+                canvas.setBackgroundColor(project.backgroundColor);
+                
+                if (project.objects && project.objects.length > 0) {
+                    canvas.loadFromJSON(project.objects, () => {
+                        canvas.renderAll();
+                    });
+                }
+                
+                renderTabs();
+                showToast(`Switched to: ${project.name}`, 'info');
+            }
+
+            function renderTabs() {
+                $('.tab').remove();
+                
+                Object.values(projects).forEach(project => {
+                    const tab = $(`
+                        <div class="tab ${project.id === activeProject ? 'active' : ''}" data-id="${project.id}">
+                            <span>${project.name}</span>
+                            <i class="fas fa-times tab-close"></i>
+                        </div>
+                    `);
+                    
+                    $('#btn-new-tab').before(tab);
                 });
             }
+
+            // ========== TOOL MANAGEMENT ==========
             
-            $('#asset-category').change(function() {
-                refreshAssetGrid($(this).val());
-            });
-            
-            // Handle drop on canvas
-            canvas.on('drop', function(options) {
-                const event = options.e;
-                event.preventDefault();
+            function setTool(tool) {
+                activeTool = tool;
+                $('.tool-btn').removeClass('active');
+                $(`#tool-${tool}`).addClass('active');
                 
-                try {
-                    const data = JSON.parse(event.dataTransfer.getData('text/plain'));
-                    const pointer = canvas.getPointer(event);
-                    
-                    if (data.type === 'icon') {
-                        // Create text with icon (Font Awesome)
-                        const text = new fabric.Textbox(`  ${data.data}  `, {
-                            left: pointer.x,
-                            top: pointer.y,
-                            fontSize: 48,
-                            fontFamily: 'Font Awesome 6 Free',
-                            fill: '#ffffff'
-                        });
-                        canvas.add(text);
-                    } else if (data.type === 'gradient') {
-                        // Extract gradient colors
-                        const rect = new fabric.Rect({
-                            left: pointer.x,
-                            top: pointer.y,
-                            width: 200,
-                            height: 200,
-                            fill: data.data
-                        });
-                        canvas.add(rect);
-                    }
-                    
-                    canvas.renderAll();
-                    showToast('Asset added to canvas!', 'success');
-                } catch (e) {
-                    console.error('Drop failed:', e);
+                // Update cursor
+                switch(tool) {
+                    case 'select':
+                        canvas.defaultCursor = 'default';
+                        canvas.selection = true;
+                        break;
+                    case 'pan':
+                        canvas.defaultCursor = 'grab';
+                        canvas.selection = false;
+                        break;
+                    case 'zoom':
+                        canvas.defaultCursor = 'zoom-in';
+                        canvas.selection = false;
+                        break;
                 }
-            });
+            }
+
+            // ========== OBJECT CREATION ==========
             
-            $('#upload-asset').click(function() {
+            function getCenter() {
+                const zoom = canvas.getZoom();
+                const vpt = canvas.viewportTransform;
+                return {
+                    x: (canvas.width / 2 - vpt[4]) / zoom,
+                    y: (canvas.height / 2 - vpt[5]) / zoom
+                };
+            }
+
+            $('#add-rect').click(() => {
+                const center = getCenter();
+                const rect = new fabric.Rect({
+                    left: center.x - 50,
+                    top: center.y - 50,
+                    width: 100,
+                    height: 100,
+                    fill: $('#fill-color').val(),
+                    stroke: $('#stroke-color').val(),
+                    strokeWidth: parseInt($('#stroke-width').val())
+                });
+                
+                canvas.add(rect);
+                canvas.setActiveObject(rect);
+                canvas.renderAll();
+                saveHistory();
+                updateLayers();
+                showToast('Rectangle added', 'success');
+            });
+
+            $('#add-circle').click(() => {
+                const center = getCenter();
+                const circle = new fabric.Circle({
+                    left: center.x - 50,
+                    top: center.y - 50,
+                    radius: 50,
+                    fill: $('#fill-color').val(),
+                    stroke: $('#stroke-color').val(),
+                    strokeWidth: parseInt($('#stroke-width').val())
+                });
+                
+                canvas.add(circle);
+                canvas.setActiveObject(circle);
+                canvas.renderAll();
+                saveHistory();
+                updateLayers();
+                showToast('Circle added', 'success');
+            });
+
+            $('#add-text').click(() => {
+                const center = getCenter();
+                const text = new fabric.Textbox('Edit me', {
+                    left: center.x - 100,
+                    top: center.y - 25,
+                    width: 200,
+                    fontSize: 24,
+                    fontFamily: $('#font-family').val(),
+                    fill: $('#fill-color').val()
+                });
+                
+                canvas.add(text);
+                canvas.setActiveObject(text);
+                canvas.renderAll();
+                saveHistory();
+                updateLayers();
+                showToast('Text added', 'success');
+            });
+
+            $('#add-image').click(() => {
                 const input = $('<input type="file" accept="image/*">');
                 input.on('change', function(e) {
                     const file = e.target.files[0];
@@ -1515,789 +1121,609 @@
                     
                     reader.onload = function(f) {
                         fabric.Image.fromURL(f.target.result, function(img) {
-                            const category = $('#asset-category').val();
-                            if (category === 'illustrations') {
-                                assets.illustrations.push(img);
-                                refreshAssetGrid('illustrations');
-                                showToast('Illustration added to library!', 'success');
-                            }
+                            const center = getCenter();
+                            img.scaleToWidth(200);
+                            img.set({
+                                left: center.x - 100,
+                                top: center.y - 100
+                            });
+                            
+                            canvas.add(img);
+                            canvas.setActiveObject(img);
+                            canvas.renderAll();
+                            saveHistory();
+                            updateLayers();
+                            showToast('Image added', 'success');
                         });
                     };
                     
                     reader.readAsDataURL(file);
                 });
+                
                 input.click();
             });
-            
-            // Initial asset load
-            refreshAssetGrid('icons');
-            
-            // --- 4. Animation Tools ---
-            class AnimationManager {
-                constructor() {
-                    this.animations = new Map();
-                    this.timeline = 0;
-                    this.isPlaying = false;
-                }
-                
-                addAnimation(obj, type, duration) {
-                    const id = Date.now() + Math.random();
-                    this.animations.set(id, { obj, type, duration, keyframes: [] });
-                    this.renderTimeline();
-                    return id;
-                }
-                
-                addKeyframe(animId, time, properties) {
-                    const anim = this.animations.get(animId);
-                    if (anim) {
-                        anim.keyframes.push({ time, properties });
-                        anim.keyframes.sort((a, b) => a.time - b.time);
-                        this.renderTimeline();
-                    }
-                }
-                
-                renderTimeline() {
-                    const timeline = $('#timeline');
-                    timeline.empty();
-                    
-                    this.animations.forEach((anim, id) => {
-                        anim.keyframes.forEach(kf => {
-                            const left = (kf.time / 5) * 100; // Assuming 5s max
-                            timeline.append(`<div class="keyframe" style="left: ${left}%;" data-anim="${id}" data-time="${kf.time}"></div>`);
-                        });
-                    });
-                }
-                
-                play() {
-                    this.isPlaying = true;
-                    this.timeline = 0;
-                    this.animate();
-                }
-                
-                animate() {
-                    if (!this.isPlaying) return;
-                    
-                    this.timeline += 0.016; // 60fps
-                    
-                    this.animations.forEach((anim, id) => {
-                        const currentKeyframe = anim.keyframes.find(kf => kf.time >= this.timeline);
-                        if (currentKeyframe) {
-                            Object.assign(anim.obj, currentKeyframe.properties);
-                        }
-                    });
-                    
-                    canvas.renderAll();
-                    
-                    if (this.timeline < 5) {
-                        requestAnimationFrame(() => this.animate());
-                    } else {
-                        this.isPlaying = false;
-                    }
-                }
-            }
-            
-            const animManager = new AnimationManager();
-            
-            $('#play-animation').click(function() {
-                animManager.play();
-            });
-            
-            $('#add-keyframe').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj) {
-                    showToast('Select an object first', 'error');
-                    return;
-                }
-                
-                const time = prompt('Enter keyframe time (seconds):', '1');
-                if (time) {
-                    const animId = animManager.addAnimation(activeObj, 'custom', 5);
-                    animManager.addKeyframe(animId, parseFloat(time), {
-                        left: activeObj.left,
-                        top: activeObj.top,
-                        angle: activeObj.angle,
-                        scaleX: activeObj.scaleX,
-                        scaleY: activeObj.scaleY
-                    });
-                    showToast('Keyframe added!', 'success');
-                }
-            });
-            
-            // --- 5. Real-time Collaboration Simulation ---
-            class CollaborationManager {
-                constructor() {
-                    this.users = new Map();
-                    this.sessionId = null;
-                }
-                
-                startSession() {
-                    this.sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
-                    this.users.set('current', { name: 'You', color: '#cbfb45' });
-                    
-                    // Simulate other users
-                    this.users.set('user1', { name: 'Alice', color: '#ff6b6b' });
-                    this.users.set('user2', { name: 'Bob', color: '#4ecdc4' });
-                    
-                    this.updateUI();
-                    $('#collab-status').show();
-                    showToast(`Session started: ${this.sessionId}`, 'success');
-                }
-                
-                updateUI() {
-                    $('#active-users').empty();
-                    this.users.forEach((user, id) => {
-                        $('#active-users').append(`
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <div class="collaborator-avatar" style="background: ${user.color};">${user.name[0]}</div>
-                                <span>${user.name} ${id === 'current' ? '(you)' : ''}</span>
-                            </div>
-                        `);
-                    });
-                    
-                    $('#session-id').val(this.sessionId);
-                }
-                
-                broadcastChange(obj) {
-                    if (!this.sessionId) return;
-                    
-                    // Simulate broadcasting to other users
-                    console.log('Broadcasting change:', obj);
-                    
-                    // Show cursor indicators
-                    this.users.forEach((user, id) => {
-                        if (id !== 'current') {
-                            const cursor = $(`<div class="collaborator-cursor" style="background: ${user.color};"></div>`);
-                            $('#workspace-wrapper').append(cursor);
-                            setTimeout(() => cursor.remove(), 1000);
-                        }
-                    });
-                }
-            }
-            
-            const collabManager = new CollaborationManager();
-            
-            $('#menu-collab-start').click(() => {
-                collabManager.startSession();
-                $('#collab-modal').css('display', 'flex');
-            });
-            
-            $('#menu-collab-join').click(() => {
-                const sessionId = prompt('Enter session ID:');
-                if (sessionId) {
-                    collabManager.sessionId = sessionId;
-                    collabManager.users.set('current', { name: 'You', color: '#cbfb45' });
-                    $('#collab-status').show();
-                    showToast(`Joined session: ${sessionId}`, 'success');
-                    $('#collab-modal').css('display', 'flex');
-                }
-            });
-            
-            $('#copy-session').click(() => {
-                navigator.clipboard.writeText($('#session-id').val());
-                showToast('Session ID copied!', 'success');
-            });
-            
-            // Broadcast object changes
-            canvas.on('object:modified', (e) => {
-                collabManager.broadcastChange(e.target);
-            });
-            
-            // --- 6. Version Control ---
-            class VersionControl {
-                constructor() {
-                    this.commits = [];
-                    this.currentBranch = 'main';
-                }
-                
-                commit(message) {
-                    const snapshot = canvas.toJSON();
-                    const commit = {
-                        id: 'commit_' + Date.now(),
-                        message,
-                        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                        data: snapshot,
-                        branch: this.currentBranch
-                    };
-                    
-                    this.commits.push(commit);
-                    this.renderTimeline();
-                    showToast(`Committed: ${message}`, 'success');
-                    return commit;
-                }
-                
-                renderTimeline() {
-                    let html = '';
-                    this.commits.slice(-5).reverse().forEach(commit => {
-                        html += `
-                            <div class="version-item" data-id="${commit.id}">
-                                <div>
-                                    <strong>${commit.message}</strong><br>
-                                    <small>${commit.timestamp}</small>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    $('#version-timeline').html(html);
-                }
-                
-                diff(commit1Id, commit2Id) {
-                    const commit1 = this.commits.find(c => c.id === commit1Id);
-                    const commit2 = this.commits.find(c => c.id === commit2Id);
-                    
-                    if (!commit1 || !commit2) return null;
-                    
-                    // Simple diff simulation
-                    const objects1 = commit1.data.objects;
-                    const objects2 = commit2.data.objects;
-                    
-                    return {
-                        added: objects2.filter(o2 => !objects1.some(o1 => o1.id === o2.id)),
-                        removed: objects1.filter(o1 => !objects2.some(o2 => o2.id === o1.id)),
-                        modified: objects2.filter(o2 => {
-                            const o1 = objects1.find(o1 => o1.id === o2.id);
-                            return o1 && JSON.stringify(o1) !== JSON.stringify(o2);
-                        })
-                    };
-                }
-            }
-            
-            const versionControl = new VersionControl();
-            
-            $('#commit-version').click(() => {
-                const message = prompt('Commit message:');
-                if (message) {
-                    versionControl.commit(message);
-                }
-            });
-            
-            $('#show-history').click(() => {
-                if (versionControl.commits.length === 0) {
-                    showToast('No commits yet', 'info');
-                    return;
-                }
-                
-                let historyHtml = '<h3>Version History</h3>';
-                versionControl.commits.forEach(commit => {
-                    historyHtml += `
-                        <div style="margin: 8px 0; padding: 8px; background: var(--bg-base); border-radius: 4px;">
-                            <strong>${commit.message}</strong><br>
-                            <small>${commit.timestamp}</small>
-                        </div>
-                    `;
-                });
-                
-                const modal = $('<div class="modal-overlay"><div class="modal"></div></div>');
-                modal.find('.modal').html(historyHtml + '<button class="btn-cancel" onclick="$(this).closest(\'.modal-overlay\').hide()">Close</button>');
-                $('body').append(modal);
-                modal.css('display', 'flex');
-            });
-            
-            // --- 7. Responsive Preview ---
-            $('.device-btn').click(function() {
-                $('.device-btn').removeClass('active');
-                $(this).addClass('active');
-                
-                const device = $(this).data('device');
-                let width, height;
-                
-                switch(device) {
-                    case 'desktop':
-                        width = 1920;
-                        height = 1080;
-                        break;
-                    case 'tablet':
-                        width = 768;
-                        height = 1024;
-                        break;
-                    case 'mobile':
-                        width = 375;
-                        height = 667;
-                        break;
-                }
-                
-                $('#device-width').text(width);
-                $('#device-width-slider').val(width);
-                
-                // Scale canvas to fit
-                const scale = Math.min(wrapper.width() / width, wrapper.height() / height) * 0.8;
-                canvas.setZoom(scale);
-                canvas.requestRenderAll();
-            });
-            
-            $('#device-width-slider').on('input', function() {
-                const width = $(this).val();
-                $('#device-width').text(width);
-                
-                // Update preview
-                const scale = Math.min(wrapper.width() / width, wrapper.height() / 600) * 0.8;
-                canvas.setZoom(scale);
-                canvas.requestRenderAll();
-            });
-            
-            // --- 8. Chart Generation ---
-            $('#create-chart').click(function() {
-                const type = $('#chart-type').val();
-                const data = JSON.parse($('#chart-data').val() || '{"labels":[],"values":[]}');
-                const title = $('#chart-title').val();
-                
-                // Create a temporary canvas for chart
-                const chartCanvas = document.createElement('canvas');
-                chartCanvas.width = 400;
-                chartCanvas.height = 300;
-                
-                const ctx = chartCanvas.getContext('2d');
-                
-                // Simple chart rendering
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, 400, 300);
-                
-                if (type === 'bar') {
-                    const barWidth = 300 / data.labels.length;
-                    ctx.fillStyle = '#cbfb45';
-                    data.values.forEach((value, i) => {
-                        ctx.fillRect(50 + i * barWidth, 250 - value * 2, barWidth - 10, value * 2);
-                    });
-                } else if (type === 'line') {
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#cbfb45';
-                    ctx.lineWidth = 2;
-                    data.values.forEach((value, i) => {
-                        const x = 50 + (i * 300 / (data.values.length - 1));
-                        const y = 250 - value * 2;
-                        if (i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    });
-                    ctx.stroke();
-                }
-                
-                // Convert to fabric image
-                fabric.Image.fromURL(chartCanvas.toDataURL(), function(img) {
-                    const center = {
-                        x: (canvas.width / 2 - canvas.viewportTransform[4]) / canvas.getZoom(),
-                        y: (canvas.height / 2 - canvas.viewportTransform[5]) / canvas.getZoom()
-                    };
-                    
-                    img.set({
-                        left: center.x,
-                        top: center.y,
-                        scaleX: 0.5,
-                        scaleY: 0.5
-                    });
-                    
-                    canvas.add(img);
-                    canvas.setActiveObject(img);
-                    canvas.renderAll();
-                    
-                    $('#chart-modal').hide();
-                    showToast('Chart created!', 'success');
-                });
-            });
-            
-            $('#menu-chart-bar, #menu-chart-pie, #menu-chart-line').click(function() {
-                $('#chart-modal').css('display', 'flex');
-            });
-            
-            // --- 9. Accessibility Features ---
-            $('#menu-high-contrast').click(function() {
-                document.body.classList.toggle('high-contrast');
-                showToast('High contrast mode toggled', 'info');
-            });
-            
-            // --- 10. Keyboard Shortcuts Manager ---
-            class ShortcutManager {
-                constructor() {
-                    this.shortcuts = new Map();
-                    this.setupDefaultShortcuts();
-                }
-                
-                setupDefaultShortcuts() {
-                    this.shortcuts.set('v', { callback: () => setTool('select'), description: 'Select tool' });
-                    this.shortcuts.set(' ', { callback: () => setTool('pan'), description: 'Pan tool' });
-                    this.shortcuts.set('z', { callback: () => setTool('zoom'), description: 'Zoom tool' });
-                    this.shortcuts.set('t', { callback: () => $('#add-text').click(), description: 'Text tool' });
-                    this.shortcuts.set('r', { callback: () => $('#add-rect').click(), description: 'Rectangle tool' });
-                    this.shortcuts.set('o', { callback: () => $('#add-circle').click(), description: 'Circle tool' });
-                    
-                    this.shortcuts.set('Ctrl+z', { callback: () => performUndo(), description: 'Undo' });
-                    this.shortcuts.set('Ctrl+y', { callback: () => performRedo(), description: 'Redo' });
-                    this.shortcuts.set('Ctrl+g', { callback: () => groupObjects(), description: 'Group' });
-                    this.shortcuts.set('Ctrl+Shift+g', { callback: () => ungroupObjects(), description: 'Ungroup' });
-                    this.shortcuts.set('Ctrl+s', { callback: () => $('#menu-save').click(), description: 'Save' });
-                    this.shortcuts.set('Ctrl+o', { callback: () => $('#menu-open').click(), description: 'Open' });
-                    this.shortcuts.set('Ctrl+n', { callback: () => $('#menu-new').click(), description: 'New' });
-                    this.shortcuts.set('Ctrl+e', { callback: () => $('#menu-export').click(), description: 'Export' });
-                    this.shortcuts.set('Ctrl+f', { callback: () => $('#menu-find-replace').click(), description: 'Find/Replace' });
-                    this.shortcuts.set('Ctrl++', { callback: () => zoomIn(), description: 'Zoom in' });
-                    this.shortcuts.set('Ctrl+-', { callback: () => zoomOut(), description: 'Zoom out' });
-                    this.shortcuts.set('Ctrl+1', { callback: () => fitPage(), description: 'Fit page' });
-                    this.shortcuts.set('w', { callback: () => togglePreview(), description: 'Toggle preview' });
-                    this.shortcuts.set('Del', { callback: () => deleteSelected(), description: 'Delete' });
-                    this.shortcuts.set('?', { callback: () => $('#shortcuts-modal').css('display', 'flex'), description: 'Show shortcuts' });
-                }
-                
-                handleKey(e) {
-                    const key = e.key;
-                    const ctrl = e.ctrlKey;
-                    
-                    if (ctrl && key.toLowerCase() === 'z') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+z')?.callback();
-                    } else if (ctrl && key.toLowerCase() === 'y') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+y')?.callback();
-                    } else if (ctrl && key.toLowerCase() === 's') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+s')?.callback();
-                    } else if (ctrl && key.toLowerCase() === 'o') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+o')?.callback();
-                    } else if (ctrl && key.toLowerCase() === 'n') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+n')?.callback();
-                    } else if (ctrl && key.toLowerCase() === 'e') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+e')?.callback();
-                    } else if (ctrl && key.toLowerCase() === 'f') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+f')?.callback();
-                    } else if (ctrl && key === '+') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl++')?.callback();
-                    } else if (ctrl && key === '-') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+-')?.callback();
-                    } else if (ctrl && key === '1') {
-                        e.preventDefault();
-                        this.shortcuts.get('Ctrl+1')?.callback();
-                    } else if (key.toLowerCase() === 'v') {
-                        this.shortcuts.get('v')?.callback();
-                    } else if (key === ' ') {
-                        e.preventDefault();
-                        this.shortcuts.get(' ')?.callback();
-                    } else if (key.toLowerCase() === 'z') {
-                        this.shortcuts.get('z')?.callback();
-                    } else if (key.toLowerCase() === 't') {
-                        this.shortcuts.get('t')?.callback();
-                    } else if (key.toLowerCase() === 'r') {
-                        this.shortcuts.get('r')?.callback();
-                    } else if (key.toLowerCase() === 'o') {
-                        this.shortcuts.get('o')?.callback();
-                    } else if (key.toLowerCase() === 'w') {
-                        this.shortcuts.get('w')?.callback();
-                    } else if (key === 'Delete' || key === 'Del') {
-                        this.shortcuts.get('Del')?.callback();
-                    } else if (key === '?') {
-                        this.shortcuts.get('?')?.callback();
-                    }
-                }
-            }
-            
-            const shortcutManager = new ShortcutManager();
-            
-            $(window).keydown(function(e) {
-                shortcutManager.handleKey(e);
-            });
-            
-            $('#menu-shortcuts').click(() => {
-                $('#shortcuts-modal').css('display', 'flex');
-            });
-            
-            // Helper functions for shortcuts
-            function setTool(tool) {
-                activeTool = tool;
-                $('.tool-btn').removeClass('active-state');
-                $(`#tool-${tool}`).addClass('active-state');
-            }
-            
-            function performUndo() {
-                showToast('Undo', 'info');
-            }
-            
-            function performRedo() {
-                showToast('Redo', 'info');
-            }
-            
-            function groupObjects() {
-                const activeObjects = canvas.getActiveObjects();
-                if (activeObjects.length > 1) {
-                    const group = new fabric.Group(activeObjects);
-                    canvas.remove(...activeObjects);
-                    canvas.add(group);
-                    canvas.setActiveObject(group);
-                    canvas.renderAll();
-                    showToast('Objects grouped', 'success');
-                }
-            }
-            
-            function ungroupObjects() {
-                const activeObject = canvas.getActiveObject();
-                if (activeObject && activeObject.type === 'group') {
-                    activeObject.toActiveSelection();
-                    canvas.renderAll();
-                    showToast('Group ungrouped', 'success');
-                }
-            }
-            
-            function zoomIn() {
-                const zoom = canvas.getZoom();
-                canvas.setZoom(zoom * 1.2);
-                canvas.renderAll();
-            }
-            
-            function zoomOut() {
-                const zoom = canvas.getZoom();
-                canvas.setZoom(zoom / 1.2);
-                canvas.renderAll();
-            }
-            
-            function fitPage() {
-                canvas.setZoom(1);
-                canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
-                canvas.renderAll();
-            }
-            
-            function togglePreview() {
-                $('.panel-right, .toolbar-left').toggle();
-            }
-            
-            function deleteSelected() {
-                const activeObject = canvas.getActiveObject();
-                if (activeObject) {
-                    canvas.remove(activeObject);
+
+            $('#delete-obj').click(() => {
+                const active = canvas.getActiveObject();
+                if (active) {
+                    canvas.remove(active);
                     canvas.discardActiveObject();
                     canvas.renderAll();
+                    saveHistory();
+                    updateLayers();
                     showToast('Object deleted', 'info');
                 }
-            }
+            });
+
+            // ========== PROPERTIES PANEL ==========
             
-            // --- 11. Cloud Storage Simulation ---
-            $('#menu-save-cloud').click(() => {
-                $('#cloud-modal').css('display', 'flex');
+            function updateProperties(obj) {
+                if (!obj) {
+                    $('#properties-panel').hide();
+                    $('#no-selection').show();
+                    $('#text-properties').hide();
+                    return;
+                }
                 
-                // Simulate loading cloud files
-                const files = [
-                    { name: 'Project 1.thooval', modified: '2 hours ago' },
-                    { name: 'Design System.thooval', modified: 'yesterday' },
-                    { name: 'Client Work.thooval', modified: '3 days ago' }
-                ];
+                $('#properties-panel').show();
+                $('#no-selection').hide();
                 
-                let html = '';
-                files.forEach(file => {
-                    html += `
-                        <div style="padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer;">
-                            <i class="fa-regular fa-file"></i> ${file.name}<br>
-                            <small>${file.modified}</small>
-                        </div>
-                    `;
-                });
-                $('#cloud-files').html(html);
-            });
-            
-            $('#cloud-google, #cloud-dropbox').click(function() {
-                showToast('Connecting to cloud...', 'info');
-                setTimeout(() => {
-                    showToast('Connected successfully!', 'success');
-                }, 2000);
-            });
-            
-            // --- 12. Export Enhancements ---
-            $('#menu-export-svg').click(() => {
-                const svg = canvas.toSVG();
-                const blob = new Blob([svg], {type: 'image/svg+xml'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'export.svg';
-                a.click();
-                showToast('SVG exported!', 'success');
-            });
-            
-            $('#menu-export-css').click(() => {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj) {
-                    const css = `
-                        .element {
-                            position: absolute;
-                            left: ${activeObj.left}px;
-                            top: ${activeObj.top}px;
-                            width: ${activeObj.width * activeObj.scaleX}px;
-                            height: ${activeObj.height * activeObj.scaleY}px;
-                            transform: rotate(${activeObj.angle}deg);
-                            background: ${activeObj.fill};
-                        }
-                    `;
-                    
-                    const blob = new Blob([css], {type: 'text/css'});
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'styles.css';
-                    a.click();
-                    showToast('CSS exported!', 'success');
+                $('#prop-x').val(Math.round(obj.left));
+                $('#prop-y').val(Math.round(obj.top));
+                $('#prop-width').val(Math.round(obj.getScaledWidth()));
+                $('#prop-height').val(Math.round(obj.getScaledHeight()));
+                $('#prop-rotation').val(Math.round(obj.angle));
+                
+                $('#fill-swatch').css('background', obj.fill);
+                $('#fill-color').val(obj.fill);
+                $('#stroke-swatch').css('background', obj.stroke || 'transparent');
+                $('#stroke-color').val(obj.stroke || '#ffffff');
+                $('#stroke-width').val(obj.strokeWidth);
+                
+                if (obj.type === 'textbox') {
+                    $('#text-properties').show();
+                    $('#font-family').val(obj.fontFamily);
+                    $('#font-size').val(obj.fontSize);
                 } else {
-                    showToast('Select an object first', 'error');
-                }
-            });
-            
-            // Initialize
-            renderTabs();
-            
-            // Tab Management
-            function generateId() {
-                return Math.random().toString(36).substr(2, 9);
-            }
-            
-            function renderTabs() {
-                $('.tab').remove();
-                for (const id in projects) {
-                    const p = projects[id];
-                    const activeClass = id === activeId ? 'active' : '';
-                    $('<div>')
-                        .addClass(`tab ${activeClass}`)
-                        .attr('data-id', id)
-                        .html(`<span>${p.name}</span><i class="fa-solid fa-xmark tab-close"></i>`)
-                        .insertBefore('#btn-new-tab');
+                    $('#text-properties').hide();
                 }
             }
-            
-            function createNewProject() {
-                const id = generateId();
-                projects[id] = {
-                    name: 'Untitled Project',
-                    isDirty: false,
-                    config: {
-                        widthPx: 800,
-                        heightPx: 600,
-                        unit: 'px'
-                    },
-                    styles: []
-                };
-                activeId = id;
-                renderTabs();
-                $('#inner-welcome').hide();
-                showToast('New project created!', 'success');
-            }
-            
-            $('#btn-new-tab, #welcome-new, #menu-new').click(createNewProject);
-            
-            // Window resize handler
-            $(window).resize(function() {
-                canvas.setWidth(wrapper.width());
-                canvas.setHeight(wrapper.height());
+
+            canvas.on('selection:created', (e) => updateProperties(e.selected[0]));
+            canvas.on('selection:updated', (e) => updateProperties(e.selected[0]));
+            canvas.on('selection:cleared', () => {
+                $('#properties-panel').hide();
+                $('#no-selection').show();
+                $('#text-properties').hide();
             });
-            
-            // Initial welcome screen
-            $('#inner-welcome').show();
-            
-            // Basic tool handlers
-            $('#add-rect').click(() => {
-                const rect = new fabric.Rect({
-                    left: 100,
-                    top: 100,
-                    width: 100,
-                    height: 100,
-                    fill: $('#color-picker').val()
-                });
-                canvas.add(rect);
-                canvas.setActiveObject(rect);
-                showToast('Rectangle added', 'success');
+
+            canvas.on('object:modified', () => {
+                saveHistory();
+                updateLayers();
             });
-            
-            $('#add-circle').click(() => {
-                const circle = new fabric.Circle({
-                    left: 100,
-                    top: 100,
-                    radius: 50,
-                    fill: $('#color-picker').val()
-                });
-                canvas.add(circle);
-                canvas.setActiveObject(circle);
-                showToast('Circle added', 'success');
+
+            // Property inputs
+            $('#prop-x, #prop-y, #prop-width, #prop-height, #prop-rotation').on('input', function() {
+                const obj = canvas.getActiveObject();
+                if (!obj) return;
+                
+                switch(this.id) {
+                    case 'prop-x':
+                        obj.set('left', parseFloat($(this).val()));
+                        break;
+                    case 'prop-y':
+                        obj.set('top', parseFloat($(this).val()));
+                        break;
+                    case 'prop-width':
+                        obj.set('width', parseFloat($(this).val()));
+                        break;
+                    case 'prop-height':
+                        obj.set('height', parseFloat($(this).val()));
+                        break;
+                    case 'prop-rotation':
+                        obj.set('angle', parseFloat($(this).val()));
+                        break;
+                }
+                
+                obj.setCoords();
+                canvas.renderAll();
             });
-            
-            $('#add-text').click(() => {
-                const text = new fabric.Textbox('Edit me', {
-                    left: 100,
-                    top: 100,
-                    width: 200,
-                    fontSize: 24,
-                    fill: $('#color-picker').val()
-                });
-                canvas.add(text);
-                canvas.setActiveObject(text);
-                showToast('Text added', 'success');
+
+            $('#fill-color').on('input', function() {
+                const obj = canvas.getActiveObject();
+                if (obj) {
+                    obj.set('fill', $(this).val());
+                    $('#fill-swatch').css('background', $(this).val());
+                    canvas.renderAll();
+                    saveHistory();
+                }
             });
-            
-            $('#delete-obj').click(() => {
-                deleteSelected();
+
+            $('#stroke-color').on('input', function() {
+                const obj = canvas.getActiveObject();
+                if (obj) {
+                    obj.set('stroke', $(this).val());
+                    $('#stroke-swatch').css('background', $(this).val());
+                    canvas.renderAll();
+                    saveHistory();
+                }
             });
-            
-            $('#swap-colors').click(() => {
-                const fill = $('#fill-focus').css('background-color');
-                const stroke = $('#stroke-focus').css('border-color');
-                $('#fill-focus').css('background-color', stroke);
-                $('#stroke-focus').css('border-color', fill);
+
+            $('#stroke-width').on('input', function() {
+                const obj = canvas.getActiveObject();
+                if (obj) {
+                    obj.set('strokeWidth', parseInt($(this).val()));
+                    canvas.renderAll();
+                    saveHistory();
+                }
             });
-            
-            $('#no-color').click(() => {
-                $('#fill-focus').css('background-color', 'transparent');
+
+            $('#font-family, #font-size').on('input', function() {
+                const obj = canvas.getActiveObject();
+                if (obj && obj.type === 'textbox') {
+                    obj.set(this.id === 'font-family' ? 'fontFamily' : 'fontSize', 
+                           this.id === 'font-family' ? $(this).val() : parseInt($(this).val()));
+                    canvas.renderAll();
+                    saveHistory();
+                }
             });
-            
-            $('#color-picker').on('input', function() {
-                const color = $(this).val();
-                $('#fill-focus').css('background-color', color);
+
+            $('#align-left, #align-center, #align-right').click(function() {
+                const obj = canvas.getActiveObject();
+                if (!obj || obj.type !== 'textbox') return;
+                
+                const align = $(this).attr('id').split('-')[1];
+                obj.set('textAlign', align);
+                canvas.renderAll();
+                saveHistory();
             });
+
+            // ========== LAYER MANAGEMENT ==========
             
-            $('#stroke-weight').on('input', function() {
-                const weight = $(this).val();
-                $('#stroke-focus').css('border-width', weight + 'px');
-            });
-            
-            // Layer panel
-            function refreshLayerPanel() {
-                const objects = canvas.getObjects();
+            function updateLayers() {
+                const objects = canvas.getObjects().reverse();
                 let html = '';
-                objects.forEach((obj, i) => {
+                
+                objects.forEach((obj, index) => {
+                    const type = obj.type === 'textbox' ? 'Text' : 
+                                obj.type === 'rect' ? 'Rectangle' :
+                                obj.type === 'circle' ? 'Circle' :
+                                obj.type === 'image' ? 'Image' : obj.type;
+                    
                     html += `
-                        <div class="layer-item" data-index="${i}">
-                            <i class="fa-regular fa-eye toggle-visibility"></i>
-                            <span class="layer-name">${obj.type}</span>
-                            <span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span>
+                        <div class="layer-item" data-index="${index}">
+                            <i class="fas fa-eye" onclick="toggleVisibility(${index})"></i>
+                            <i class="fas ${obj.lockMovement ? 'fa-lock' : 'fa-unlock'}" onclick="toggleLock(${index})"></i>
+                            <span class="layer-name">${type}</span>
+                            <i class="fas fa-grip-vertical drag-handle"></i>
                         </div>
                     `;
                 });
+                
                 $('#layer-list').html(html);
             }
-            
-            $('#refresh-layers').click(refreshLayerPanel);
-            
-            canvas.on('object:added', refreshLayerPanel);
-            canvas.on('object:removed', refreshLayerPanel);
-            
+
+            window.toggleVisibility = function(index) {
+                const objects = canvas.getObjects();
+                const obj = objects[objects.length - 1 - index];
+                if (obj) {
+                    obj.visible = !obj.visible;
+                    canvas.renderAll();
+                }
+            };
+
+            window.toggleLock = function(index) {
+                const objects = canvas.getObjects();
+                const obj = objects[objects.length - 1 - index];
+                if (obj) {
+                    obj.lockMovement = !obj.lockMovement;
+                    obj.selectable = !obj.lockMovement;
+                    obj.evented = !obj.lockMovement;
+                    canvas.renderAll();
+                    updateLayers();
+                }
+            };
+
             // Make layers sortable
             $('#layer-list').sortable({
                 handle: '.drag-handle',
                 update: function() {
-                    const newOrder = [];
+                    const layers = [];
                     $('#layer-list .layer-item').each(function() {
                         const idx = $(this).data('index');
-                        newOrder.push(canvas.getObjects()[idx]);
+                        layers.push(canvas.getObjects()[canvas.getObjects().length - 1 - idx]);
                     });
                     
-                    // Reorder canvas objects
-                    canvas.getObjects().forEach(obj => canvas.remove(obj));
-                    newOrder.forEach(obj => canvas.add(obj));
+                    canvas.clear();
+                    layers.reverse().forEach(obj => canvas.add(obj));
                     canvas.renderAll();
-                    refreshLayerPanel();
+                    updateLayers();
+                    saveHistory();
                 }
             });
+
+            // ========== PAN AND ZOOM ==========
             
-            // Toggle AI Assistant panel
-            $('#toggle-ai-assistant').click(function() {
-                $('#ai-assistant').slideToggle();
+            let isDragging = false;
+            let lastPosX, lastPosY;
+
+            canvas.on('mouse:down', (opt) => {
+                if (activeTool === 'pan' || opt.e.button === 1) {
+                    isDragging = true;
+                    lastPosX = opt.e.clientX;
+                    lastPosY = opt.e.clientY;
+                    canvas.selection = false;
+                    canvas.defaultCursor = 'grabbing';
+                } else if (activeTool === 'zoom') {
+                    const pointer = canvas.getPointer(opt.e);
+                    const zoom = canvas.getZoom();
+                    const newZoom = opt.e.button === 2 ? zoom / 1.2 : zoom * 1.2;
+                    
+                    canvas.zoomToPoint({ x: pointer.x, y: pointer.y }, newZoom);
+                }
             });
+
+            canvas.on('mouse:move', (opt) => {
+                if (isDragging) {
+                    const vpt = canvas.viewportTransform;
+                    vpt[4] += opt.e.clientX - lastPosX;
+                    vpt[5] += opt.e.clientY - lastPosY;
+                    
+                    canvas.requestRenderAll();
+                    
+                    lastPosX = opt.e.clientX;
+                    lastPosY = opt.e.clientY;
+                }
+            });
+
+            canvas.on('mouse:up', () => {
+                isDragging = false;
+                if (activeTool === 'pan') {
+                    canvas.defaultCursor = 'grab';
+                }
+            });
+
+            canvas.on('mouse:wheel', (opt) => {
+                if (opt.e.ctrlKey) {
+                    const delta = opt.e.deltaY;
+                    const zoom = canvas.getZoom();
+                    const newZoom = delta > 0 ? zoom / 1.1 : zoom * 1.1;
+                    
+                    canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, newZoom);
+                    opt.e.preventDefault();
+                }
+            });
+
+            // ========== AI FEATURES ==========
             
-            console.log('Thooval v3.0 initialized with modern features!');
+            $('#ai-suggest').click(() => {
+                const objects = canvas.getObjects();
+                if (objects.length === 0) {
+                    showToast('Add some objects first', 'error');
+                    return;
+                }
+                
+                showToast('AI analyzing layout...', 'info');
+                
+                setTimeout(() => {
+                    // Simple auto-align
+                    const active = canvas.getActiveObjects();
+                    if (active.length > 1) {
+                        // Distribute horizontally
+                        active.sort((a, b) => a.left - b.left);
+                        const startX = active[0].left;
+                        const endX = active[active.length - 1].left + active[active.length - 1].width;
+                        const spacing = (endX - startX) / (active.length - 1);
+                        
+                        active.forEach((obj, i) => {
+                            obj.set('left', startX + spacing * i - obj.width / 2);
+                        });
+                        
+                        canvas.renderAll();
+                        saveHistory();
+                        showToast('Objects aligned!', 'success');
+                    }
+                }, 1000);
+            });
+
+            $('#ai-color').click(() => {
+                const obj = canvas.getActiveObject();
+                if (!obj) {
+                    showToast('Select an object first', 'error');
+                    return;
+                }
+                
+                // Generate random harmonious color
+                const hue = Math.random() * 360;
+                const color = `hsl(${hue}, 70%, 60%)`;
+                
+                obj.set('fill', color);
+                canvas.renderAll();
+                updateProperties(obj);
+                showToast('Generated new color!', 'success');
+            });
+
+            // ========== KEYBOARD SHORTCUTS ==========
+            
+            $(window).keydown((e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                // Tools
+                if (e.key.toLowerCase() === 'v') setTool('select');
+                if (e.key.toLowerCase() === 'h') setTool('pan');
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'r') $('#add-rect').click();
+                if (e.key.toLowerCase() === 'c') $('#add-circle').click();
+                if (e.key.toLowerCase() === 't') $('#add-text').click();
+                
+                // File operations with Ctrl
+                if (e.ctrlKey && e.key.toLowerCase() === 'n') {
+                    e.preventDefault();
+                    $('#new-doc-modal').show();
+                }
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 's') {
+                    e.preventDefault();
+                    $('#menu-save').click();
+                }
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+                    e.preventDefault();
+                    $('#menu-export').click();
+                }
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+                    e.preventDefault();
+                    undo();
+                }
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+                
+                if (e.ctrlKey && e.key === '+') {
+                    e.preventDefault();
+                    const zoom = canvas.getZoom();
+                    canvas.setZoom(zoom * 1.2);
+                }
+                
+                if (e.ctrlKey && e.key === '-') {
+                    e.preventDefault();
+                    const zoom = canvas.getZoom();
+                    canvas.setZoom(zoom / 1.2);
+                }
+                
+                if (e.ctrlKey && e.key === '0') {
+                    e.preventDefault();
+                    canvas.setZoom(1);
+                    canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+                }
+                
+                if (e.key === 'Delete' || e.key === 'Del') {
+                    $('#delete-obj').click();
+                }
+                
+                if (e.key === '?') {
+                    $('#shortcuts-modal').show();
+                }
+            });
+
+            // ========== MENU ACTIONS ==========
+            
+            $('#menu-new, #welcome-new, #btn-new-tab').click(() => {
+                $('#new-doc-modal').show();
+            });
+
+            $('#create-doc').click(() => {
+                const name = $('#doc-name').val();
+                const width = parseInt($('#doc-width').val());
+                const height = parseInt($('#doc-height').val());
+                const bgColor = $('#doc-bg').val();
+                
+                createNewProject(name, width, height, bgColor);
+                $('#new-doc-modal').hide();
+            });
+
+            $('#menu-save').click(() => {
+                if (!activeProject) {
+                    showToast('No active document', 'error');
+                    return;
+                }
+                
+                const project = projects[activeProject];
+                project.objects = canvas.toJSON();
+                
+                // Download as file
+                const data = JSON.stringify(project, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${project.name}.thooval`;
+                a.click();
+                
+                showToast('Project saved!', 'success');
+            });
+
+            $('#menu-open, #welcome-open').click(() => {
+                const input = $('<input type="file" accept=".thooval,.json">');
+                input.on('change', function(e) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(f) {
+                        try {
+                            const project = JSON.parse(f.target.result);
+                            projects[project.id] = project;
+                            switchProject(project.id);
+                            showToast('Project opened!', 'success');
+                        } catch (err) {
+                            showToast('Invalid project file', 'error');
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                });
+                
+                input.click();
+            });
+
+            $('#menu-export').click(() => {
+                if (!activeProject) {
+                    showToast('No active document', 'error');
+                    return;
+                }
+                
+                $('#export-modal').show();
+            });
+
+            $('#export-btn').click(() => {
+                const format = $('#export-format').val();
+                const quality = parseFloat($('#export-quality').val());
+                
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: projects[activeProject].width > projects[activeProject].height ? 'l' : 'p',
+                        unit: 'px',
+                        format: [projects[activeProject].width, projects[activeProject].height]
+                    });
+                    
+                    pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: quality }), 'PNG', 0, 0, projects[activeProject].width, projects[activeProject].height);
+                    pdf.save(`${projects[activeProject].name}.pdf`);
+                } else if (format === 'svg') {
+                    const svg = canvas.toSVG();
+                    const blob = new Blob([svg], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${projects[activeProject].name}.svg`;
+                    a.click();
+                } else {
+                    const dataURL = canvas.toDataURL({ format: format, multiplier: quality });
+                    const a = document.createElement('a');
+                    a.href = dataURL;
+                    a.download = `${projects[activeProject].name}.${format}`;
+                    a.click();
+                }
+                
+                $('#export-modal').hide();
+                showToast(`Exported as ${format.toUpperCase()}`, 'success');
+            });
+
+            $('#menu-undo').click(undo);
+            $('#menu-redo').click(redo);
+
+            $('#menu-group').click(() => {
+                const active = canvas.getActiveObjects();
+                if (active.length > 1) {
+                    const group = new fabric.Group(active);
+                    canvas.remove(...active);
+                    canvas.add(group);
+                    canvas.setActiveObject(group);
+                    canvas.renderAll();
+                    saveHistory();
+                    showToast('Grouped', 'success');
+                }
+            });
+
+            $('#menu-ungroup').click(() => {
+                const active = canvas.getActiveObject();
+                if (active && active.type === 'group') {
+                    active.toActiveSelection();
+                    canvas.renderAll();
+                    saveHistory();
+                    showToast('Ungrouped', 'success');
+                }
+            });
+
+            $('#menu-zoom-in').click(() => {
+                const zoom = canvas.getZoom();
+                canvas.setZoom(zoom * 1.2);
+            });
+
+            $('#menu-zoom-out').click(() => {
+                const zoom = canvas.getZoom();
+                canvas.setZoom(zoom / 1.2);
+            });
+
+            $('#menu-fit').click(() => {
+                canvas.setZoom(1);
+                canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+            });
+
+            $('#menu-high-contrast').click(() => {
+                document.body.classList.toggle('high-contrast');
+                showToast('High contrast mode toggled', 'info');
+            });
+
+            $('#menu-shortcuts').click(() => {
+                $('#shortcuts-modal').show();
+            });
+
+            // Tool buttons
+            $('#tool-select').click(() => setTool('select'));
+            $('#tool-pan').click(() => setTool('pan'));
+            $('#tool-zoom').click(() => setTool('zoom'));
+
+            // Close modals on outside click
+            $('.modal-overlay').click(function(e) {
+                if (e.target === this) {
+                    $(this).hide();
+                }
+            });
+
+            // Tab close
+            $(document).on('click', '.tab-close', function(e) {
+                e.stopPropagation();
+                const id = $(this).parent().data('id');
+                
+                if (confirm('Close this document?')) {
+                    delete projects[id];
+                    
+                    if (id === activeProject) {
+                        const remaining = Object.keys(projects);
+                        if (remaining.length > 0) {
+                            switchProject(remaining[0]);
+                        } else {
+                            activeProject = null;
+                            canvas.clear();
+                            $('#welcome-screen').show();
+                            renderTabs();
+                        }
+                    } else {
+                        renderTabs();
+                    }
+                    
+                    showToast('Document closed', 'info');
+                }
+            });
+
+            $(document).on('click', '.tab', function() {
+                const id = $(this).data('id');
+                if (id !== activeProject) {
+                    switchProject(id);
+                }
+            });
+
+            // ========== INITIAL SETUP ==========
+            
+            // Resize handler
+            $(window).resize(() => {
+                canvas.setWidth(canvasWrapper.width());
+                canvas.setHeight(canvasWrapper.height());
+            });
+
+            // Initial welcome screen
+            $('#welcome-screen').show();
+
+            // Create default project for demo
+            setTimeout(() => {
+                createNewProject('Demo Project', 800, 600, '#1a1a1a');
+            }, 500);
+
+            console.log('Thooval Pro initialized successfully!');
         });
     </script>
 </body>
