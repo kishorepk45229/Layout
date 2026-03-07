@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.3</title>
+    <title>Thooval Workspace v5.4</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -46,7 +46,7 @@
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
         
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
         .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
@@ -179,9 +179,11 @@
                         <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
                         <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
                         <li class="divider-li"></li>
+                        <li id="menu-cut"><span>Cut</span> <span class="shortcut">Ctrl+X</span></li>
                         <li id="menu-copy"><span>Copy</span> <span class="shortcut">Ctrl+C</span></li>
                         <li id="menu-paste"><span>Paste</span> <span class="shortcut">Ctrl+V</span></li>
                         <li id="menu-paste-into"><span>Paste Into Shape</span> <span class="shortcut">Ctrl+Alt+V</span></li>
+                        <li id="menu-delete-action"><span>Delete</span> <span class="shortcut">Del</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
@@ -530,6 +532,13 @@
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
             });
 
+            // --- MENU FIX: SNAP DROPDOWN SHUT ON CLICK ---
+            $('.dropdown li').on('click', function() {
+                const $dropdown = $(this).closest('.dropdown');
+                $dropdown.hide();
+                setTimeout(() => $dropdown.css('display', ''), 150);
+            });
+
             // --- MALAYALAM FML ↔ UNICODE ENGINE ---
             const uniToFmlDict = [
                 { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
@@ -575,10 +584,7 @@
                 if (p.history && p.historyIndex > 0) {
                     isHistoryProcessing = true; p.historyIndex--;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); 
-                        maintainHairlines();
-                        canvas.renderAll(); 
-                        isHistoryProcessing = false; 
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; 
                     });
                 }
             }
@@ -588,20 +594,10 @@
                 if (p.history && p.historyIndex < p.history.length - 1) {
                     isHistoryProcessing = true; p.historyIndex++;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); 
-                        maintainHairlines();
-                        canvas.renderAll(); 
-                        isHistoryProcessing = false; 
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; 
                     });
                 }
             }
-
-            // --- MENU FIX: SNAP DROPDOWN SHUT ON CLICK ---
-            $('.dropdown li').on('click', function() {
-                const $dropdown = $(this).closest('.dropdown');
-                $dropdown.hide();
-                setTimeout(() => $dropdown.css('display', ''), 150);
-            });
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -796,25 +792,75 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART GUIDES SNAPPING ---
+            // --- NEW: SMART SNAPPING ENGINE ---
             canvas.on('object:moving', function(options) {
                 if (!activeId || !showGuides || isPreviewMode || isCropMode) return;
-                const obj = options.target; const zoom = canvas.getZoom();
-                const guides = canvas.getObjects().filter(o => o.isGuide);
                 
-                guides.forEach(guide => {
-                    if (guide.lockMovementX) { 
-                        if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
-                        if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
+                const obj = options.target; 
+                const zoom = canvas.getZoom();
+                const snapThreshold = SNAP_THRESHOLD / zoom;
+
+                const snapTargets = canvas.getObjects().filter(o => 
+                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && o.visible !== false
+                );
+
+                const objB = obj.getBoundingRect();
+                let snapX = false;
+                let snapY = false;
+                let dx = 0;
+                let dy = 0;
+
+                snapTargets.forEach(target => {
+                    // Guide lines logic
+                    if (target.isGuide) {
+                        if (target.lockMovementX && !snapY) {
+                            if (Math.abs(objB.top - target.top) < snapThreshold) { dy = target.top - objB.top; snapY = true; }
+                            else if (Math.abs((objB.top + objB.height) - target.top) < snapThreshold) { dy = target.top - (objB.top + objB.height); snapY = true; }
+                            else if (Math.abs((objB.top + objB.height/2) - target.top) < snapThreshold) { dy = target.top - (objB.top + objB.height/2); snapY = true; }
+                        }
+                        if (target.lockMovementY && !snapX) {
+                            if (Math.abs(objB.left - target.left) < snapThreshold) { dx = target.left - objB.left; snapX = true; }
+                            else if (Math.abs((objB.left + objB.width) - target.left) < snapThreshold) { dx = target.left - (objB.left + objB.width); snapX = true; }
+                            else if (Math.abs((objB.left + objB.width/2) - target.left) < snapThreshold) { dx = target.left - (objB.left + objB.width/2); snapX = true; }
+                        }
+                        return;
                     }
-                    if (guide.lockMovementY) {
-                        if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
-                        if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
+
+                    // Smart Object & Page/Margin logic
+                    const tarB = target.getBoundingRect();
+                    
+                    // X-Axis Snapping (Left, Center, Right)
+                    if (!snapX) {
+                        const tarPointsX = [tarB.left, tarB.left + tarB.width, tarB.left + tarB.width/2];
+                        const objPointsX = [objB.left, objB.left + objB.width, objB.left + objB.width/2];
+                        for(let t of tarPointsX) {
+                            for(let o of objPointsX) {
+                                if (Math.abs(o - t) < snapThreshold) { dx = t - o; snapX = true; break; }
+                            }
+                            if(snapX) break;
+                        }
+                    }
+
+                    // Y-Axis Snapping (Top, Center, Bottom)
+                    if (!snapY) {
+                        const tarPointsY = [tarB.top, tarB.top + tarB.height, tarB.top + tarB.height/2];
+                        const objPointsY = [objB.top, objB.top + objB.height, objB.top + objB.height/2];
+                        for(let t of tarPointsY) {
+                            for(let o of objPointsY) {
+                                if (Math.abs(o - t) < snapThreshold) { dy = t - o; snapY = true; break; }
+                            }
+                            if(snapY) break;
+                        }
                     }
                 });
+
+                if (snapX || snapY) {
+                    obj.set({ left: obj.left + dx, top: obj.top + dy });
+                    obj.setCoords();
+                }
             });
 
-            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
+            // --- TEXT SCALING FIX ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -874,13 +920,24 @@
                 drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- CLIPBOARD (Copy/Paste) ---
+            // --- CLIPBOARD (Cut/Copy/Paste) ---
             function copyObjects() {
                 if (!activeId) return;
                 const activeObject = canvas.getActiveObject();
                 if (activeObject) {
                     activeObject.clone(function(cloned) {
                         clipboard = cloned;
+                    }, CUSTOM_PROPS);
+                }
+            }
+
+            function cutObjects() {
+                if (!activeId) return;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && !activeObject.isEditing) {
+                    activeObject.clone(function(cloned) {
+                        clipboard = cloned;
+                        deleteActive(); // Safely delete only after clone finishes
                     }, CUSTOM_PROPS);
                 }
             }
@@ -906,7 +963,27 @@
             }
             
             $('#menu-copy').click(copyObjects);
+            $('#menu-cut').click(cutObjects);
             $('#menu-paste').click(() => pasteObjects(false));
+
+            // --- IMPROVED MULTI-DELETE ---
+            function deleteActive() { 
+                const activeObjects = canvas.getActiveObjects();
+                if (activeObjects.length) {
+                    activeObjects.forEach(function(obj) {
+                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) {
+                            canvas.remove(obj);
+                        }
+                    });
+                    canvas.discardActiveObject(); 
+                    markDirty(); saveHistory(); 
+                }
+            }
+
+            $('#delete-obj, #menu-delete-action').click(deleteActive); 
+            $('html').keyup(function(e) { 
+                if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing && e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') deleteActive(); 
+            });
 
             // --- IMPROVED GROUPING LOGIC ---
             function groupObjects() {
@@ -926,8 +1003,7 @@
                 const activeObj = canvas.getActiveObject();
                 if (!activeObj || activeObj.type !== 'group') return;
                 
-                const items = activeObj._objects;
-                const activeSelection = activeObj.toActiveSelection();
+                activeObj.toActiveSelection();
                 
                 canvas.requestRenderAll();
                 markDirty(); saveHistory();
@@ -1170,6 +1246,7 @@
                     if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
                     if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
                     if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
+                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
                     if (key === 'c') { e.preventDefault(); copyObjects(); return; }
                     if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
                 }
@@ -1396,8 +1473,6 @@
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
-            $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing && e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') deleteActive(); });
-            function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); } }
 
             // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
