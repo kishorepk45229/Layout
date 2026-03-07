@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.16</title>
+    <title>Thooval Workspace v6.17</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -59,6 +59,10 @@
 
         .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
         .btn-primary:hover { background: var(--accent-hover); }
+
+        /* New Secondary Bar */
+        .secondary-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; height: 32px; z-index: 190; position: relative; padding: 0 16px; flex-shrink: 0; gap: 12px; }
+        .sec-divider { width: 1px; height: 16px; background: var(--border-light); margin: 0 4px; }
 
         .tabs-bar { display: flex; background: #121215; border-bottom: 1px solid var(--border); height: 36px; padding: 0 8px; align-items: flex-end; z-index: 150; flex-shrink: 0; }
         .tab { background: var(--bg-surface); color: var(--text-muted); padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 4px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent; border-bottom: none; max-width: 200px; font-size: 11px; }
@@ -247,6 +251,36 @@
             <span style="color: var(--text-muted); font-size: 11px; margin-right: 8px;">Page <span id="page-indicator">1</span> of <span id="page-count-display">1</span></span>
         </div>
     </header>
+
+    <div class="secondary-bar" id="secondary-bar">
+        <div class="btn-group" style="background: transparent;">
+            <button class="small-icon-btn" title="Undo" onclick="$('#menu-undo').click()"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="small-icon-btn" title="Redo" onclick="$('#menu-redo').click()"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+        
+        <div class="sec-divider"></div>
+        
+        <div class="btn-group" style="background: transparent;">
+            <button class="small-icon-btn" title="Align Left" onclick="$('#align-left').click()"><i class="fa-solid fa-align-left"></i></button>
+            <button class="small-icon-btn" title="Align Center" onclick="$('#align-center').click()"><i class="fa-solid fa-align-center"></i></button>
+            <button class="small-icon-btn" title="Align Right" onclick="$('#align-right').click()"><i class="fa-solid fa-align-right"></i></button>
+            <button class="small-icon-btn" title="Justify" onclick="$('#align-justify').click()"><i class="fa-solid fa-align-justify"></i></button>
+        </div>
+        
+        <div class="sec-divider"></div>
+        
+        <div class="btn-group" style="background: transparent;">
+            <button class="small-icon-btn" title="Bring Forward" onclick="$('#bring-forward').click()"><i class="fa-solid fa-arrow-up"></i></button>
+            <button class="small-icon-btn" title="Send Backward" onclick="$('#send-backward').click()"><i class="fa-solid fa-arrow-down"></i></button>
+        </div>
+        
+        <div class="sec-divider"></div>
+        
+        <div class="btn-group" style="background: transparent;">
+            <button class="small-icon-btn" title="Group Objects" onclick="$('#menu-group').click()"><i class="fa-solid fa-object-group"></i></button>
+            <button class="small-icon-btn" title="Ungroup Objects" onclick="$('#menu-ungroup').click()"><i class="fa-solid fa-object-ungroup"></i></button>
+        </div>
+    </div>
 
     <div class="tabs-bar" id="tabs-container">
         <button class="tab-new" id="btn-new-tab" title="New Document"><i class="fa-solid fa-plus"></i></button>
