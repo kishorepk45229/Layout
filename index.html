@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.1</title>
+    <title>Thooval Workspace v6.2</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -1366,6 +1366,26 @@
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
                 if (canvas.getActiveObject()?.isEditing) return;
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey) {
+                    const step = e.shiftKey ? 10 : 1;
+                    let moved = false;
+
+                    if (e.key === 'ArrowLeft') { activeObj.set('left', activeObj.left - step); moved = true; }
+                    if (e.key === 'ArrowRight') { activeObj.set('left', activeObj.left + step); moved = true; }
+                    if (e.key === 'ArrowUp') { activeObj.set('top', activeObj.top - step); moved = true; }
+                    if (e.key === 'ArrowDown') { activeObj.set('top', activeObj.top + step); moved = true; }
+
+                    if (moved) {
+                        e.preventDefault(); // Stop browser scrolling
+                        activeObj.setCoords();
+                        canvas.requestRenderAll();
+                        updateTransformUI({ target: activeObj }); // Update X/Y in the right panel
+                        markDirty();
+                        // We omit saveHistory() here to prevent flooding the undo stack on every single pixel nudge.
+                        return; 
+                    }
+                }
 
                 if (e.key === 'Delete' || e.key === 'Backspace') {
                     deleteActive();
@@ -1896,7 +1916,12 @@
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
-
+                // Add this inside function updateUI(event) { ... }
+                if (obj.fill && typeof obj.fill === 'object' && obj.fill.type) {
+                    $('#obj-fill-type').val(obj.fill.type);
+                } else {
+                    $('#obj-fill-type').val('solid');
+                }
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
                 if (obj.type === 'rect' && !obj.clipPath) { 
