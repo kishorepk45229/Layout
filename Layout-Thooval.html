@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.10</title>
+    <title>Thooval Workspace v1.9</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -102,9 +102,7 @@
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
         input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
-        input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
-
+        
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
         .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .btn-group button:hover { background: var(--bg-surface); color: var(--text-main); }
@@ -177,8 +175,6 @@
         .color-input-group { display: flex; align-items: center; gap: 8px; }
         .color-input-group label { width: 12px; color: var(--text-muted); font-weight: 600; }
         .color-input-group input { width: 100%; }
-        
-        .grad-color-btn:hover { box-shadow: 0 0 0 2px var(--accent); }
     </style>
 </head>
 <body>
@@ -338,7 +334,6 @@
                 <select id="swatch-category" style="margin-bottom: 12px;">
                     <option value="Basic RGB">Basic RGB (Web)</option>
                     <option value="Basic CMYK">Basic CMYK (Print)</option>
-                    <option value="Gradients">Gradients</option>
                     <option value="Garden">Garden Palette</option>
                     <option value="Ocean">Ocean Palette</option>
                     <option value="Sunset">Sunset Palette</option>
@@ -358,15 +353,6 @@
             </div>
             
             <div id="properties-form" style="display: none;">
-
-                <div class="panel-section" id="gradient-properties" style="display: none; background: rgba(203, 251, 69, 0.05); border-left: 2px solid var(--accent);">
-                    <h3>Gradient Settings</h3>
-                    <div class="prop-row">
-                        <div class="prop-col" style="flex: 1;"><label>Start Color</label><div class="color-preview-box grad-color-btn" id="grad-color-1" style="background:#ff0000; height: 24px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border);"></div></div>
-                        <div class="prop-col" style="flex: 1;"><label>End Color</label><div class="color-preview-box grad-color-btn" id="grad-color-2" style="background:#0000ff; height: 24px; cursor: pointer; border-radius: 4px; border: 1px solid var(--border);"></div></div>
-                        <div class="prop-col" style="flex: 1;"><label>Angle</label><input type="number" id="grad-angle" min="0" max="360" step="1" value="0"></div>
-                    </div>
-                </div>
                 
                 <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(59, 130, 246, 0.1);">
                     <h3>Image Mask Options</h3>
@@ -582,7 +568,7 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked', 'gradAngle', 'gradColor1', 'gradColor2']; 
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -605,13 +591,11 @@
             let cropImage = null;
             let clipboard = null;
 
-            // --- PALETTE & GRADIENT STATE ---
-            let currentFillType = 'solid'; // 'solid' or 'gradient'
+            // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
             let globalStrokeWeight = 0;
-            let colorPickerTarget = 'fill'; // 'fill', 'stroke', 'grad1', 'grad2'
-            let globalGradient = { c1: '#ff9a9e', c2: '#fecfef', angle: 0 };
+            let colorPickerTarget = 'fill';
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -637,43 +621,6 @@
                 c = c / 100; m = m / 100; y = y / 100; k = k / 100;
                 let r = 255 * (1 - c) * (1 - k); let g = 255 * (1 - m) * (1 - k); let b = 255 * (1 - y) * (1 - k);
                 return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
-            }
-
-            // --- GRADIENT MATH UTILS ---
-            function getGradientCoords(angle) {
-                const rad = (angle % 360) * (Math.PI / 180);
-                return {
-                    x1: Math.round((Math.cos(rad + Math.PI) + 1) * 50) / 100,
-                    y1: Math.round((Math.sin(rad + Math.PI) + 1) * 50) / 100,
-                    x2: Math.round((Math.cos(rad) + 1) * 50) / 100,
-                    y2: Math.round((Math.sin(rad) + 1) * 50) / 100
-                };
-            }
-
-            function applyGradientToObject(obj, c1, c2, angle) {
-                const coords = getGradientCoords(angle);
-                const grad = new fabric.Gradient({
-                    type: 'linear',
-                    gradientUnits: 'percentage',
-                    coords: { x1: coords.x1, y1: coords.y1, x2: coords.x2, y2: coords.y2 },
-                    colorStops: [ { offset: 0, color: c1 }, { offset: 1, color: c2 } ]
-                });
-                obj.set('fill', grad);
-                obj.set('gradAngle', angle);
-                obj.set('gradColor1', c1);
-                obj.set('gradColor2', c2);
-            }
-
-            function getActiveFill() {
-                if (currentFillType === 'gradient') {
-                    return new fabric.Gradient({
-                        type: 'linear',
-                        gradientUnits: 'percentage',
-                        coords: getGradientCoords(globalGradient.angle),
-                        colorStops: [ { offset: 0, color: globalGradient.c1 }, { offset: 1, color: globalGradient.c2 } ]
-                    });
-                }
-                return globalFill;
             }
 
             // --- IRO.JS ADVANCED COLOR PICKER ---
@@ -704,14 +651,9 @@
 
             function openAdvancedPicker(target) {
                 colorPickerTarget = target;
-                let currentColor = '#000000';
+                let currentColor = target === 'fill' ? globalFill : globalStroke;
 
-                if (target === 'fill') { currentColor = globalFill; } 
-                else if (target === 'stroke') { currentColor = globalStroke; } 
-                else if (target === 'grad1') { currentColor = $('#grad-color-1').data('color'); } 
-                else if (target === 'grad2') { currentColor = $('#grad-color-2').data('color'); }
-
-                if (currentColor && currentColor !== 'transparent' && !currentColor.includes('gradient')) { 
+                if (currentColor && currentColor !== 'transparent') { 
                     colorPicker.color.hexString = currentColor; 
                     $('#picker-old-color').css('background-color', currentColor);
                 } else {
@@ -723,42 +665,21 @@
             $('#fill-focus').dblclick(() => openAdvancedPicker('fill'));
             $('#stroke-focus').dblclick(() => openAdvancedPicker('stroke'));
             $('#btn-open-advanced-picker').click(() => openAdvancedPicker(focusedColorType));
-            $('#grad-color-1').click(() => openAdvancedPicker('grad1'));
-            $('#grad-color-2').click(() => openAdvancedPicker('grad2'));
 
             $('#btn-apply-color').click(() => {
                 const col = colorPicker.color.hexString;
                 const obj = canvas.getActiveObject();
                 
                 if (colorPickerTarget === 'fill') {
-                    currentFillType = 'solid';
                     globalFill = col;
                     $('#fill-focus').css('background', col).removeClass('none');
                     updateObj('fill', col);
-                    $('#gradient-properties').hide();
                 } else if (colorPickerTarget === 'stroke') {
                     globalStroke = col;
                     $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none');
                     updateObj('stroke', col);
                     if (obj && !obj.strokeWidth && obj.type !== 'activeSelection') { 
                         globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); 
-                    }
-                } else if (colorPickerTarget === 'grad1' || colorPickerTarget === 'grad2') {
-                    currentFillType = 'gradient';
-                    if (colorPickerTarget === 'grad1') globalGradient.c1 = col;
-                    if (colorPickerTarget === 'grad2') globalGradient.c2 = col;
-                    
-                    $('#fill-focus').css('background', `linear-gradient(135deg, ${globalGradient.c1}, ${globalGradient.c2})`).removeClass('none');
-                    $('#grad-color-1').css('background', globalGradient.c1).data('color', globalGradient.c1);
-                    $('#grad-color-2').css('background', globalGradient.c2).data('color', globalGradient.c2);
-                    
-                    if (obj) {
-                        if (obj.type === 'activeSelection') {
-                            obj.forEachObject(o => applyGradientToObject(o, globalGradient.c1, globalGradient.c2, globalGradient.angle));
-                        } else {
-                            applyGradientToObject(obj, globalGradient.c1, globalGradient.c2, globalGradient.angle);
-                        }
-                        canvas.renderAll(); markDirty(); saveHistory();
                     }
                 }
                 $('#advanced-color-modal').hide();
@@ -768,7 +689,6 @@
             const palettes = {
                 'Basic RGB': ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff', '#000000', '#888888', '#cccccc', '#990000', '#009900', '#000099', '#999900', '#009999', '#990099', '#ff6600', '#ff0066', '#66ff00', '#00ff66', '#0066ff', '#6600ff', '#ff9900', '#0099ff'],
                 'Basic CMYK': ['#00aeef', '#ec008c', '#fff200', '#231f20', '#ed1c24', '#00a651', '#2e3192', '#e6e7e8', '#808285', '#c1272d', '#8cc63f', '#1b1464', '#f7931e', '#8c6239', '#0072bc', '#f15a24', '#c1272d', '#009245', '#0071bc', '#29abe2', '#9e005d', '#d9e021', '#c69c6d', '#ffffff'],
-                'Gradients': [['#ff9a9e', '#fecfef'], ['#a18cd1', '#fbc2eb'], ['#ffecd2', '#fcb69f'], ['#cfd9df', '#e2ebf0'], ['#fdcbf1', '#e6dee9'], ['#a1c4fd', '#c2e9fb'], ['#f6d365', '#fda085'], ['#84fab0', '#8fd3f4'], ['#a6c0fe', '#f68084'], ['#fccb90', '#d57eeb'], ['#e0c3fc', '#8ec5fc'], ['#4facfe', '#00f2fe']],
                 'Garden': ['#2d5a27', '#8e9a22', '#cbce91', '#e8f0c3', '#f2aaaa', '#e16552', '#c72e45', '#8f1d2c', '#4b7f52', '#7dd181', '#96e8bc', '#b6f9c9', '#f9a03f', '#f7d08a', '#f4f4f4'],
                 'Ocean': ['#03045e', '#023e8a', '#0077b6', '#0096c7', '#00b4d8', '#48cae4', '#90e0ef', '#ade8f4', '#caf0f8', '#007ea7', '#00a8e8', '#118ab2', '#06d6a0', '#073b4c'],
                 'Sunset': ['#ff7b54', '#ffb26b', '#ffd56b', '#939b62', '#e05d5d', '#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#f4a261', '#e76f51', '#d62828', '#264653'],
@@ -778,11 +698,7 @@
             function loadSwatchCategory(category) {
                 const grid = $('#swatch-grid-container');
                 grid.empty();
-                if (category === 'Gradients') {
-                    palettes[category].forEach(c => {
-                        grid.append(`<div class="swatch-box" style="background: linear-gradient(135deg, ${c[0]}, ${c[1]});" data-is-grad="true" data-color1="${c[0]}" data-color2="${c[1]}"></div>`);
-                    });
-                } else if (palettes[category]) {
+                if (palettes[category]) {
                     palettes[category].forEach(c => grid.append(`<div class="swatch-box" style="background:${c};" data-color="${c}"></div>`));
                 }
             }
@@ -790,34 +706,15 @@
             $('#swatch-category').change(function() { loadSwatchCategory($(this).val()); });
 
             $(document).on('click', '.swatch-box', function() {
-                const isGrad = $(this).data('is-grad');
+                const col = $(this).data('color');
                 const sel = canvas.getActiveObject();
-
-                if (isGrad) {
-                    currentFillType = 'gradient';
-                    globalGradient.c1 = $(this).data('color1');
-                    globalGradient.c2 = $(this).data('color2');
-                    
-                    $('#fill-focus').css('background', `linear-gradient(135deg, ${globalGradient.c1}, ${globalGradient.c2})`).removeClass('none');
-                    
-                    if (sel) {
-                        if (sel.type === 'activeSelection') {
-                            sel.forEachObject(o => applyGradientToObject(o, globalGradient.c1, globalGradient.c2, globalGradient.angle));
-                        } else {
-                            applyGradientToObject(sel, globalGradient.c1, globalGradient.c2, globalGradient.angle);
-                        }
-                        canvas.renderAll(); markDirty(); saveHistory(); updateUI({selected: [sel]});
-                    }
+                
+                if(focusedColorType === 'fill') {
+                    globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
                 } else {
-                    currentFillType = 'solid';
-                    const col = $(this).data('color');
-                    if(focusedColorType === 'fill') {
-                        globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
-                    } else {
-                        globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
-                        if(sel && !sel.strokeWidth && sel.type !== 'activeSelection') {
-                            globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight);
-                        }
+                    globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
+                    if(sel && !sel.strokeWidth && sel.type !== 'activeSelection') {
+                        globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight);
                     }
                 }
             });
@@ -838,6 +735,34 @@
             curatedFonts.forEach(font => {
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
             });
+
+            // --- MALAYALAM CONVERTER ---
+            const uniToFmlDict = [
+                { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
+                { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
+                { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
+                { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
+                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sெ" } 
+            ];
+            const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
+
+            function convertUnicodeToFml(text) {
+                let processedText = text;
+                const preBaseVowels = /([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g;
+                processedText = processedText.replace(preBaseVowels, function(match, p1, p2, p3) { return p3 + p1 + (p2 || ""); });
+                uniToFmlDict.forEach(mapping => { const regex = new RegExp(mapping.uni, "g"); processedText = processedText.replace(regex, mapping.fml); });
+                return processedText;
+            }
+            function convertFmlToUnicode(text) {
+                let processedText = text;
+                fmlToUniDict.forEach(mapping => {
+                    const escapedFml = mapping.fml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(escapedFml, "g"); processedText = processedText.replace(regex, mapping.uni);
+                });
+                const reversePreBase = /([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g;
+                processedText = processedText.replace(reversePreBase, function(match, p1, p2, p3) { return p2 + (p3 || "") + p1; });
+                return processedText;
+            }
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -1157,7 +1082,7 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE ---
+            // --- NEW: SMART SNAPPING ENGINE ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -1205,7 +1130,9 @@
                 for (let oX of objXs) {
                     for (let tX of targetXs) {
                         if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) {
-                            minDx = tX - oX; lineX = tX; snapX = true;
+                            minDx = tX - oX;
+                            lineX = tX;
+                            snapX = true;
                         }
                     }
                 }
@@ -1214,7 +1141,9 @@
                 for (let oY of objYs) {
                     for (let tY of targetYs) {
                         if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) {
-                            minDy = tY - oY; lineY = tY; snapY = true;
+                            minDy = tY - oY;
+                            lineY = tY;
+                            snapY = true;
                         }
                     }
                 }
@@ -1341,7 +1270,7 @@
             $('#menu-cut').click(cutObjects);
             $('#menu-paste').click(() => pasteObjects(false));
 
-            // --- MULTI-DELETE ---
+            // --- IMPROVED MULTI-DELETE ---
             function deleteActive() { 
                 const activeObjects = canvas.getActiveObjects();
                 if (activeObjects.length) {
@@ -1510,9 +1439,7 @@
             }
 
             $('#add-text').click(() => {
-                let txtOpts = { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true, fill: getActiveFill(), stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
-                const txt = new fabric.Textbox('Double-click to edit.', txtOpts);
-                if (currentFillType === 'gradient') { txt.set({ gradAngle: globalGradient.angle, gradColor1: globalGradient.c1, gradColor2: globalGradient.c2 }); }
+                const txt = new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight });
                 processNewObject(txt); setTool('select');
             });
             
@@ -1662,15 +1589,13 @@
                     isDrawingShape = true; isDragging = false;
                     const pointer = canvas.getPointer(opt.e); origX = pointer.x; origY = pointer.y;
 
-                    let shapeOpts = { left: origX, top: origY, fill: getActiveFill(), stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
+                    let shapeOpts = { left: origX, top: origY, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
                     
                     if (activeTool === 'rect') { drawingObject = new fabric.Rect(Object.assign({ width: 0, height: 0, originX: 'left', originY: 'top' }, shapeOpts)); } 
                     else if (activeTool === 'circle') { drawingObject = new fabric.Circle(Object.assign({ radius: 0, originX: 'center', originY: 'center' }, shapeOpts)); } 
                     else if (activeTool === 'polygon') { const points = getPolygonPoints(polygonSides, 50); drawingObject = new fabric.Polygon(points, Object.assign({ scaleX: 0.01, scaleY: 0.01, originX: 'center', originY: 'center' }, shapeOpts)); }
                     
-                    if (currentFillType === 'gradient') { drawingObject.set({ gradAngle: globalGradient.angle, gradColor1: globalGradient.c1, gradColor2: globalGradient.c2 }); }
                     if (projects[activeId].isMasterMode) { drawingObject.set({ isMasterSource: true }); } else { drawingObject.set({ isRegular: true }); }
-                    
                     canvas.add(drawingObject);
                 }
             });
@@ -1731,6 +1656,8 @@
             });
 
             // --- UI PROPERTIES PANEL ---
+            let focusedColorType = 'fill'; 
+
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
@@ -1766,32 +1693,17 @@
             }
 
             function updateColorsUI(obj) {
-                if (obj.fill && typeof obj.fill === 'object' && obj.fill.colorStops) {
-                    currentFillType = 'gradient';
-                    const c1 = obj.gradColor1 || obj.fill.colorStops[0].color;
-                    const c2 = obj.gradColor2 || obj.fill.colorStops[1].color;
-                    const ang = obj.gradAngle || 0;
-                    
-                    globalGradient = { c1: c1, c2: c2, angle: ang };
-                    
-                    $('#fill-focus').css('background', `linear-gradient(135deg, ${c1}, ${c2})`).removeClass('none');
-                    $('#gradient-properties').show();
-                    $('#grad-color-1').css('background', c1).data('color', c1);
-                    $('#grad-color-2').css('background', c2).data('color', c2);
-                    $('#grad-angle').val(ang);
-                } else {
-                    currentFillType = 'solid';
-                    $('#gradient-properties').hide();
-                    const fillVal = obj.fill || 'transparent';
-                    globalFill = fillVal;
-                    $('#fill-focus').css('background', fillVal).removeClass('none');
-                    if (fillVal === 'transparent') $('#fill-focus').addClass('none');
-                }
+                const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                
+                globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
 
-                const strokeVal = obj.stroke || 'transparent';
-                globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
-                $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
+                $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
+                if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
+                
+                const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
+                if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+                
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
@@ -1803,18 +1715,11 @@
                 } 
             }
             
-            // --- GRADIENT PROPERTIES BINDINGS ---
-            $('#grad-angle').on('input', function() {
-                const obj = canvas.getActiveObject();
-                if (obj && obj.fill && obj.fill.colorStops) {
-                    globalGradient.angle = parseFloat($(this).val()) || 0;
-                    applyGradientToObject(obj, globalGradient.c1, globalGradient.c2, globalGradient.angle);
-                    canvas.renderAll(); markDirty(); saveHistory();
-                }
+            // --- SHAPE PROPERTIES BINDINGS ---
+            $('#obj-rx').on('input', function() {
+                updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0);
             });
 
-            // --- SHAPE PROPERTIES BINDINGS ---
-            $('#obj-rx').on('input', function() { updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0); });
             $('#obj-poly-sides').on('change', function() {
                 const sides = parseInt($(this).val());
                 if (sides >= 3 && sides <= 30) {
@@ -1830,6 +1735,45 @@
                         sortLayers(); markDirty(); saveHistory();
                     }
                 }
+            });
+
+            $('#fill-focus, #stroke-focus').click(function() {
+                focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
+                $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
+                const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); 
+            });
+
+            $('#unified-color-picker').on('input', function() {
+                const obj = canvas.getActiveObject(); const col = $(this).val();
+                if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
+                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
+            });
+            
+            $('#global-stroke-weight').on('input', function() {
+                globalStrokeWeight = parseFloat($(this).val()) || 0;
+                const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight);
+            });
+
+            $('.swap-fill-stroke').click(() => {
+                let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
+                $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') {
+                        sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); });
+                    } else {
+                        const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); 
+                        if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } 
+                    }
+                    canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); 
+                }
+            });
+
+            $('.apply-none').click(() => {
+                const obj = canvas.getActiveObject();
+                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
+                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
+                if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
@@ -1867,12 +1811,7 @@
                 const newText = $('#typo-output-text').val(); if (!newText) return;
                 let activeObj = canvas.getActiveObject();
                 if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
-                else { 
-                    let txtOpts = { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: getActiveFill(), stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight, fontSize: 24 };
-                    const text = new fabric.Textbox(newText, txtOpts); 
-                    if (currentFillType === 'gradient') { text.set({ gradAngle: globalGradient.angle, gradColor1: globalGradient.c1, gradColor2: globalGradient.c2 }); }
-                    processNewObject(text); 
-                }
+                else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
                 canvas.requestRenderAll(); markDirty(); saveHistory();
                 $('#typography-modal').hide();
             });
