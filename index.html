@@ -103,7 +103,11 @@
         
         input[type="text"], input[type="number"], select, textarea { background: var(--bg-base); border: 1px solid transparent; color: var(--text-main); padding: 6px 8px; border-radius: 4px; width: 100%; outline: none; transition: border 0.2s;}
         input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--accent); }
-        
+        input[type="color"] { background: transparent; border: none; width: 100%; height: 28px; padding: 0; cursor: pointer; border-radius: 4px;}
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
+        input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
+
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
         .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .btn-group button:hover { background: var(--bg-surface); color: var(--text-main); }
@@ -259,11 +263,11 @@
                 
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
                 
-                <button class="tool-btn" id="add-pen" title="Pen Tool (P)"><i class="fa-solid fa-pen-nib"></i></button>
-                
+                <button class="tool-btn" id="add-pen" title="Draw Tool / Pen (P)"><i class="fa-solid fa-pen-nib"></i></button>
                 <button class="tool-btn" id="add-rect" title="Rectangle Tool (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse Tool (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="add-polygon" title="Polygon Tool (Shift+P)"><i class="fa-solid fa-draw-polygon"></i></button>
+                
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Selected Shape" style="grid-column: 1 / -1;"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
@@ -356,14 +360,14 @@
             </div>
             
             <div id="properties-form" style="display: none;">
-                
+
                 <div class="panel-section" id="node-edit-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
                     <h3>Path Editing</h3>
                     <div class="prop-row" style="margin-bottom: 0;">
                         <button class="doc-btn" id="btn-edit-nodes" style="color: var(--accent); border-color: var(--accent);"><i class="fa-solid fa-draw-polygon"></i> Toggle Node Edit</button>
                     </div>
                 </div>
-
+                
                 <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(59, 130, 246, 0.1);">
                     <h3>Image Mask Options</h3>
                     <div class="prop-row" style="margin-bottom: 0;">
@@ -600,17 +604,12 @@
             let cropShape = null;
             let cropImage = null;
             let clipboard = null;
-            
-            // --- PEN TOOL STATE ---
-            let isDrawingPen = false;
-            let penPoints = [];
-            let penLines = [];
-            let penActiveLine = null;
 
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
             let globalStrokeWeight = 0;
+            let colorPickerTarget = 'fill';
 
             const wrapper = $('#workspace-wrapper');
             const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
@@ -724,7 +723,7 @@
             ];
             const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
             const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap`;
-            $('head').append(`<link href="${googleFontsUrl}" relstylesheet">`);
+            $('head').append(`<link href="${googleFontsUrl}" rel="stylesheet">`);
 
             const fontSelect = $('#obj-font-family');
             curatedFonts.forEach(font => {
@@ -985,7 +984,7 @@
                 list.empty();
                 
                 const objects = canvas.getObjects().filter(o => 
-                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPenTemp
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide
                 );
 
                 const activeObjs = canvas.getActiveObjects();
@@ -996,7 +995,6 @@
                     if (obj.type === 'textbox') typeName = `Text: "${obj.text.substring(0, 10)}${obj.text.length > 10 ? '...' : ''}"`;
                     if (obj.isMasterClone) typeName = `[Master] ${typeName}`;
                     if (obj.clipPath) typeName = `[Masked] ${typeName}`;
-                    if (obj.type === 'polygon' || obj.type === 'polyline') typeName = `Path`;
                     
                     const isActive = activeObjs.includes(obj) ? 'active' : '';
                     const visIcon = obj.visible !== false ? 'fa-eye' : 'fa-eye-slash';
@@ -1023,7 +1021,7 @@
             $(document).on('click', '.layer-item', function(e) {
                 if ($(e.target).hasClass('layer-action-btn')) return; 
                 const idx = $(this).data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPenTemp);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
                 const obj = objects[idx];
                 if (obj && !obj.locked && obj.visible !== false && !obj.isMasterClone) {
                     canvas.setActiveObject(obj);
@@ -1034,7 +1032,7 @@
             $(document).on('click', '.btn-lock', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPenTemp);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
                 const obj = objects[idx];
                 
                 obj.locked = !obj.locked;
@@ -1054,7 +1052,7 @@
             $(document).on('click', '.btn-vis', function(e) {
                 e.stopPropagation();
                 const idx = $(this).closest('.layer-item').data('index');
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isPenTemp);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
                 const obj = objects[idx];
                 
                 obj.visible = obj.visible === false ? true : false;
@@ -1120,7 +1118,7 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE ---
+            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -1135,7 +1133,7 @@
                 const snapThreshold = SNAP_THRESHOLD / zoom;
 
                 const snapTargets = canvas.getObjects().filter(o => 
-                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && !o.isPenTemp && o.visible !== false
+                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && o.visible !== false
                 );
 
                 const objB = obj.getBoundingRect(true, true); 
@@ -1308,23 +1306,33 @@
             $('#menu-cut').click(cutObjects);
             $('#menu-paste').click(() => pasteObjects(false));
 
-            // --- MULTI-DELETE ---
+            // --- IMPROVED MULTI-DELETE ---
             function deleteActive() { 
                 const activeObjects = canvas.getActiveObjects();
                 if (activeObjects.length) {
+                    canvas.discardActiveObject(); // Important: Discard selection before removing to prevent ghosting
                     activeObjects.forEach(function(obj) {
-                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone && !obj.isPenTemp) {
+                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) {
                             canvas.remove(obj);
                         }
                     });
-                    canvas.discardActiveObject(); 
                     markDirty(); saveHistory(); 
                 }
             }
 
             $('#delete-obj, #menu-delete-action').click(deleteActive); 
+            $(window).keydown(function(e) { 
+                if(!activeId || $('.modal-overlay').is(':visible')) return;
+                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+                if (canvas.getActiveObject()?.isEditing) return;
 
-            // --- GROUPING LOGIC ---
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    deleteActive();
+                    e.preventDefault();
+                }
+            });
+
+            // --- IMPROVED GROUPING LOGIC ---
             function groupObjects() {
                 if (!activeId) return;
                 const activeObj = canvas.getActiveObject();
@@ -1351,7 +1359,7 @@
             $('#menu-group').click(groupObjects);
             $('#menu-ungroup').click(ungroupObjects);
 
-            // --- ADVANCED IMAGE MASKING ---
+            // --- ADVANCED IMAGE MASKING & CROPPING ---
             function applyMask(img, shape) {
                 const imgCenter = img.getCenterPoint();
                 const shapeCenter = shape.getCenterPoint();
@@ -1456,15 +1464,15 @@
             });
 
             // --- FABRIC.JS NODE EDITING ENGINE ---
+            function getObjectSizeWithStroke(object) {
+                let stroke = new fabric.Point( object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1 ).multiply(object.strokeWidth || 0);
+                return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
+            }
+
             function polygonPositionHandler(dim, finalMatrix, fabricObject) {
                 let x = (fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x),
                     y = (fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y);
                 return fabric.util.transformPoint({ x: x, y: y }, fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()));
-            }
-
-            function getObjectSizeWithStroke(object) {
-                let stroke = new fabric.Point( object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1 ).multiply(object.strokeWidth);
-                return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
             }
 
             function actionHandler(eventData, transform, x, y) {
@@ -1493,35 +1501,67 @@
 
             $('#btn-edit-nodes').click(function() {
                 let poly = canvas.getActiveObject();
-                if(!poly || (poly.type !== 'polygon' && poly.type !== 'polyline')) return;
+                // Support both standard polygons and drawn Paths
+                if(!poly || (!['polygon', 'polyline', 'path'].includes(poly.type))) return;
                 
                 poly.edit = !poly.edit;
+                
                 if (poly.edit) {
                     poly.hasControls = false;
                     poly.hasBorders = false;
                     poly.lockMovementX = true;
                     poly.lockMovementY = true;
                     
-                    let lastControl = poly.points.length - 1;
-                    poly.controls = poly.points.reduce(function(acc, point, index) {
-                        acc['p' + index] = new fabric.Control({
-                            positionHandler: polygonPositionHandler,
-                            actionHandler: anchorWrapper(index > 0 ? index - 1 : lastControl, actionHandler),
-                            actionName: 'modifyPolygon',
-                            pointIndex: index,
-                            cursorStyle: 'pointer',
-                            render: function(ctx, left, top, styleOverride, fabricObject) {
-                                ctx.beginPath();
-                                ctx.arc(left, top, 4, 0, Math.PI * 2, false);
-                                ctx.fillStyle = '#00ffcc';
-                                ctx.fill();
-                                ctx.lineWidth = 1;
-                                ctx.strokeStyle = '#000';
-                                ctx.stroke();
+                    if (poly.type === 'polygon' || poly.type === 'polyline') {
+                        let lastControl = poly.points.length - 1;
+                        poly.controls = poly.points.reduce(function(acc, point, index) {
+                            acc['p' + index] = new fabric.Control({
+                                positionHandler: polygonPositionHandler,
+                                actionHandler: anchorWrapper(index > 0 ? index - 1 : lastControl, actionHandler),
+                                actionName: 'modifyPolygon',
+                                pointIndex: index,
+                                cursorStyle: 'pointer',
+                                render: function(ctx, left, top, styleOverride, fabricObject) {
+                                    ctx.beginPath(); ctx.arc(left, top, 4, 0, Math.PI * 2, false);
+                                    ctx.fillStyle = '#00ffcc'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+                                }
+                            });
+                            return acc;
+                        }, {});
+                    } else if (poly.type === 'path') {
+                        // Advanced Path Editing 
+                        poly.controls = poly.path.reduce(function(acc, seg, index) {
+                            let isCurve = seg[0] === 'Q' || seg[0] === 'C';
+                            let xIdx = isCurve ? seg.length - 2 : (seg[0] === 'H' ? null : 1);
+                            let yIdx = isCurve ? seg.length - 1 : (seg[0] === 'V' ? null : 2);
+
+                            if (xIdx !== null && yIdx !== null && seg[xIdx] !== undefined) {
+                                acc['p' + index] = new fabric.Control({
+                                    positionHandler: function(dim, finalMatrix, fabricObject) {
+                                        let x = fabricObject.path[index][xIdx] - fabricObject.pathOffset.x;
+                                        let y = fabricObject.path[index][yIdx] - fabricObject.pathOffset.y;
+                                        return fabric.util.transformPoint( { x: x, y: y }, fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()) );
+                                    },
+                                    actionHandler: function(eventData, transform, x, y) {
+                                        let target = transform.target;
+                                        let localPoint = target.toLocalPoint(new fabric.Point(x, y), 'center', 'center');
+                                        let size = target._getTransformedDimensions(0, 0);
+                                        let baseSize = getObjectSizeWithStroke(target);
+
+                                        target.path[index][xIdx] = localPoint.x * baseSize.x / size.x + target.pathOffset.x;
+                                        target.path[index][yIdx] = localPoint.y * baseSize.y / size.y + target.pathOffset.y;
+                                        return true;
+                                    },
+                                    cursorStyle: 'pointer',
+                                    render: function(ctx, left, top, styleOverride, fabricObject) {
+                                        ctx.beginPath(); ctx.arc(left, top, 4, 0, Math.PI * 2, false);
+                                        ctx.fillStyle = '#00ffcc'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+                                    }
+                                });
                             }
-                        });
-                        return acc;
-                    }, {});
+                            return acc;
+                        }, {});
+                    }
                 } else {
                     poly.hasControls = true;
                     poly.hasBorders = true;
@@ -1536,17 +1576,13 @@
             canvas.on('selection:cleared', function() {
                 canvas.getObjects().forEach(o => {
                     if (o.edit) {
-                        o.edit = false;
-                        o.hasControls = true;
-                        o.hasBorders = true;
-                        o.lockMovementX = false;
-                        o.lockMovementY = false;
+                        o.edit = false; o.hasControls = true; o.hasBorders = true; o.lockMovementX = false; o.lockMovementY = false;
                         o.controls = fabric.Object.prototype.controls;
                     }
                 });
             });
 
-            // --- DRAWING SHAPES, PEN & TEXT CREATION ---
+            // --- DRAWING SHAPES & TEXT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             
             function processNewObject(obj) { 
@@ -1615,13 +1651,23 @@
             // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
             function setTool(tool) {
                 if (isCropMode) { alert("Please Apply Crop first."); return; }
-                if (isDrawingPen && tool !== 'pen') finishPen();
-
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); 
                 if(tool==='pan') $('#tool-pan').addClass('active-state'); 
                 if(tool==='zoom') $('#tool-zoom').addClass('active-state');
                 if(['rect', 'circle', 'polygon', 'pen'].includes(tool)) $(`#add-${tool}`).addClass('active-state');
+
+                if (tool === 'pen') {
+                    canvas.isDrawingMode = true;
+                    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                    canvas.freeDrawingBrush.color = globalStroke !== 'transparent' ? globalStroke : (globalFill !== 'transparent' ? globalFill : '#000000');
+                    canvas.freeDrawingBrush.width = globalStrokeWeight > 0 ? globalStrokeWeight : 2;
+                    canvas.discardActiveObject();
+                    canvas.requestRenderAll();
+                    return;
+                } else {
+                    canvas.isDrawingMode = false;
+                }
 
                 if (tool !== 'select') { 
                     canvas.selection = false; 
@@ -1635,7 +1681,7 @@
                     canvas.selection = true; 
                     canvas.getObjects().forEach(o => { 
                         if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
-                            if (o.isMasterClone || o.locked || o.isPenTemp) {
+                            if (o.isMasterClone || o.locked) {
                                 o.set({selectable: false, evented: false});
                             } else {
                                 o.set({selectable: true, evented: true});
@@ -1660,33 +1706,17 @@
                 }
             });
 
-            // --- PEN DRAWING ENGINE ---
-            function finishPen() {
-                if (!isDrawingPen || penPoints.length < 2) {
-                    resetPen(); return;
-                }
-                canvas.remove(penActiveLine);
-                penLines.forEach(l => canvas.remove(l));
-                canvas.getObjects().forEach(o => { if(o.isPenTemp) canvas.remove(o); });
-                
-                const poly = new fabric.Polygon(penPoints, {
+            // Convert free-drawn paths into real Thooval objects
+            canvas.on('path:created', function(opt) {
+                const path = opt.path;
+                path.set({
                     fill: globalFill,
                     stroke: globalStroke !== 'transparent' ? globalStroke : null,
-                    strokeWidth: globalStrokeWeight || 0,
-                    objectCaching: false
+                    strokeWidth: globalStrokeWeight || 0
                 });
-                
-                resetPen();
-                processNewObject(poly);
-                setTool('select');
-            }
-
-            function resetPen() {
-                isDrawingPen = false;
-                penPoints = [];
-                penLines = [];
-                penActiveLine = null;
-            }
+                if (projects[activeId].isMasterMode) { path.set({ isMasterSource: true }); } else { path.set({ isRegular: true }); }
+                sortLayers(); markDirty(); saveHistory();
+            });
 
             function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
             function fitWholePage() {
@@ -1702,15 +1732,12 @@
             
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
+                
                 if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
                 
                 if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
 
                 if (canvas.getActiveObject()?.isEditing) return; 
-                
-                if (e.key === 'Escape' || e.key === 'Enter') {
-                    if (activeTool === 'pen' && isDrawingPen) { finishPen(); e.preventDefault(); return; }
-                }
 
                 if (e.ctrlKey) {
                     const key = e.key.toLowerCase();
@@ -1745,32 +1772,11 @@
 
             canvas.on('mouse:down', function(opt) {
                 if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return;}
-
-                const pointer = canvas.getPointer(opt.e); 
-                origX = pointer.x; origY = pointer.y;
-
-                if (activeTool === 'pen' && !isSpaceDown) {
-                    isDrawingPen = true;
-                    penPoints.push({ x: origX, y: origY });
-                    
-                    let circle = new fabric.Circle({ radius: 3 / canvas.getZoom(), fill: '#00ffcc', left: origX, top: origY, originX: 'center', originY: 'center', selectable: false, evented: false, isPenTemp: true, excludeFromExport: true });
-                    canvas.add(circle);
-                    
-                    if (penPoints.length > 1 && penActiveLine) {
-                        penActiveLine.set({ x2: origX, y2: origY });
-                        penActiveLine = null;
-                    }
-                    
-                    const pts = [origX, origY, origX, origY];
-                    penActiveLine = new fabric.Line(pts, { strokeWidth: globalStrokeWeight || 2, fill: globalFill, stroke: globalStroke !== 'transparent' ? globalStroke : '#00ffcc', originX: 'center', originY: 'center', selectable: false, evented: false, isPenTemp: true, excludeFromExport: true });
-                    penLines.push(penActiveLine);
-                    canvas.add(penActiveLine);
-                    return;
-                }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return; }
 
                 if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
                     isDrawingShape = true; isDragging = false;
+                    const pointer = canvas.getPointer(opt.e); origX = pointer.x; origY = pointer.y;
 
                     let shapeOpts = { left: origX, top: origY, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
                     
@@ -1785,13 +1791,6 @@
             
             canvas.on('mouse:move', function(opt) { 
                 if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
-                
-                if (activeTool === 'pen' && isDrawingPen && penActiveLine) {
-                    const pointer = canvas.getPointer(opt.e);
-                    penActiveLine.set({ x2: pointer.x, y2: pointer.y });
-                    canvas.requestRenderAll();
-                }
-
                 if (isDrawingShape && drawingObject) {
                     const pointer = canvas.getPointer(opt.e);
                     if (activeTool === 'rect') { drawingObject.set({ width: Math.abs(pointer.x - origX), height: Math.abs(pointer.y - origY), left: Math.min(origX, pointer.x), top: Math.min(origY, pointer.y) }); } 
@@ -1799,10 +1798,6 @@
                     else if (activeTool === 'polygon') { const dx = pointer.x - origX; const dy = pointer.y - origY; const radius = Math.sqrt(dx * dx + dy * dy); const scale = radius / 50; drawingObject.set({ scaleX: scale, scaleY: scale }); }
                     canvas.requestRenderAll();
                 }
-            });
-
-            canvas.on('mouse:dblclick', function(opt) {
-                if (activeTool === 'pen') { finishPen(); }
             });
 
             canvas.on('mouse:up', function(opt) { 
@@ -1871,7 +1866,7 @@
                     $('#shape-properties').hide();
                 }
                 
-                if (obj.type === 'polygon' || obj.type === 'polyline') {
+                if (obj.type === 'polygon' || obj.type === 'polyline' || obj.type === 'path') {
                     $('#node-edit-tools').show();
                 } else {
                     $('#node-edit-tools').hide();
@@ -1910,8 +1905,14 @@
             function updateObj(prop, val) { 
                 const sel = canvas.getActiveObject(); 
                 if (sel) { 
-                    if (sel.type === 'activeSelection') { sel.forEachObject(o => { o.set(prop, val); }); } else { sel.set(prop, val); }
-                    canvas.renderAll(); markDirty(); saveHistory(); 
+                    if (sel.type === 'activeSelection') { 
+                        sel.forEachObject(o => { o.set(prop, val); }); 
+                        canvas.requestRenderAll();
+                    } else { 
+                        sel.set(prop, val); 
+                        canvas.requestRenderAll();
+                    }
+                    markDirty(); saveHistory(); 
                 } 
             }
             
@@ -1961,11 +1962,13 @@
                 if (sel) { 
                     if (sel.type === 'activeSelection') {
                         sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); });
+                        canvas.requestRenderAll();
                     } else {
                         const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); 
                         if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } 
+                        canvas.requestRenderAll();
                     }
-                    canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); 
+                    updateColorsUI(sel); markDirty(); saveHistory(); 
                 }
             });
 
@@ -1973,7 +1976,7 @@
                 const obj = canvas.getActiveObject();
                 if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
                 else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
-                if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
+                if(obj) { canvas.requestRenderAll(); markDirty(); saveHistory(); }
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
