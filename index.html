@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.2</title>
+    <title>Thooval Workspace v6.15</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -326,15 +326,10 @@
 
         <aside class="panel-right" id="sidebar-right">
             
-            <div class="panel-section">
-                <h3>Arrange Layer</h3>
-                <div class="btn-group" style="margin-bottom: 8px;">
-                    <button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button>
-                    <button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button>
-                </div>
-                <div class="btn-group">
-                    <button id="dist-h" title="Distribute Horizontally"><i class="fa-solid fa-arrows-left-right"></i> Distribute H</button>
-                    <button id="dist-v" title="Distribute Vertically"><i class="fa-solid fa-arrows-up-down"></i> Distribute V</button>
+            <div id="panel-pages">
+                <div class="panel-section">
+                    <h3>Template</h3>
+                    <button class="doc-btn" id="toggle-master-btn"><i class="fa-solid fa-crown"></i> Edit Master Template</button>
                 </div>
             </div>
 
@@ -381,19 +376,19 @@
                     </div>
                 </div>
 
-                <div class="panel-section" id="appearance-properties">
-                <h3>Appearance</h3>
-                <div class="prop-row">
-                    <div class="prop-col">
-                        <label>Fill Type</label>
-                        <select id="obj-fill-type">
-                            <option value="solid">Solid</option>
-                            <option value="linear">Linear Gradient</option>
-                            <option value="radial">Radial Gradient</option>
-                        </select>
+                <div class="panel-section" id="appearance-properties" style="display: none;">
+                    <h3>Appearance</h3>
+                    <div class="prop-row">
+                        <div class="prop-col">
+                            <label>Fill Type</label>
+                            <select id="obj-fill-type">
+                                <option value="solid">Solid</option>
+                                <option value="linear">Linear Gradient</option>
+                                <option value="radial">Radial Gradient</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
 
                 <div class="panel-section" id="geometry-properties">
                     <h3>Transform</h3>
@@ -471,7 +466,14 @@
 
                 <div class="panel-section">
                     <h3>Arrange Layer</h3>
-                    <div class="btn-group"><button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button><button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button></div>
+                    <div class="btn-group" style="margin-bottom: 8px;">
+                        <button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button>
+                        <button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button>
+                    </div>
+                    <div class="btn-group">
+                        <button id="dist-h" title="Distribute Horizontally"><i class="fa-solid fa-arrows-left-right"></i> Distribute H</button>
+                        <button id="dist-v" title="Distribute Vertically"><i class="fa-solid fa-arrows-up-down"></i> Distribute V</button>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -1007,29 +1009,7 @@
                 );
 
                 const activeObjs = canvas.getActiveObjects();
-                $('#obj-fill-type').on('change', function() {
-                    const type = $(this).val();
-                    const obj = canvas.getActiveObject();
-                    if (!obj) return;
 
-                    if (type === 'solid') {
-                        updateObj('fill', globalFill);
-                    } else {
-                        const baseColor = globalFill === 'transparent' ? '#cbfb45' : globalFill;
-                        const gradient = new fabric.Gradient({
-                            type: type,
-                            gradientUnits: 'percentage', // Scales smoothly with the object
-                            coords: type === 'linear' 
-                                ? { x1: 0, y1: 0, x2: 1, y2: 0 } 
-                                : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 },
-                            colorStops: [
-                                { offset: 0, color: baseColor },
-                                { offset: 1, color: '#ffffff' } // Fades to white by default
-                            ]
-                        });
-                        updateObj('fill', gradient);
-                    }
-                });
                 for (let i = objects.length - 1; i >= 0; i--) {
                     const obj = objects[i];
                     let typeName = obj.type.charAt(0).toUpperCase() + obj.type.slice(1);
@@ -1365,9 +1345,21 @@
             $(window).keydown(function(e) { 
                 if(!activeId || $('.modal-overlay').is(':visible')) return;
                 if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                if (canvas.getActiveObject()?.isEditing) return;
+                
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    if (canvas.getActiveObject()?.isEditing) return;
+                    deleteActive();
+                    e.preventDefault();
+                    return;
+                }
+
+                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } return;}
+
+                if (canvas.getActiveObject()?.isEditing) return; 
+
+                // --- FEATURE 3: KEYBOARD NUDGING ---
                 const activeObj = canvas.getActiveObject();
-                if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey) {
+                if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
                     const step = e.shiftKey ? 10 : 1;
                     let moved = false;
 
@@ -1382,15 +1374,81 @@
                         canvas.requestRenderAll();
                         updateTransformUI({ target: activeObj }); // Update X/Y in the right panel
                         markDirty();
-                        // We omit saveHistory() here to prevent flooding the undo stack on every single pixel nudge.
+                        // Omit saveHistory() here to prevent flooding the undo stack on every pixel nudge.
                         return; 
                     }
                 }
 
-                if (e.key === 'Delete' || e.key === 'Backspace') {
-                    deleteActive();
-                    e.preventDefault();
+                if (e.ctrlKey) {
+                    const key = e.key.toLowerCase();
+                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
+                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
+                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
+                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
+                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
+                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
+                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
+                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
+                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
+                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
                 }
+
+                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
+                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
+                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
+                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
+                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
+                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
+                
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            });
+
+            // --- FEATURE 2: OBJECT DISTRIBUTION LOGIC ---
+            $('#dist-h, #dist-v').click(function() {
+                if (!activeId) return;
+                const activeSelection = canvas.getActiveObject();
+                
+                if (!activeSelection || activeSelection.type !== 'activeSelection') {
+                    alert("Please select at least 3 objects to distribute.");
+                    return;
+                }
+                
+                const items = activeSelection.getObjects();
+                if (items.length < 3) {
+                     alert("Please select at least 3 objects to distribute.");
+                     return;
+                }
+
+                const isHoriz = $(this).attr('id') === 'dist-h';
+                const prop = isHoriz ? 'left' : 'top';
+
+                // Sort items visually from left-to-right or top-to-bottom
+                items.sort((a, b) => a[prop] - b[prop]);
+
+                const first = items[0];
+                const last = items[items.length - 1];
+                
+                // Calculate the even spacing between the first and last object edges
+                const totalDistance = last[prop] - first[prop];
+                const spacing = totalDistance / (items.length - 1);
+
+                items.forEach((obj, i) => {
+                    if (i > 0 && i < items.length - 1) {
+                        obj.set(prop, first[prop] + (spacing * i));
+                        obj.setCoords();
+                    }
+                });
+                
+                // Recalculate the selection bounding box after moving items
+                activeSelection.addWithUpdate(); 
+                canvas.requestRenderAll();
+                markDirty(); 
+                saveHistory();
             });
 
             // --- IMPROVED GROUPING LOGIC ---
@@ -1791,44 +1849,6 @@
 
             let isDragging = false; let lastPosX, lastPosY;
             
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible')) return;
-                
-                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                
-                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } }
-
-                if (canvas.getActiveObject()?.isEditing) return; 
-
-                if (e.ctrlKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
-                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
-                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
-                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
-                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
-                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
-                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
-                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
-                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
-                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
-                }
-
-                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
-                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
-                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
-                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
-                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
-                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
-            });
-            
             $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
 
             canvas.on('mouse:down', function(opt) {
@@ -1916,12 +1936,15 @@
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
-                // Add this inside function updateUI(event) { ... }
+
+                $('#appearance-properties').show();
+                // Check if fill is an object (gradient) or solid
                 if (obj.fill && typeof obj.fill === 'object' && obj.fill.type) {
                     $('#obj-fill-type').val(obj.fill.type);
                 } else {
                     $('#obj-fill-type').val('solid');
                 }
+
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
                 if (obj.type === 'rect' && !obj.clipPath) { 
@@ -1954,7 +1977,11 @@
             }
 
             function updateColorsUI(obj) {
-                const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                let fillVal = 'transparent';
+                if (obj.fill) {
+                    fillVal = typeof obj.fill === 'string' ? obj.fill : (obj.fill.colorStops ? obj.fill.colorStops[0].color : '#cbfb45');
+                }
+                const strokeVal = obj.stroke || 'transparent';
                 
                 globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
 
@@ -1967,6 +1994,31 @@
                 
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
+
+            // --- FEATURE 1: GRADIENT CHANGE LISTENER ---
+            $('#obj-fill-type').on('change', function() {
+                const type = $(this).val();
+                const obj = canvas.getActiveObject();
+                if (!obj) return;
+
+                if (type === 'solid') {
+                    updateObj('fill', globalFill);
+                } else {
+                    const baseColor = globalFill === 'transparent' ? '#cbfb45' : globalFill;
+                    const gradient = new fabric.Gradient({
+                        type: type,
+                        gradientUnits: 'percentage', // Scales smoothly with the object
+                        coords: type === 'linear' 
+                            ? { x1: 0, y1: 0, x2: 1, y2: 0 } 
+                            : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 },
+                        colorStops: [
+                            { offset: 0, color: baseColor },
+                            { offset: 1, color: '#ffffff' } // Fades to white by default
+                        ]
+                    });
+                    updateObj('fill', gradient);
+                }
+            });
 
             function updateObj(prop, val) { 
                 const sel = canvas.getActiveObject(); 
@@ -2060,44 +2112,9 @@
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
-            $('#dist-h, #dist-v').click(function() {
-                if (!activeId) return;
-                const activeSelection = canvas.getActiveObject();
-                
-                if (!activeSelection || activeSelection.type !== 'activeSelection') {
-                    alert("Please select at least 3 objects to distribute.");
-                    return;
-                }
-                
-                const items = activeSelection.getObjects();
-                if (items.length < 3) return;
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); updateLayersPanel(); } }); 
+            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); updateLayersPanel(); } });
 
-                const isHoriz = $(this).attr('id') === 'dist-h';
-                const prop = isHoriz ? 'left' : 'top';
-
-                // Sort items visually from left-to-right or top-to-bottom
-                items.sort((a, b) => a[prop] - b[prop]);
-
-                const first = items[0];
-                const last = items[items.length - 1];
-                
-                // Calculate the even spacing between the first and last object edges
-                const totalDistance = last[prop] - first[prop];
-                const spacing = totalDistance / (items.length - 1);
-
-                items.forEach((obj, i) => {
-                    if (i > 0 && i < items.length - 1) {
-                        obj.set(prop, first[prop] + (spacing * i));
-                        obj.setCoords();
-                    }
-                });
-                
-                // Recalculate the selection bounding box after moving items
-                activeSelection.addWithUpdate(); 
-                canvas.requestRenderAll();
-                markDirty(); 
-                saveHistory();
-            });
             // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
                 if(!activeId) return;
