@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5.6</title>
+    <title>Thooval Workspace v5.7</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -116,6 +116,16 @@
         .doc-btn:hover { background: var(--bg-surface-hover); }
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
+        /* LAYERS PANEL UI */
+        .layer-list { list-style: none; margin-top: 8px; max-height: 250px; overflow-y: auto; background: var(--bg-base); border-radius: 6px; padding: 4px; }
+        .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 2px; border-radius: 4px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .layer-item:hover { background: var(--bg-surface-hover); }
+        .layer-item.active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
+        .layer-info { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 8px; font-size: 11px; }
+        .layer-actions { display: flex; gap: 8px; color: var(--text-muted); }
+        .layer-action-btn { cursor: pointer; transition: 0.2s; font-size: 10px; }
+        .layer-action-btn:hover { color: var(--text-main); }
+
         .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; min-height: 0; }
         .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; flex-shrink: 0; }
         .editor-body { flex: 1; display: flex; position: relative; overflow: hidden; min-height: 0; min-width: 0;}
@@ -304,6 +314,11 @@
                 </div>
             </div>
 
+            <div class="panel-section" id="panel-layers">
+                <h3>Layers</h3>
+                <ul id="layer-list" class="layer-list"></ul>
+            </div>
+
             <div id="no-selection" class="empty-state" style="padding: 20px;">
                 <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
                 <div style="font-size: 11px;">Select an object to modify properties.</div>
@@ -471,7 +486,6 @@
     </div>
 
     <script>
-        // Force FabricJS to keep vectors crisp instead of caching them as blurry bitmaps
         fabric.Object.prototype.objectCaching = false;
 
         $(document).ready(function() {
@@ -484,7 +498,8 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText']; 
+            // ADDED 'locked' property to CUSTOM_PROPS for saving state
+            const CUSTOM_PROPS = ['isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'locked']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
@@ -518,7 +533,7 @@
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
-            // --- GOOGLE FONTS INJECTION & PREVIEWS ---
+            // --- GOOGLE FONTS INJECTION ---
             const curatedFonts = [
                 "Inter", "Manjari", "Noto Sans Malayalam", "Roboto", "Open Sans", "Lato", "Montserrat", 
                 "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", "Merriweather", 
@@ -526,7 +541,6 @@
                 "Poppins", "Ubuntu", "Karla", "Lora", "Mukta", "Inconsolata", "Anton", "Josefin Sans",
                 "Cabin", "Dancing Script", "Pacifico", "Bebas Neue", "Abel", "Questrial"
             ];
-            
             const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
             const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap`;
             $('head').append(`<link href="${googleFontsUrl}" rel="stylesheet">`);
@@ -536,14 +550,14 @@
                 fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
             });
 
-            // --- MENU FIX: SNAP DROPDOWN SHUT ON CLICK ---
+            // --- MENU FIX ---
             $('.dropdown li').on('click', function() {
                 const $dropdown = $(this).closest('.dropdown');
                 $dropdown.hide();
                 setTimeout(() => $dropdown.css('display', ''), 150);
             });
 
-            // --- MALAYALAM FML ↔ UNICODE ENGINE ---
+            // --- MALAYALAM CONVERTER ---
             const uniToFmlDict = [
                 { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
                 { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
@@ -603,7 +617,6 @@
                 }
             }
 
-            // Bind Undo/Redo Menus
             $('#menu-undo').click(performUndo);
             $('#menu-redo').click(performRedo);
 
@@ -620,7 +633,7 @@
                 if (Object.keys(projects).length === 0) {
                     $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide();
                 } else {
-                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers();
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
                 }
             }
 
@@ -650,9 +663,9 @@
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
-            canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); } });
+            canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); updateLayersPanel(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); updateLayersPanel(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isSnapGuide) { markDirty(); saveHistory(); updateLayersPanel(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -718,6 +731,7 @@
                     return getZ(a) - getZ(b);
                 });
                 objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
+                updateLayersPanel();
             }
 
             function drawDocumentEnvironment() {
@@ -747,6 +761,91 @@
                 canvas.add(new fabric.Path(maskPathStr, { fill: '#0e0e11', fillRule: 'evenodd', selectable: false, evented: false, isMask: true, objectCaching: false, excludeFromExport: true }));
                 sortLayers(); canvas.requestRenderAll();
             }
+
+            // --- LAYERS PANEL ENGINE ---
+            function updateLayersPanel() {
+                if (!activeId) return;
+                const list = $('#layer-list');
+                list.empty();
+                
+                // Get all user objects
+                const objects = canvas.getObjects().filter(o => 
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide
+                );
+
+                const activeObjs = canvas.getActiveObjects();
+
+                // Render top to bottom
+                for (let i = objects.length - 1; i >= 0; i--) {
+                    const obj = objects[i];
+                    let typeName = obj.type.charAt(0).toUpperCase() + obj.type.slice(1);
+                    if (obj.type === 'textbox') typeName = `Text: "${obj.text.substring(0, 10)}${obj.text.length > 10 ? '...' : ''}"`;
+                    if (obj.isMasterClone) typeName = `[Master] ${typeName}`;
+                    if (obj.clipPath) typeName = `[Masked] ${typeName}`;
+                    
+                    const isActive = activeObjs.includes(obj) ? 'active' : '';
+                    const visIcon = obj.visible !== false ? 'fa-eye' : 'fa-eye-slash';
+                    const lockIcon = obj.locked ? 'fa-lock' : 'fa-lock-open';
+
+                    const li = $(`
+                        <li class="layer-item ${isActive}" data-index="${i}">
+                            <div class="layer-info">${typeName}</div>
+                            <div class="layer-actions">
+                                <i class="fa-solid ${lockIcon} layer-action-btn btn-lock" title="Toggle Lock"></i>
+                                <i class="fa-solid ${visIcon} layer-action-btn btn-vis" title="Toggle Visibility"></i>
+                            </div>
+                        </li>
+                    `);
+                    
+                    list.append(li);
+                }
+            }
+
+            canvas.on('selection:created', updateLayersPanel);
+            canvas.on('selection:updated', updateLayersPanel);
+            canvas.on('selection:cleared', updateLayersPanel);
+
+            $(document).on('click', '.layer-item', function(e) {
+                if ($(e.target).hasClass('layer-action-btn')) return; 
+                const idx = $(this).data('index');
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const obj = objects[idx];
+                if (obj && !obj.locked && obj.visible !== false && !obj.isMasterClone) {
+                    canvas.setActiveObject(obj);
+                    canvas.requestRenderAll();
+                }
+            });
+
+            $(document).on('click', '.btn-lock', function(e) {
+                e.stopPropagation();
+                const idx = $(this).closest('.layer-item').data('index');
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const obj = objects[idx];
+                
+                obj.locked = !obj.locked;
+                obj.set({
+                    selectable: !obj.locked,
+                    evented: !obj.locked,
+                    lockMovementX: obj.locked,
+                    lockMovementY: obj.locked,
+                    lockScalingX: obj.locked,
+                    lockScalingY: obj.locked,
+                    lockRotation: obj.locked
+                });
+                if (obj.locked && canvas.getActiveObject() === obj) canvas.discardActiveObject();
+                canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
+            });
+
+            $(document).on('click', '.btn-vis', function(e) {
+                e.stopPropagation();
+                const idx = $(this).closest('.layer-item').data('index');
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide);
+                const obj = objects[idx];
+                
+                obj.visible = obj.visible === false ? true : false;
+                if (obj.visible === false && canvas.getActiveObject() === obj) canvas.discardActiveObject();
+                canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
+            });
 
             // --- TOGGLES & PREVIEW MODE ---
             function updateVisibilityToggles() {
@@ -806,7 +905,7 @@
                 draggingGuideType = null;
             });
 
-            // --- NEW: SMART SNAPPING ENGINE ---
+            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -824,7 +923,6 @@
                     o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && o.visible !== false
                 );
 
-                // Get bounding box without any viewport transform interference
                 const objB = obj.getBoundingRect(true, true); 
                 
                 let snapX = false;
@@ -889,7 +987,7 @@
                 }
             });
 
-            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
+            // --- TEXT SCALING FIX ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
@@ -939,7 +1037,7 @@
                 p.isMasterMode = false; canvas.discardActiveObject(); setTool('select');
                 $('#master-banner').hide(); 
                 
-                canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: true, evented: true }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
+                canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: !obj.locked, evented: !obj.locked }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
                 const sources = canvas.getObjects().filter(o => o.isMasterSource); 
                 for (let pg = 0; pg < p.totalPages; pg++) {
                     const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
@@ -1232,7 +1330,7 @@
                     canvas.selection = true; 
                     canvas.getObjects().forEach(o => { 
                         if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
-                            if (o.isMasterClone) {
+                            if (o.isMasterClone || o.locked) {
                                 o.set({selectable: false, evented: false});
                             } else {
                                 o.set({selectable: true, evented: true});
@@ -1514,7 +1612,8 @@
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); updateLayersPanel(); } }); 
+            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); updateLayersPanel(); } });
 
             // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
