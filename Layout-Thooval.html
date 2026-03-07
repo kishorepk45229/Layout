@@ -94,9 +94,17 @@
         
         .stroke-weight-control { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; }
 
-        .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        /* RIGHT PANEL & TABS */
+        .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-base); flex-shrink: 0; }
+        .sidebar-tab { flex: 1; padding: 10px 0; text-align: center; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .sidebar-tab:hover { color: var(--text-main); background: var(--bg-panel); }
+        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
+        .sidebar-pane { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+        .sidebar-pane.active { display: flex; }
+
         .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
-        .panel-right h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-section h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .prop-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; width: 100%; }
         .prop-col { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
         
@@ -113,8 +121,17 @@
         .btn-group button.active { background: var(--bg-surface-hover); color: var(--text-main); }
         
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; }
-        .doc-btn:hover { background: var(--bg-surface-hover); }
+        .doc-btn:hover { background: var(--bg-surface-hover); border-color: var(--border-light); }
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
+
+        .icon-row { display: flex; width: 100%; gap: 6px; justify-content: center;}
+        .format-icon-btn { padding: 6px; border-radius: 4px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; transition: 0.2s;}
+        .format-icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
+        .format-icon-btn.active { background: var(--bg-surface-hover); color: var(--text-main); }
+        .numeric-row { display: flex; width: 100%; gap: 8px; justify-content: center; align-items: flex-end;}
+        .num-col { flex: 1; display: flex; flex-direction: column; gap: 4px;}
+        .num-label { font-size: 10px; color: var(--text-muted); }
+        .align-option-row { display: flex; gap: 8px; align-items: center; width: 100%; padding: 4px; background: var(--bg-base); border-radius: 4px; }
         
         .editor-core { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-base); min-width: 0; min-height: 0; }
         .ruler-h { height: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-light); z-index: 90; display: none; cursor: row-resize; flex-shrink: 0; }
@@ -125,7 +142,6 @@
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
         #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
-        #exit-master-btn:hover { background: #000; border-color: var(--accent); }
         
         #inner-welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 300; display: flex; flex-direction: column; align-items: center; background: var(--bg-panel); border: 1px solid var(--border); padding: 40px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center; }
         .logo-huge { font-size: 48px; color: var(--accent); margin-bottom: 20px; }
@@ -140,29 +156,6 @@
         .small-icon-btn { min-width: 18px; min-height: 18px; color: var(--text-muted); font-size: 10px; display: flex; justify-content: center; align-items: center; background: transparent; border: none; cursor: pointer; transition: 0.2s; }
         .small-icon-btn:hover { color: var(--text-main); background: var(--bg-surface-hover); border-radius: 3px;}
 
-        /* --- NEW: LAYER PANEL STYLES --- */
-        .layer-list { margin-top: 8px; max-height: 300px; overflow-y: auto; }
-        .layer-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; margin-bottom: 2px; cursor: default; }
-        .layer-item i { cursor: pointer; color: var(--text-muted); width: 16px; text-align: center; }
-        .layer-item i:hover { color: var(--text-main); }
-        .layer-item .drag-handle { margin-left: auto; cursor: grab; color: var(--text-muted); }
-        .layer-item .drag-handle:active { cursor: grabbing; }
-        .layer-item .layer-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* --- NEW: STYLES PANEL --- */
-        .style-preset-list { margin-bottom: 8px; max-height: 150px; overflow-y: auto; }
-        .style-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; margin-bottom: 2px; cursor: pointer; }
-        .style-item:hover { background: var(--bg-surface); }
-        .style-item.active { background: var(--bg-surface-hover); border-left: 2px solid var(--accent); }
-
-        /* Sidebar Tabs */
-        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg-base); }
-        .sidebar-tab { flex: 1; padding: 10px 0; text-align: center; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; border-bottom: 2px solid transparent; transition: 0.2s; }
-        .sidebar-tab:hover { color: var(--text-main); background: var(--bg-panel); }
-        .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
-        .sidebar-pane { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
-        .sidebar-pane.active { display: block; }
-
         /* --- MODALS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--bg-panel); padding: 24px; border-radius: 12px; width: 90%; max-width: 440px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -170,6 +163,21 @@
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
+
+        /* Layers Panel UI */
+        .layer-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .layer-item:hover { border-color: var(--border-light); }
+        .layer-item.active { border-color: var(--accent); background: rgba(203, 251, 69, 0.05); }
+        .layer-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; margin: 0 8px; }
+        .layer-actions { display: flex; gap: 4px; }
+        .layer-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 11px; padding: 2px; }
+        .layer-btn:hover { color: var(--text-main); }
+        .layer-btn.locked { color: var(--danger); }
+        .layer-btn.hidden { opacity: 0.3; }
+
+        /* Styles Panel UI */
+        .style-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-base); margin-bottom: 4px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .style-item:hover { border-color: var(--accent); }
     </style>
 </head>
 <body>
@@ -208,6 +216,7 @@
                         <li id="menu-find-replace"><span>Find & Replace...</span> <span class="shortcut">Ctrl+F</span></li>
                     </ul>
                 </li>
+                
                 <li class="menu-item">Pages
                     <ul class="dropdown">
                         <li class="menu-page-action" data-action="insert"><span>Insert Pages...</span></li>
@@ -215,25 +224,20 @@
                         <li class="menu-page-action" data-action="goto"><span>Go to Page...</span></li>
                     </ul>
                 </li>
+
                 <li class="menu-item">View
                     <ul class="dropdown">
                         <li id="menu-zoom-in"><span>Zoom In</span> <span class="shortcut">Ctrl++</span></li>
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
                         <li class="divider-li"></li>
-                        <li><span>Snap to</span>
-                            <ul style="margin-left:20px; list-style:none;">
-                                <li><label style="cursor: pointer; display: block; padding: 4px 0;"><input type="checkbox" id="snap-page-center" checked> Page Center</label></li>
-                                <li><label style="cursor: pointer; display: block; padding: 4px 0;"><input type="checkbox" id="snap-margins" checked> Margins</label></li>
-                                <li><label style="cursor: pointer; display: block; padding: 4px 0;"><input type="checkbox" id="snap-objects" checked> Other Objects</label></li>
-                            </ul>
-                        </li>
-                        <li class="divider-li"></li>
                         <li id="menu-toggle-preview"><span>Toggle Preview Mode</span> <span class="shortcut">W</span></li>
                         <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
                         <li id="menu-toggle-guides"><span>Toggle Guides</span> <span class="shortcut">;</span></li>
                         <li id="menu-toggle-margins"><span>Toggle Margins</span> <span class="shortcut">M</span></li>
                         <li id="menu-toggle-bleed"><span>Toggle Bleed</span> <span class="shortcut">B</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-toggle-baseline"><span>Toggle Baseline Grid</span> <span class="shortcut">Alt+B</span></li>
                     </ul>
                 </li>
             </ul>
@@ -252,9 +256,13 @@
         <aside class="toolbar-left" id="sidebar-left">
             <div class="tool-grid">
                 <button class="tool-btn active-state" id="tool-select" title="Select (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
+                <button class="tool-btn" id="tool-pan" title="Pan (Hold Space)"><i class="fa-regular fa-hand"></i></button>
+                
                 <button class="tool-btn" id="tool-zoom" title="Zoom (Z)"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button class="tool-btn" id="add-text" title="Text Frame (T)"><i class="fa-solid fa-t"></i></button>
+                
                 <div class="tool-divider" style="grid-column: 1 / -1;"></div>
+                
                 <button class="tool-btn" id="add-rect" title="Rectangle (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
@@ -315,8 +323,8 @@
                 <button class="sidebar-tab" data-target="tab-layers">Layers</button>
                 <button class="sidebar-tab" data-target="tab-styles">Styles</button>
             </div>
-            
-            <div class="sidebar-pane active" id="tab-properties">
+
+            <div id="tab-properties" class="sidebar-pane active">
                 <div id="panel-pages">
                     <div class="panel-section">
                         <h3>Template</h3>
@@ -334,6 +342,40 @@
                     <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
                         <h3>Image Mask Options</h3>
                         <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
+                    </div>
+
+                    <div class="panel-section" id="align-panel" style="border-bottom: 2px solid var(--border);">
+                        <h3>Align Objects</h3>
+                        <div class="icon-row" style="margin-bottom: 8px;">
+                            <button class="format-icon-btn align-action" data-align="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                            <button class="format-icon-btn align-action" data-align="center" title="Horizontal Center"><i class="fa-solid fa-align-center"></i></button>
+                            <button class="format-icon-btn align-action" data-align="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                        </div>
+                        <div class="icon-row" style="margin-bottom: 12px;">
+                            <button class="format-icon-btn align-action" data-align="top" title="Align Top"><i class="fa-solid fa-square" style="transform: rotate(180deg);"></i></button>
+                            <button class="format-icon-btn align-action" data-align="middle" title="Vertical Center"><i class="fa-solid fa-square" style="transform: rotate(90deg);"></i></button>
+                            <button class="format-icon-btn align-action" data-align="bottom" title="Align Bottom"><i class="fa-solid fa-square"></i></button>
+                        </div>
+
+                        <h3 style="margin-top: 16px;">Distribute Objects</h3>
+                        <div class="icon-row" style="margin-bottom: 8px;">
+                            <button class="format-icon-btn distribute-action" data-dist="vtop" title="Vertical Top"><i class="fa-solid fa-distribute-spacing-vertical" style="transform: rotate(180deg);"></i></button>
+                            <button class="format-icon-btn distribute-action" data-dist="vmid" title="Vertical Center"><i class="fa-solid fa-distribute-spacing-vertical"></i></button>
+                            <button class="format-icon-btn distribute-action" data-dist="vbot" title="Vertical Bottom"><i class="fa-solid fa-distribute-spacing-vertical" style="transform: rotate(-180deg);"></i></button>
+                        </div>
+                        <div class="icon-row" style="margin-bottom: 12px;">
+                            <button class="format-icon-btn distribute-action" data-dist="hleft" title="Horizontal Left"><i class="fa-solid fa-distribute-spacing-horizontal"></i></button>
+                            <button class="format-icon-btn distribute-action" data-dist="hmid" title="Horizontal Center"><i class="fa-solid fa-distribute-spacing-horizontal" style="transform: rotate(180deg);"></i></button>
+                            <button class="format-icon-btn distribute-action" data-dist="hright" title="Horizontal Right"><i class="fa-solid fa-distribute-spacing-horizontal" style="transform: rotate(180deg);"></i></button>
+                        </div>
+                        
+                        <div class="align-option-row">
+                            <label style="color: var(--text-muted); font-size: 11px;">Align To:</label>
+                            <select id="align-to-target" style="flex: 1; padding: 4px 8px; font-size: 11px;">
+                                <option value="selection">Selection Bounds</option>
+                                <option value="page">Page Margins (Active Page)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="panel-section" id="geometry-properties">
@@ -354,30 +396,16 @@
                     
                     <div id="text-properties" style="display: none;">
                         <div class="panel-section">
-                            <h3>Typography</h3>
+                            <h3>Character</h3>
                             <div class="prop-col" style="margin-bottom: 12px;">
-                                <select id="obj-font-family"></select>
+                                <select id="obj-font-family">
+                                    </select>
                             </div>
                             <div class="prop-row">
                                 <div class="prop-col"><label>Font Size</label><input type="number" id="obj-font-size" min="8" max="144" value="24"></div>
                                 <div class="prop-col"><label>Letter Tracking</label><input type="number" id="obj-tracking" step="10" value="0"></div>
                             </div>
-                        </div>
-
-                        <div class="panel-section">
-                            <h3>Paragraph</h3>
-                            <div class="prop-row" style="margin-bottom: 12px;">
-                                <div class="prop-col">
-                                    <label>Alignment</label>
-                                    <div class="btn-group">
-                                        <button id="align-left" class="p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                        <button id="align-center" class="p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                        <button id="align-right" class="p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                        <button id="align-justify" class="p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="prop-row" style="margin-bottom: 12px;">
+                            <div class="prop-row">
                                 <div class="prop-col" style="flex: 2;">
                                     <label>Line Spacing</label>
                                     <div style="display: flex; gap: 4px;">
@@ -392,9 +420,75 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3>Paragraph</h3>
                             
+                            <div class="icon-row" style="margin-bottom: 12px;">
+                                <button class="format-icon-btn p-align" data-palign="left" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                <button class="format-icon-btn p-align" data-palign="center" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                <button class="format-icon-btn p-align" data-palign="right" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                <button class="format-icon-btn p-align" data-palign="justify" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                            </div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 8px;">
+                                <div class="num-col">
+                                    <span class="num-label">Left Indent (px)</span>
+                                    <input type="number" id="obj-indent-left" min="0" value="0" step="1">
+                                </div>
+                                <div class="num-col">
+                                    <span class="num-label">Right Indent (px)</span>
+                                    <input type="number" id="obj-indent-right" min="0" value="0" step="1">
+                                </div>
+                            </div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col">
+                                    <span class="num-label">First Line Left (px)</span>
+                                    <input type="number" id="obj-indent-first" value="0" step="1">
+                                </div>
+                                <div class="num-col">
+                                    <span class="num-label">Last Line Right (px)</span>
+                                    <input type="number" id="obj-indent-last" value="0" step="1">
+                                </div>
+                            </div>
+
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col">
+                                    <span class="num-label">Space Before (px)</span>
+                                    <input type="number" id="obj-space-before" min="0" value="0" step="1">
+                                </div>
+                                <div class="num-col">
+                                    <span class="num-label">Space After (px)</span>
+                                    <input type="number" id="obj-space-after" min="0" value="0" step="1">
+                                </div>
+                            </div>
+                            
+                            <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
+                            
+                            <div class="numeric-row" style="margin-bottom: 12px;">
+                                <div class="num-col">
+                                    <span class="num-label">Drop Cap lines</span>
+                                    <input type="number" id="obj-drop-cap-lines" min="0" value="0" max="10" step="1">
+                                </div>
+                                <div class="num-col">
+                                    <span class="num-label">Drop Cap chars</span>
+                                    <input type="number" id="obj-drop-cap-chars" min="0" value="0" max="10" step="1">
+                                </div>
+                            </div>
+                            
+                            <div class="prop-row" style="margin-top: 8px; justify-content: flex-start; gap: 6px;">
+                                <input type="checkbox" id="obj-hyphenate">
+                                <label for="obj-hyphenate" style="color: var(--text-main); font-size: 11px;">Hyphenate Text Block</label>
+                            </div>
+                            
+                            <div class="prop-row" style="margin-top: 16px; display: none;" id="text-overflow-warning">
+                                <button class="doc-btn" id="btn-split-overflow" style="color: var(--accent); border-color: var(--accent); font-size: 10px;"><i class="fa-solid fa-arrow-down-up-across-line"></i> Split Overflow to Next Page</button>
+                            </div>
+
                             <div class="prop-row" style="margin-top: 16px;">
-                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Page Number</button>
+                                <button class="doc-btn" id="btn-insert-page-num" style="font-size: 10px; padding: 4px;"><i class="fa-solid fa-hashtag"></i> Convert to Dynamic Page Number</button>
                             </div>
                         </div>
                     </div>
@@ -407,28 +501,38 @@
             </div>
 
             <div id="tab-layers" class="sidebar-pane">
-                <div class="panel-section" style="border-bottom: none;">
-                    <h3>Layers <span class="small-icon-btn" id="refresh-layers" title="Refresh" style="float: right;"><i class="fa-solid fa-rotate"></i></span></h3>
-                    <div class="layer-list" id="layer-list"></div>
+                <div class="panel-section" style="flex: 1; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <h3>Page Objects</h3>
+                        <button id="refresh-layers" class="small-icon-btn" title="Refresh Layers"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                    <div id="layers-list-container">
+                        </div>
                 </div>
             </div>
 
             <div id="tab-styles" class="sidebar-pane">
                 <div class="panel-section">
                     <h3>Global Styles</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Save a text box's format to apply it elsewhere.</p>
-                    <div class="prop-col" style="margin-bottom: 12px;">
-                        <input type="text" id="new-style-name" placeholder="New Style Name (e.g. Heading 1)">
-                        <button class="doc-btn" id="btn-save-style" style="margin-top: 4px;">Save from Selection</button>
-                    </div>
-                    <div style="height: 1px; background: var(--border); margin: 16px 0;"></div>
-                    <div class="prop-col">
-                        <label>Apply Style</label>
+                    <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Save formatting to apply consistently across layout.</p>
+                    
+                    <div class="prop-col" style="margin-bottom: 16px;">
+                        <label>Select Style</label>
                         <select id="global-style-select">
-                            <option value="">-- Choose Style --</option>
+                            <option value="">-- None --</option>
                         </select>
-                        <button class="doc-btn" id="btn-apply-style" style="margin-top: 4px;">Apply to Selection</button>
                     </div>
+                    <div class="prop-row">
+                        <button class="doc-btn" id="btn-apply-style">Apply to Selection</button>
+                    </div>
+                    
+                    <div style="height: 1px; background: var(--border); margin: 24px 0;"></div>
+                    
+                    <h3 style="margin-bottom: 12px;">Create New Style</h3>
+                    <div class="prop-col" style="margin-bottom: 12px;">
+                        <input type="text" id="new-style-name" placeholder="e.g. Chapter Heading">
+                    </div>
+                    <button class="doc-btn" id="btn-save-style" style="background: transparent; border-color: var(--border);">Save from Selection</button>
                 </div>
             </div>
 
@@ -476,14 +580,14 @@
         <div class="modal" style="width: 400px;">
             <h2>Find & Replace</h2>
             <div class="prop-col" style="margin-bottom: 16px;"><label>Find</label><input type="text" id="find-text" placeholder="Text to find"></div>
-            <div class="prop-col" style="margin-bottom: 16px;"><label>Replace with</label><input type="text" id="replace-text" placeholder="Replacement"></div>
+            <div class="prop-col" style="margin-bottom: 16px;"><label>Replace with</label><input type="text" id="replace-text" placeholder="Replacement text"></div>
             <div class="prop-row" style="margin-bottom: 16px;">
                 <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="find-case-sensitive"> Case sensitive</label>
                 <label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="find-whole-word"> Whole word</label>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="$('#find-replace-modal').hide()">Cancel</button>
-                <button class="btn-primary" id="btn-find-next" style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main);">Find Next</button>
+                <button class="btn-primary" id="btn-find-next" style="background: transparent; border: 1px solid var(--border); color: var(--text-main);">Find Next</button>
                 <button class="btn-primary" id="find-replace-btn">Replace All</button>
             </div>
         </div>
@@ -536,27 +640,22 @@
             function fromPx(val, unit) { if (unit === 'in') return val / DPI; if (unit === 'mm') return val / (DPI / 25.4); return val; }
             
             const PAGE_GAP = 60; const MARGIN_LEFT = 150; const MARGIN_TOP = 80;
-            // Added explicit custom variables to save the simulated paragraph options
-            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'styleId']; 
+            // Added explicit custom variables to save the simulated paragraph options, layers, and clipboard
+            const CUSTOM_PROPS = ['id', 'isRegular', 'isMasterSource', 'isMasterClone', 'isDynamicText', 'styleId', 'isPaper', 'isMargin', 'isBleed', 'isMask', 'isGuide', 'isGrid', 'selectable', 'evented', 'hoverCursor', 'excludeFromExport', 'indentLeft', 'indentRight', 'indentLast', 'spaceBefore', 'spaceAfter', 'dropCapChars', 'dropCapLines', 'isHyphenated']; 
             
             const SNAP_THRESHOLD = 8;
             let isHistoryProcessing = false;
             let isPreviewMode = false;
+            let isSpaceDown = false;
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
+            let showBaselineGrid = false; const baselineGridHeight = 15;
             let pagesActionType = null; let isEditingDoc = false;
 
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
             let globalStroke = 'transparent';
             let globalStrokeWeight = 0;
-
-            // --- SNAP SETTINGS ---
-            let snapSettings = {
-                toPageCenter: true,
-                toMargins: true,
-                toObjects: true
-            };
 
             // --- CLIPBOARD ---
             let _clipboard = null;
@@ -566,6 +665,16 @@
             
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
+
+            // --- SIDEBAR TABS ---
+            $('.sidebar-tab').click(function() {
+                $('.sidebar-tab').removeClass('active');
+                $(this).addClass('active');
+                $('.sidebar-pane').removeClass('active');
+                $('#' + $(this).data('target')).addClass('active');
+                if($(this).data('target') === 'tab-layers') refreshLayerPanel();
+                if($(this).data('target') === 'tab-styles') refreshStyleList();
+            });
 
             // --- GOOGLE FONTS INJECTION & PREVIEWS ---
             const curatedFonts = [
@@ -614,23 +723,19 @@
             }
 
             // --- HISTORY STACK ---
-            let historyTimeout = null;
             function saveHistory() {
                 if (!activeId || isHistoryProcessing) return;
-                clearTimeout(historyTimeout);
-                historyTimeout = setTimeout(() => {
-                    const p = projects[activeId];
-                    if (!p.history) { p.history = []; p.historyIndex = -1; }
-                    if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
-                    
-                    // BULLETPROOF FIX: Strip layout environment items out before saving to history memory
-                    const state = canvas.toJSON(CUSTOM_PROPS);
-                    state.objects = state.objects.filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide);
-                    
-                    p.history.push(state);
-                    p.historyIndex++;
-                    if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
-                }, 150);
+                const p = projects[activeId];
+                if (!p.history) { p.history = []; p.historyIndex = -1; }
+                if (p.historyIndex < p.history.length - 1) p.history = p.history.slice(0, p.historyIndex + 1);
+                
+                // BULLETPROOF FIX: Strip environmental items (Margins, Bleed, etc) BEFORE saving history!
+                const state = canvas.toJSON(CUSTOM_PROPS);
+                state.objects = state.objects.filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid);
+                
+                p.history.push(state);
+                p.historyIndex++;
+                if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
             }
             
             function performUndo() {
@@ -686,21 +791,10 @@
                 activeId = id; const p = projects[id]; canvas.clear();
                 
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (!p.styles) { p.styles = {}; }
+                if (!p.styles) { p.styles = []; }
 
-                if (p.canvasData) { 
-                    canvas.loadFromJSON(p.canvasData, function() { 
-                        canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); 
-                        drawDocumentEnvironment(); maintainHairlines(); 
-                        if(showRulers && !isPreviewMode) drawRulers(); 
-                        refreshStyleList(); 
-                        if($('#tab-layers').hasClass('active')) refreshLayerPanel(); 
-                    }); 
-                } else { 
-                    canvas.viewportTransform = [1,0,0,1,0,0]; 
-                    drawDocumentEnvironment(); refreshStyleList(); 
-                    if($('#tab-layers').hasClass('active')) refreshLayerPanel(); 
-                }
+                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); refreshStyleList(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); }); } 
+                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); refreshStyleList(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); }
                 
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
@@ -714,13 +808,13 @@
 
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
-            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, styles: p.styles, canvasData: p.canvasData })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
+            $('#btn-save-close').click(() => { $('#unsaved-modal').hide(); const p = projects[tabIdToClose]; if(activeId === tabIdToClose) p.canvasData = canvas.toJSON(CUSTOM_PROPS); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData, styles: p.styles })], {type: "application/json"})); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); forceCloseProject(tabIdToClose); tabIdToClose = null; });
 
             function markDirty() { if (activeId && projects[activeId] && !projects[activeId].isDirty) { projects[activeId].isDirty = true; renderTabs(); } }
             
-            canvas.on('object:modified', () => { markDirty(); updateDynamicText(); saveHistory(); }); 
-            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
-            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
+            canvas.on('object:modified', () => { markDirty(); saveHistory(); updateDynamicText(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); }); 
+            canvas.on('object:added', (e) => { if(!e.target.excludeFromExport && !e.target.isPaper && !e.target.isMargin && !e.target.isBleed && !e.target.isMask && !e.target.isGrid) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
+            canvas.on('object:removed', (e) => { if(!e.target.excludeFromExport && !e.target.isPaper && !e.target.isMargin && !e.target.isBleed && !e.target.isMask && !e.target.isGrid) { markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
 
             // --- DOCUMENT SETUP ---
             let marginsLinked = true; $('#link-margins-btn').click(function() { marginsLinked = !marginsLinked; $(this).css('opacity', marginsLinked ? 1 : 0.4); if(marginsLinked) $('.margin-input').val($('#mar-t').val()); });
@@ -749,8 +843,7 @@
                 if (isEditingDoc && activeId) {
                     projects[activeId].config = confData; drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
                 } else {
-                    const newId = generateId(); 
-                    projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: {} };
+                    const newId = generateId(); projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: 1, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1, styles: [] };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
                 $('#new-doc-modal').hide();
@@ -767,13 +860,13 @@
 
             function maintainHairlines() {
                 if(!activeId) return; const z = canvas.getZoom();
-                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide) o.set('strokeWidth', 1 / z); });
+                canvas.getObjects().forEach(o => { if (o.isPaper || o.isBleed || o.isMargin || o.isGuide || o.isGrid) o.set('strokeWidth', 1 / z); });
             }
 
             function sortLayers() {
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
-                    const getZ = (o) => { if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
+                    const getZ = (o) => { if (o.isGrid) return -6; if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide) return 1; return -3; };
                     return getZ(a) - getZ(b);
                 });
                 objects.forEach(obj => { canvas.remove(obj); canvas.add(obj); });
@@ -782,12 +875,11 @@
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
                 
-                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
+                const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask || obj.isGrid);
                 envItems.forEach(obj => canvas.remove(obj));
                 
                 const isMasterSpread = p.isMasterMode && conf.facingPages; const pagesToDraw = p.isMasterMode ? (isMasterSpread ? 2 : 1) : p.totalPages;
                 let maskPathStr = `M -50000 -50000 L 50000 -50000 L 50000 50000 L -50000 50000 Z `;
-                
                 const initZoom = canvas.getZoom() || 1; 
 
                 for (let i = 0; i < pagesToDraw; i++) {
@@ -797,6 +889,13 @@
                     
                     canvas.add(new fabric.Rect({ left: pos.x, top: pos.y, width: conf.widthPx, height: conf.heightPx, fill: '#ffffff', stroke: '#000000', strokeWidth: 1/initZoom, selectable: false, evented: false, isPaper: true, excludeFromExport: true }));
                     
+                    // BASELINE GRID
+                    if (showBaselineGrid && !isPreviewMode) {
+                        for(let lineY = pos.y + conf.marginsPx.t; lineY < pos.y + conf.heightPx - conf.marginsPx.b; lineY += baselineGridHeight) {
+                            canvas.add(new fabric.Line([pos.x + conf.marginsPx.l, lineY, pos.x + conf.widthPx - conf.marginsPx.r, lineY], { stroke: '#93c5fd', strokeWidth: 1/initZoom, selectable: false, evented: false, isGrid: true, opacity: 0.5, excludeFromExport: true }));
+                        }
+                    }
+
                     if (showBleed && conf.bleedPx > 0 && !isPreviewMode) canvas.add(new fabric.Rect({ left: bx, top: by, width: bw, height: bh, fill: 'transparent', stroke: '#ff0000', strokeWidth: 1/initZoom, selectable: false, evented: false, isBleed: true, opacity: 0.8, excludeFromExport: true }));
                     if (showMargins && !isPreviewMode) {
                         const m = conf.marginsPx; let isLeftPage = p.isMasterMode ? (isMasterSpread && i === 0) : (conf.facingPages && i > 0 && (i - 1) % 2 === 0);
@@ -812,13 +911,14 @@
             function updateVisibilityToggles() {
                 if (isPreviewMode) {
                     $('#ruler-h, #ruler-v').hide();
-                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed || o.isGrid) o.set('opacity', 0); });
                 } else {
                     if(showRulers) $('#ruler-h, #ruler-v').show();
                     canvas.getObjects().forEach(o => {
                        if(o.isGuide && showGuides) o.set('opacity', 1);
                        if(o.isMargin && showMargins) o.set('opacity', 0.8);
                        if(o.isBleed && showBleed) o.set('opacity', 0.8);
+                       if(o.isGrid && showBaselineGrid) o.set('opacity', 0.5);
                     });
                 }
                 canvas.requestRenderAll();
@@ -829,11 +929,7 @@
             $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-guides').click(() => { showGuides = !showGuides; updateVisibilityToggles(); });
-
-            // Snap settings from checkboxes
-            $('#snap-page-center').change(function() { snapSettings.toPageCenter = this.checked; });
-            $('#snap-margins').change(function() { snapSettings.toMargins = this.checked; });
-            $('#snap-objects').change(function() { snapSettings.toObjects = this.checked; });
+            $('#menu-toggle-baseline').click(() => { showBaselineGrid = !showBaselineGrid; drawDocumentEnvironment(); updateVisibilityToggles(); });
 
             // --- DRAGGABLE RULERS ---
             function drawRulers() {
@@ -854,6 +950,8 @@
 
             let draggingGuideType = null;
             $('#ruler-h').mousedown(() => { draggingGuideType = 'h'; }); $('#ruler-v').mousedown(() => { draggingGuideType = 'v'; });
+            
+            // --- EXACT STABLE v1.9 MOUSE LOGIC TO FIX STICKY DRAG ---
             $(window).mouseup((e) => {
                 if (draggingGuideType && activeId && !isPreviewMode) {
                     const rect = wrapper[0].getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
@@ -866,101 +964,119 @@
                 draggingGuideType = null;
             });
 
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
+                    isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; 
+                    lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; 
+                }
+            });
+            canvas.on('mouse:move', function(opt) { if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } });
+            canvas.on('mouse:up', function(opt) { 
+                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
+                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } 
+                else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
+            });
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+
             // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
-                if (!activeId || !showGuides || isPreviewMode) return;
+                if (!activeId || isPreviewMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
                 
-                // Snap to guides
-                const guides = canvas.getObjects().filter(o => o.isGuide);
-                guides.forEach(guide => {
-                    if (guide.lockMovementX) { 
-                        if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
-                        if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
-                    }
-                    if (guide.lockMovementY) {
-                        if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
-                        if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
-                    }
-                });
-
-                // Snap to page bounds
-                const p = projects[activeId];
-                const conf = p.config;
-                const pageIndex = getPageIndexForObject(obj);
-                if (pageIndex === null) return;
-                const pos = p.isMasterMode ? getMasterPos(obj.left < MARGIN_LEFT + conf.widthPx ? 'left' : 'right', conf) : getPagePosition(pageIndex, conf);
-                
-                if (snapSettings.toPageCenter) {
-                    const pageCenterX = pos.x + conf.widthPx/2;
-                    const pageCenterY = pos.y + conf.heightPx/2;
-                    if (Math.abs(obj.left + obj.getScaledWidth()/2 - pageCenterX) < SNAP_THRESHOLD / zoom) {
-                        obj.set('left', pageCenterX - obj.getScaledWidth()/2).setCoords();
-                    }
-                    if (Math.abs(obj.top + obj.getScaledHeight()/2 - pageCenterY) < SNAP_THRESHOLD / zoom) {
-                        obj.set('top', pageCenterY - obj.getScaledHeight()/2).setCoords();
-                    }
+                // Baseline grid snapping 
+                if (showBaselineGrid && obj.type === 'textbox') {
+                    let relativeTop = obj.top - MARGIN_TOP;
+                    let remainder = relativeTop % baselineGridHeight;
+                    if (remainder < 0) remainder += baselineGridHeight;
+                    if (remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top - remainder).setCoords(); }
+                    else if (baselineGridHeight - remainder < SNAP_THRESHOLD / zoom) { obj.set('top', obj.top + (baselineGridHeight - remainder)).setCoords(); }
                 }
 
-                if (snapSettings.toMargins) {
-                    const m = conf.marginsPx;
-                    const leftMargin = pos.x + (conf.facingPages && pageIndex > 0 && (pageIndex-1)%2===0 ? m.r : m.l);
-                    const rightMargin = pos.x + conf.widthPx - (conf.facingPages && pageIndex>0 && (pageIndex-1)%2===0 ? m.l : m.r);
-                    const topMargin = pos.y + m.t;
-                    const bottomMargin = pos.y + conf.heightPx - m.b;
-                    if (Math.abs(obj.left - leftMargin) < SNAP_THRESHOLD / zoom) obj.set('left', leftMargin);
-                    if (Math.abs(obj.left + obj.getScaledWidth() - rightMargin) < SNAP_THRESHOLD / zoom) obj.set('left', rightMargin - obj.getScaledWidth());
-                    if (Math.abs(obj.top - topMargin) < SNAP_THRESHOLD / zoom) obj.set('top', topMargin);
-                    if (Math.abs(obj.top + obj.getScaledHeight() - bottomMargin) < SNAP_THRESHOLD / zoom) obj.set('top', bottomMargin - obj.getScaledHeight());
-                }
-
-                if (snapSettings.toObjects) {
-                    const others = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide && o !== obj);
-                    others.forEach(other => {
-                        if (Math.abs(obj.left - other.left) < SNAP_THRESHOLD / zoom) obj.set('left', other.left);
-                        if (Math.abs(obj.left - (other.left + other.getScaledWidth())) < SNAP_THRESHOLD / zoom) obj.set('left', other.left + other.getScaledWidth());
-                        if (Math.abs(obj.left + obj.getScaledWidth() - other.left) < SNAP_THRESHOLD / zoom) obj.set('left', other.left - obj.getScaledWidth());
-                        if (Math.abs(obj.left + obj.getScaledWidth() - (other.left + other.getScaledWidth())) < SNAP_THRESHOLD / zoom) obj.set('left', other.left + other.getScaledWidth() - obj.getScaledWidth());
-                        
-                        if (Math.abs(obj.top - other.top) < SNAP_THRESHOLD / zoom) obj.set('top', other.top);
-                        if (Math.abs(obj.top - (other.top + other.getScaledHeight())) < SNAP_THRESHOLD / zoom) obj.set('top', other.top + other.getScaledHeight());
-                        if (Math.abs(obj.top + obj.getScaledHeight() - other.top) < SNAP_THRESHOLD / zoom) obj.set('top', other.top - obj.getScaledHeight());
-                        if (Math.abs(obj.top + obj.getScaledHeight() - (other.top + other.getScaledHeight())) < SNAP_THRESHOLD / zoom) obj.set('top', other.top + other.getScaledHeight() - obj.getScaledHeight());
+                // Guides snapping
+                if (showGuides) {
+                    const guides = canvas.getObjects().filter(o => o.isGuide);
+                    guides.forEach(guide => {
+                        if (guide.lockMovementX) { 
+                            if (Math.abs(obj.top - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top).setCoords();
+                            if (Math.abs((obj.top + obj.getScaledHeight()) - guide.top) < SNAP_THRESHOLD / zoom) obj.set('top', guide.top - obj.getScaledHeight()).setCoords();
+                        }
+                        if (guide.lockMovementY) {
+                            if (Math.abs(obj.left - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left).setCoords();
+                            if (Math.abs((obj.left + obj.getScaledWidth()) - guide.left) < SNAP_THRESHOLD / zoom) obj.set('left', guide.left - obj.getScaledWidth()).setCoords();
+                        }
                     });
                 }
             });
 
-            function getPageIndexForObject(obj) {
-                if (!activeId) return null;
-                const p = projects[activeId];
-                const conf = p.config;
-                for (let i = 0; i < p.totalPages; i++) {
-                    const pos = getPagePosition(i, conf);
-                    if (obj.left >= pos.x - 10 && obj.left <= pos.x + conf.widthPx + 10 && obj.top >= pos.y - 10 && obj.top <= pos.y + conf.heightPx + 10) {
-                        return i;
-                    }
-                }
-                return null;
-            }
-
-            // --- TEXT SCALING FIX & SPLITTER ---
+            // --- TEXT SCALING FIX (TEXT AREA BEHAVIOR) ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
                 if (obj.type === 'textbox') {
                     var w = obj.width * obj.scaleX;
                     var h = obj.height * obj.scaleY;
                     obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
+                    checkTextOverflow(obj);
                 }
+            });
+            canvas.on('text:changed', e => checkTextOverflow(e.target));
+
+            // --- TEXT OVERFLOW SPLITTER ---
+            function checkTextOverflow(obj) {
+                if (obj && obj.type === 'textbox') {
+                    const totalHeight = obj.lineHeight * obj.fontSize * (obj._textLines ? obj._textLines.length : 1);
+                    if (totalHeight > obj.getScaledHeight()) {
+                        $('#text-overflow-warning').show();
+                    } else {
+                        $('#text-overflow-warning').hide();
+                    }
+                }
+            }
+
+            $('#btn-split-overflow').click(function() {
+                const obj = canvas.getActiveObject();
+                if (!obj || obj.type !== 'textbox' || !obj._textLines) return;
+                
+                const linesThatFit = Math.floor(obj.getScaledHeight() / (obj.lineHeight * obj.fontSize));
+                if (linesThatFit >= obj._textLines.length || linesThatFit <= 0) return;
+
+                const keptText = obj._textLines.slice(0, linesThatFit).join('\n');
+                const overflowText = obj._textLines.slice(linesThatFit).join('\n');
+
+                obj.set('text', keptText);
+                checkTextOverflow(obj);
+
+                const p = projects[activeId];
+                let currentPage = Math.max(0, Math.floor((obj.top - MARGIN_TOP) / (p.config.heightPx + PAGE_GAP)));
+                
+                if (currentPage + 1 >= p.totalPages) {
+                    p.totalPages++;
+                    $('#page-count-display').text(p.totalPages);
+                    drawDocumentEnvironment();
+                }
+                
+                const nextPos = getPagePosition(currentPage + 1, p.config);
+                const margins = p.config.marginsPx;
+                let isLeftPage = p.config.facingPages && (currentPage + 1) > 0 && ((currentPage + 1) - 1) % 2 === 0;
+                let aL = isLeftPage ? margins.r : margins.l;
+
+                const newTextBox = new fabric.Textbox(overflowText, {
+                    left: nextPos.x + aL,
+                    top: nextPos.y + margins.t,
+                    width: obj.width,
+                    fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing, textAlign: obj.textAlign, fill: obj.fill,
+                    splitByGrapheme: true, isRegular: true, id: generateId()
+                });
+                
+                canvas.add(newTextBox);
+                sortLayers(); canvas.requestRenderAll(); markDirty(); saveHistory();
+                if($('#tab-layers').hasClass('active')) refreshLayerPanel();
             });
 
             // --- COPY / PASTE / CUT LOGIC ---
-            function copy() {
-                const activeObject = canvas.getActiveObject();
-                if (activeObject) { activeObject.clone(function(cloned) { _clipboard = cloned; }, CUSTOM_PROPS); }
-            }
-            function cut() {
-                copy(); deleteActive();
-            }
+            function copy() { const activeObject = canvas.getActiveObject(); if (activeObject) { activeObject.clone(function(cloned) { _clipboard = cloned; }, CUSTOM_PROPS); } }
+            function cut() { copy(); deleteActive(); }
             function paste() {
                 if (!_clipboard) return;
                 _clipboard.clone(function(clonedObj) {
@@ -977,6 +1093,65 @@
                     if($('#tab-layers').hasClass('active')) refreshLayerPanel();
                 }, CUSTOM_PROPS);
             }
+
+            // --- GROUP / UNGROUP LOGIC ---
+            function groupObjects() {
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'activeSelection') return;
+                activeObj.toGroup(); canvas.requestRenderAll(); markDirty(); saveHistory();
+                if($('#tab-layers').hasClass('active')) refreshLayerPanel();
+            }
+            function ungroupObjects() {
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'group') return;
+                activeObj.toActiveSelection(); canvas.requestRenderAll(); markDirty(); saveHistory();
+                if($('#tab-layers').hasClass('active')) refreshLayerPanel();
+            }
+
+            // --- MENU CLICKS BINDING ---
+            $('#menu-undo').click(performUndo);
+            $('#menu-redo').click(performRedo);
+            $('#menu-cut').click(cut);
+            $('#menu-copy').click(copy);
+            $('#menu-paste').click(paste);
+            $('#menu-group').click(groupObjects);
+            $('#menu-ungroup').click(ungroupObjects);
+
+            // KEYBOARD SHORTCUTS
+            $(window).keydown(function(e) { 
+                if(!activeId || $('.modal-overlay').is(':visible')) return;
+                
+                if(e.code === 'Space') {
+                    isSpaceDown = true;
+                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') {
+                        canvas.defaultCursor = 'grab'; e.preventDefault();
+                    }
+                }
+
+                if (canvas.getActiveObject()?.isEditing) return; 
+                
+                if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copy(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'x') { e.preventDefault(); cut(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'v') { e.preventDefault(); paste(); return; }
+
+                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { ungroupObjects(); } else { groupObjects(); } }
+                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'f') { $('#menu-find-replace').click(); e.preventDefault(); }
+
+                if (e.key.toLowerCase() === 'v') setTool('select'); 
+                if (e.key.toLowerCase() === 'h') setTool('pan'); 
+                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            });
 
             // --- FIND & REPLACE LOGIC ---
             let foundObjects = []; let findIndex = -1;
@@ -1011,71 +1186,8 @@
                 objects.forEach(obj => {
                     if (regex.test(obj.text)) { obj.set('text', obj.text.replace(regex, replace)); modified = true; }
                 });
-                if (modified) { canvas.renderAll(); markDirty(); saveHistory(); refreshLayerPanel(); }
+                if (modified) { canvas.renderAll(); markDirty(); saveHistory(); }
                 $('#find-replace-modal').hide();
-            });
-
-            // --- NATIVE ZOOM LOGIC ONLY ---
-            function setTool(tool) {
-                activeTool = tool; $('.tool-btn').removeClass('active-state');
-                $('#tool-' + tool).addClass('active-state');
-                
-                if (tool === 'select') { 
-                    canvas.defaultCursor = 'default'; 
-                    canvas.getObjects().forEach(o => { if(!o.excludeFromExport && !o.isMasterClone) o.set('selectable', true); });
-                } else {
-                    canvas.defaultCursor = 'zoom-in'; 
-                    canvas.getObjects().forEach(o => o.set('selectable', false));
-                    canvas.discardActiveObject(); 
-                }
-                canvas.requestRenderAll();
-            }
-            $('#tool-select').click(() => setTool('select')); $('#tool-zoom').click(() => setTool('zoom'));
-
-            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
-            function fitWholePage() {
-                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
-                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
-                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
-            }
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { e.preventDefault(); });
-
-            canvas.on('mouse:down', function(opt) {
-                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); }
-            });
-
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible') || canvas.getActiveObject()?.isEditing) return;
-                
-                if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copy(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'x') { e.preventDefault(); cut(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'v') { e.preventDefault(); paste(); return; }
-                
-                if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); performUndo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); performRedo(); return; }
-                if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } }
-                if (e.ctrlKey && e.key.toLowerCase() === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
-                if (e.ctrlKey && e.key.toLowerCase() === 'f') { $('#menu-find-replace').click(); e.preventDefault(); }
-
-                if (e.key.toLowerCase() === 'v') setTool('select'); 
-                if (e.key.toLowerCase() === 'z') setTool('zoom');
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
-            });
-
-            // Native mouse wheel override ONLY for Zoom & Pan - does not break object logic
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey || opt.e.altKey || opt.e.metaKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } 
-                else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } 
-                opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); 
             });
 
             // --- PAGES MANAGER ---
@@ -1094,9 +1206,9 @@
                         const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
                         sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
                     }
-                    drawDocumentEnvironment(); markDirty(); saveHistory();
+                    drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText();
                 } 
-                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); saveHistory(); }
+                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText(); }
                 else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
                 $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
             });
@@ -1125,31 +1237,34 @@
                     sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
                 }
                 
-                drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory();
+                drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- TEXT BOX & OBJECT CREATION ---
+            // --- OBJECT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             function processNewObject(obj) { 
                 if(!activeId) return; 
-                obj.id = generateId(); // Ensure unique ID for layers
+                if(activeTool !== 'select') setTool('select'); 
                 if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
-                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel();
+                
+                obj.id = generateId(); // Unique ID for layers
+                if (obj.type !== 'image') {
+                    obj.set('fill', globalFill);
+                    if (globalStroke !== 'transparent' && globalStrokeWeight > 0) { obj.set('stroke', globalStroke); obj.set('strokeWidth', globalStrokeWeight); }
+                }
+                
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
             }
 
-            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#3f3f46', width: 100, height: 100 })));
-            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, fill: '#cbfb45', radius: 50 })));
-            
-            $('#add-text').click(() => {
-                const text = new fabric.Textbox('Double-click to edit.\nWraps text perfectly.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fill: '#18181b', fontSize: 24, lineHeight: 1.16, splitByGrapheme: true }); 
-                processNewObject(text);
-            });
+            $('#add-rect').click(() => processNewObject(new fabric.Rect({ left: getScreenCenter().x, top: getScreenCenter().y, width: 100, height: 100 })));
+            $('#add-circle').click(() => processNewObject(new fabric.Circle({ left: getScreenCenter().x, top: getScreenCenter().y, radius: 50 })));
+            $('#add-text').click(() => processNewObject(new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true })));
             
             function handleImageInsert(file) {
                 if (!file || !activeId) return; const reader = new FileReader();
                 reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
             }
-            $('#image-upload, #place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+            $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
 
             // --- ADVANCED IMAGE MASKING ---
             $('#tool-mask-image').click(function() {
@@ -1167,15 +1282,11 @@
                 activeSelection.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
                 
                 const cloneShape = fabric.util.object.clone(shape);
-                cloneShape.set({
-                    originX: 'center', originY: 'center',
-                    left: shape.left - img.left,
-                    top: shape.top - img.top
-                });
+                cloneShape.set({ originX: 'center', originY: 'center', left: shape.left - img.left, top: shape.top - img.top });
                 
                 img.set('clipPath', cloneShape);
                 canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img);
-                canvas.requestRenderAll(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel();
+                canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
             $('#btn-unmask').click(function() {
@@ -1183,42 +1294,37 @@
                 if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
             });
 
-            // --- EXPORT & SAVE ---
-            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
-            
-            $('#confirm-export-btn').click(async function() {
-                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
-                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
-                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
-                
-                const oldGuides = showGuides; const oldBleed = showBleed; 
-                showGuides = false; showBleed = false; updateVisibilityToggles();
-                
-                let pagesToExport = [];
-                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
+            // --- TOOLS, PAN & ZOOM ---
+            function setTool(tool) {
+                activeTool = tool; $('.tool-btn').removeClass('active-state');
+                if(tool==='select') $('#tool-select').addClass('active-state'); if(tool==='pan') $('#tool-pan').addClass('active-state'); if(tool==='zoom') $('#tool-zoom').addClass('active-state');
+                if (tool !== 'select') { canvas.selection = false; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', false); }); canvas.defaultCursor = tool === 'pan' ? 'grab' : 'zoom-in'; } 
+                else { canvas.selection = true; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set('selectable', true); }); canvas.defaultCursor = 'default'; }
+                canvas.discardActiveObject(); canvas.requestRenderAll();
+            }
+            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
 
-                if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
-                    pdf.save(`${p.name}_Export.pdf`);
-                } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
-                }
-                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
-            });
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
+            function fitWholePage() {
+                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
+                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
+                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
+                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+            }
+            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
+            $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
 
             // --- UI PROPERTIES PANEL ---
             let focusedColorType = 'fill'; 
 
-            canvas.on('selection:created', updateUI); 
-            canvas.on('selection:updated', updateUI); 
-            canvas.on('object:moving', updateTransformUI); 
+            canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('selection:cleared', function() { $('#no-selection').show(); $('#properties-form').hide(); });
 
             function updateUI(event) {
                 const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
                 $('#no-selection').hide(); $('#properties-form').show();
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
+                checkTextOverflow(obj);
 
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
@@ -1228,18 +1334,17 @@
                     $('.p-align').removeClass('active');
                     if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
                     
-                    // Populate stored simulated states
-                    $('#obj-indent-left').val(obj.indentLeft || 0); $('#obj-indent-right').val(obj.indentRight || 0);
-                    $('#obj-indent-first').val(obj.textIndent || 0); $('#obj-indent-last').val(obj.indentLast || 0);
-                    $('#obj-space-before').val(obj.spaceBefore || 0); $('#obj-space-after').val(obj.spaceAfter || 0);
-                    $('#obj-hyphenate').prop('checked', obj.isHyphenated || false);
-                    $('#obj-drop-cap-lines').val(obj.dropCapLines || 0); $('#obj-drop-cap-chars').val(obj.dropCapChars || 0);
+                    // Populate saved styles state
+                    if (obj.styleId) {
+                        $(`#style-list .style-item[data-id="${obj.styleId}"]`).addClass('active').siblings().removeClass('active');
+                    } else {
+                        $('#style-list .style-item').removeClass('active');
+                    }
                 } else { $('#text-properties').hide(); }
             }
 
             function updateTransformUI(e) {
-                const obj = e.target;
-                if(!obj) return;
+                const obj = e.target; if(!obj) return;
                 $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top));
                 $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight()));
                 $('#obj-rotation').val(Math.round(obj.angle % 360));
@@ -1247,67 +1352,77 @@
 
             function updateColorsUI(obj) {
                 const fillVal = obj.fill || 'transparent'; const strokeVal = obj.stroke || 'transparent';
+                
+                globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
+
                 $('#fill-focus').css('background', fillVal).removeClass('none'); $('#stroke-focus').css('background', strokeVal).css('border-color', strokeVal).removeClass('none');
                 if (fillVal === 'transparent') $('#fill-focus').addClass('none');
                 if (strokeVal === 'transparent' || !obj.strokeWidth) $('#stroke-focus').addClass('none').css('border-color', 'transparent');
                 
                 const focusCol = focusedColorType === 'fill' ? fillVal : strokeVal;
                 if(focusCol !== 'transparent') $('#unified-color-picker').val(focusCol);
+                $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
-            function updateObj(prop, val) { const obj = canvas.getActiveObject(); if (obj) { obj.set(prop, val); canvas.renderAll(); markDirty(); saveHistory(); } }
+            function updateObj(prop, val) { 
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') { sel.forEachObject(o => { o.set(prop, val); }); } else { sel.set(prop, val); }
+                    canvas.renderAll(); markDirty(); saveHistory(); 
+                } 
+            }
             
             $('#fill-focus, #stroke-focus').click(function() {
                 focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
                 $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
-                updateColorsUI(canvas.getActiveObject()); 
+                const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); 
             });
 
             $('#unified-color-picker').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const col = $(this).val();
-                if(focusedColorType === 'fill') { updateObj('fill', col); } else { updateObj('stroke', col); if(!obj.strokeWidth) obj.set('strokeWidth', 2); }
-                updateColorsUI(obj);
+                const obj = canvas.getActiveObject(); const col = $(this).val();
+                if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
+                else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
+            });
+            
+            $('#global-stroke-weight').on('input', function() {
+                globalStrokeWeight = parseFloat($(this).val()) || 0;
+                const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight);
             });
 
-            $('#swap-fill-stroke').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                const oldFill = obj.fill; const oldStroke = obj.stroke;
-                obj.set('fill', oldStroke); obj.set('stroke', oldFill);
-                if(!obj.strokeWidth && oldFill !== 'transparent') obj.set('strokeWidth', 2);
-                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+            $('.swap-fill-stroke').click(() => {
+                let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
+                $('#fill-focus').css('background', globalFill).removeClass('none'); $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
+                const sel = canvas.getActiveObject(); 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') { sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); }); } 
+                    else { const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } }
+                    canvas.renderAll(); updateColorsUI(sel); markDirty(); saveHistory(); 
+                }
             });
 
-            $('#apply-none').click(() => {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                if(focusedColorType === 'fill') obj.set('fill', 'transparent'); else { obj.set('stroke', 'transparent'); obj.set('strokeWidth', 0); }
-                canvas.renderAll(); updateColorsUI(obj); markDirty(); saveHistory();
+            $('.apply-none').click(() => {
+                const obj = canvas.getActiveObject();
+                if(focusedColorType === 'fill') { globalFill = 'transparent'; if(obj) updateObj('fill', 'transparent'); $('#fill-focus').addClass('none'); } 
+                else { globalStroke = 'transparent'; globalStrokeWeight = 0; if(obj) { updateObj('stroke', 'transparent'); updateObj('strokeWidth', 0); } $('#stroke-focus').addClass('none').css('border-color', 'transparent'); $('#global-stroke-weight').val(0); }
+                if(obj) { canvas.renderAll(); markDirty(); saveHistory(); }
             });
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
             $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
             $('#obj-w, #obj-h').on('input', function() {
-                const obj = canvas.getActiveObject(); if(!obj) return; const newDim = parseFloat($(this).val()) || 1;
+                const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; 
+                const newDim = parseFloat($(this).val()) || 1;
                 if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
                 canvas.renderAll(); markDirty(); saveHistory();
             });
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
+            $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
             $('#obj-line-height').on('input', function() { updateObj('lineHeight', parseFloat($(this).val())); });
             $('#obj-font-family').on('change', function() { updateObj('fontFamily', $(this).val()); });
             $('.p-align').click(function() { const align = $(this).data('palign'); updateObj('textAlign', align); $('.p-align').removeClass('active'); $(this).addClass('active'); });
             
-            $('#obj-space-before').on('input', function() { updateObj('spaceBefore', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-right').on('input', function() { updateObj('indentRight', parseFloat($(this).val()) || 0); });
-            $('#obj-space-after').on('input', function() { updateObj('spaceAfter', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-left').on('input', function() { updateObj('indentLeft', parseFloat($(this).val()) || 0); });
-            $('#obj-indent-first').on('input', function() { updateObj('textIndent', parseFloat($(this).val()) || 0); });
-            $('#obj-hyphenate').on('change', function() { updateObj('isHyphenated', $(this).is(':checked')); });
-            $('#obj-drop-cap-lines').on('input', function() { updateObj('dropCapLines', parseInt($(this).val()) || 0); });
-            $('#obj-drop-cap-chars').on('input', function() { updateObj('dropCapChars', parseInt($(this).val()) || 0); });
-
-            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } }); 
-            $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } });
-            
+            $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); } }); $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); } });
             $('#delete-obj').click(deleteActive); $('html').keyup(function(e) { if((e.keyCode === 46 || e.keyCode === 8) && !canvas.getActiveObject()?.isEditing) deleteActive(); });
             function deleteActive() { const obj = canvas.getActiveObject(); if (obj && !obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) { canvas.remove(obj); canvas.discardActiveObject(); markDirty(); saveHistory(); if($('#tab-layers').hasClass('active')) refreshLayerPanel(); } }
 
@@ -1315,18 +1430,18 @@
             function refreshLayerPanel() {
                 if (!activeId || !$('#tab-layers').hasClass('active')) return;
                 $('#layer-list').empty();
-                const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                [...objs].reverse().forEach((obj, index) => {
-                    let name = obj.type; if (obj.type==='textbox') name = obj.text.substring(0,10)+'...';
-                    $('#layer-list').append(`
-                        <div class="layer-item" data-index="${objs.length - 1 - index}">
-                            <i class="fa-solid ${obj.visible === false ? 'fa-eye-slash' : 'fa-eye'} btn-vis"></i>
-                            <i class="fa-solid ${obj.selectable === false ? 'fa-lock' : 'fa-unlock'} btn-lock"></i>
-                            <span class="layer-name" title="${name}">${name}</span>
-                            <span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span>
-                        </div>
-                    `);
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                let html = '';
+                objects.forEach((obj, index) => {
+                    const type = obj.type === 'textbox' ? 'Text' : obj.type === 'image' ? 'Image' : obj.type === 'rect' ? 'Rectangle' : obj.type === 'circle' ? 'Ellipse' : obj.type;
+                    html += `<div class="layer-item" data-index="${index}">
+                        <i class="fa-regular ${obj.visible === false ? 'fa-eye-slash' : 'fa-eye'} toggle-visibility" data-index="${index}"></i>
+                        <i class="fa-solid ${obj.selectable === false ? 'fa-lock' : 'fa-lock-open'} toggle-lock" data-index="${index}"></i>
+                        <span class="layer-name" title="${type}">${type}</span>
+                        <span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span>
+                    </div>`;
                 });
+                $('#layer-list').html(html);
                 
                 $('#layer-list').sortable({
                     handle: '.drag-handle',
@@ -1334,7 +1449,7 @@
                         const newOrder = [];
                         $('#layer-list .layer-item').each(function() {
                             const idx = $(this).data('index');
-                            newOrder.push(objs[idx]);
+                            newOrder.push(objects[idx]);
                         });
                         newOrder.reverse().forEach((obj, i) => obj.moveTo(i));
                         canvas.renderAll(); refreshLayerPanel(); markDirty(); saveHistory();
@@ -1344,17 +1459,17 @@
             $('#refresh-layers').click(refreshLayerPanel);
 
             $(document).on('click', '.layer-item', function(e) {
-                if($(e.target).closest('.btn-lock, .btn-vis').length) return;
-                const idx = $(this).data('index'); const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                const obj = objs[idx]; if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); }
+                if($(e.target).hasClass('toggle-visibility') || $(e.target).hasClass('toggle-lock')) return;
+                const idx = $(this).data('index'); const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                const obj = objects[idx]; if(obj && obj.selectable) { canvas.setActiveObject(obj); canvas.requestRenderAll(); }
             });
-            $(document).on('click', '.btn-lock', function(e) {
-                e.stopPropagation(); const idx = $(this).closest('.layer-item').data('index'); const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                const obj = objs[idx]; if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
+            $(document).on('click', '.toggle-lock', function(e) {
+                e.stopPropagation(); const idx = $(this).data('index'); const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                const obj = objects[idx]; if(obj) { obj.set('selectable', !obj.selectable); obj.set('evented', obj.selectable); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
             });
-            $(document).on('click', '.btn-vis', function(e) {
-                e.stopPropagation(); const idx = $(this).closest('.layer-item').data('index'); const objs = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
-                const obj = objs[idx]; if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
+            $(document).on('click', '.toggle-visibility', function(e) {
+                e.stopPropagation(); const idx = $(this).data('index'); const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGrid && !o.isGuide && !o.isMasterClone);
+                const obj = objects[idx]; if(obj) { obj.set('visible', obj.visible === false ? true : false); canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayerPanel(); }
             });
 
             // --- STYLES SYSTEM ---
@@ -1362,18 +1477,56 @@
                 if(!activeId) return;
                 const p = projects[activeId];
                 $('#global-style-select').empty().append('<option value="">-- Choose Style --</option>');
-                for(let styleName in p.styles) { $('#global-style-select').append(`<option value="${styleName}">${styleName}</option>`); }
+                let html = '';
+                p.styles.forEach(style => {
+                    $('#global-style-select').append(`<option value="${style.id}">${style.name}</option>`);
+                    html += `<div class="style-item" data-id="${style.id}"><span>${style.name}</span></div>`;
+                });
+                $('#style-list').html(html);
+                
+                $('.style-item').click(function() {
+                    const styleId = $(this).data('id');
+                    applyStyle(styleId);
+                });
             }
+
             $('#btn-save-style').click(() => {
-                let name = $('#new-style-name').val(); let obj = canvas.getActiveObject();
-                if (name && obj && obj.type === 'textbox') {
-                    projects[activeId].styles[name] = { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing || 0, textAlign: obj.textAlign, fill: obj.fill };
-                    refreshStyleList(); $('#new-style-name').val(''); alert('Style Saved!'); markDirty(); saveHistory();
-                } else { alert("Select a text box and enter a name."); }
+                const obj = canvas.getActiveObject();
+                if (!obj || obj.type !== 'textbox') { alert('Select a text box first.'); return; }
+                $('#style-modal-title').text('New Style');
+                $('#style-modal-name').val('');
+                $('#style-name-modal').css('display', 'flex');
+                
+                $('#style-modal-save').off('click').on('click', function() {
+                    const name = $('#style-modal-name').val().trim();
+                    if (!name) return;
+                    const p = projects[activeId];
+                    const newStyle = {
+                        id: generateId(), name: name,
+                        props: { fontFamily: obj.fontFamily, fontSize: obj.fontSize, lineHeight: obj.lineHeight, charSpacing: obj.charSpacing, fill: obj.fill, textAlign: obj.textAlign }
+                    };
+                    p.styles.push(newStyle);
+                    obj.styleId = newStyle.id;
+                    refreshStyleList();
+                    $('#style-name-modal').hide();
+                    markDirty(); saveHistory();
+                });
             });
+
+            function applyStyle(styleId) {
+                const obj = canvas.getActiveObject();
+                if (!obj || obj.type !== 'textbox') return;
+                const p = projects[activeId];
+                const style = p.styles.find(s => s.id === styleId);
+                if (style) {
+                    obj.set(style.props);
+                    obj.styleId = styleId;
+                    canvas.renderAll(); markDirty(); saveHistory(); updateUI({selected: [obj]});
+                }
+            }
             $('#btn-apply-style').click(() => {
-                let name = $('#global-style-select').val(); let obj = canvas.getActiveObject();
-                if (name && obj && obj.type === 'textbox') { obj.set(projects[activeId].styles[name]); canvas.requestRenderAll(); markDirty(); saveHistory(); }
+                const styleId = $('#global-style-select').val();
+                applyStyle(styleId);
             });
 
             // --- TYPOGRAPHY CONVERTER UI ---
