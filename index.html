@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.19</title>
+    <title>Thooval Workspace v6.20</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -627,6 +627,14 @@
 
         $(document).ready(function() {
             
+            // Fallback if swatches.js is missing
+            if (typeof ThoovalPalettes === 'undefined') {
+                window.ThoovalPalettes = {
+                    'Basic RGB': ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff', '#000000', '#888888', '#cccccc'],
+                    'Gradients': [ { c1: '#ff9a9e', c2: '#fecfef', type: 'linear' }, { c1: '#a18cd1', c2: '#fbc2eb', type: 'linear' } ]
+                };
+            }
+
             // --- SWATCHES INITIALIZATION (EXTERNAL FILE LINK) ---
             function loadSwatchCategory(category) {
                 const grid = $('#swatch-grid-container');
@@ -1595,6 +1603,31 @@
                 if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
                 if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
+
+            // Make fitWholePage totally bulletproof against 0 dimensions
+            function fitWholePage() {
+                if(!activeId) return; 
+                const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
+                
+                // Force read widths, fallback to standard desktop resolution if hidden
+                const w = wrapper.width() || 1024;
+                const h = wrapper.height() || 768;
+                
+                // Ensure canvas knows its real size now
+                canvas.setWidth(w);
+                canvas.setHeight(h);
+                
+                let scale = Math.min((w-80)/cw, (h-80)/c.heightPx);
+                if (scale <= 0 || isNaN(scale)) scale = 0.5; // Protect from crashing zoom transform
+                
+                canvas.setZoom(scale); 
+                const pos = getPagePosition(0, c); 
+                canvas.viewportTransform[4] = (w/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; 
+                canvas.viewportTransform[5] = (h/2) - (pos.y + c.heightPx/2)*scale; 
+                
+                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+            }
+            $('#menu-fit-page').click(fitWholePage);
 
             // --- EXPORT FUNCTION WITH NATIVE VECTOR PDF EXPORT (svg2pdf) ---
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
