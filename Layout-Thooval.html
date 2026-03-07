@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v5</title>
+    <title>Thooval Workspace V5.1</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -45,7 +45,6 @@
         .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; }
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
         
-        /* MENU FIX: Invisible hover bridge to prevent disconnects */
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
         .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
@@ -125,6 +124,12 @@
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
+        
+        /* CROP MODE BANNER */
+        #crop-mode-banner { background: #3b82f6; display: none; }
+        #exit-crop-btn { background: #eff6ff; color: #1e3a8a; border: none; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
+        #exit-crop-btn:hover { background: #ffffff; }
+
         #exit-master-btn { background: #1a2005; color: var(--accent); border: 1px solid transparent; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
         #exit-master-btn:hover { background: #000; border-color: var(--accent); }
         
@@ -173,6 +178,10 @@
                     <ul class="dropdown">
                         <li id="menu-undo"><span>Undo</span> <span class="shortcut">Ctrl+Z</span></li>
                         <li id="menu-redo"><span>Redo</span> <span class="shortcut">Ctrl+Y</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-copy"><span>Copy</span> <span class="shortcut">Ctrl+C</span></li>
+                        <li id="menu-paste"><span>Paste</span> <span class="shortcut">Ctrl+V</span></li>
+                        <li id="menu-paste-into"><span>Paste Into Shape</span> <span class="shortcut">Ctrl+Alt+V</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
                         <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
@@ -226,7 +235,7 @@
                 <button class="tool-btn" id="add-rect" title="Rectangle Tool (R)"><i class="fa-regular fa-square"></i></button>
                 <button class="tool-btn" id="add-circle" title="Ellipse Tool (O)"><i class="fa-regular fa-circle"></i></button>
                 <button class="tool-btn" id="add-polygon" title="Polygon Tool (P)"><i class="fa-solid fa-draw-polygon"></i></button>
-                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Shape"><i class="fa-solid fa-object-intersect"></i></button>
+                <button class="tool-btn" id="tool-mask-image" title="Mask Image with Selected Shape"><i class="fa-solid fa-object-intersect"></i></button>
             </div>
             
             <div class="tool-divider" style="flex: 1;"></div>
@@ -255,6 +264,11 @@
             <div class="master-banner" id="master-banner">
                 <span><i class="fa-solid fa-crown"></i> Editing Master Template</span>
                 <button id="exit-master-btn">Done</button>
+            </div>
+            
+            <div class="master-banner" id="crop-mode-banner">
+                <span><i class="fa-solid fa-crop"></i> Image Crop Mode</span>
+                <button id="exit-crop-btn">Apply Crop</button>
             </div>
             
             <canvas class="ruler-h" id="ruler-h"></canvas>
@@ -293,9 +307,12 @@
             
             <div id="properties-form" style="display: none;">
                 
-                <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
+                <div class="panel-section" id="image-mask-tools" style="display: none; background: rgba(59, 130, 246, 0.1);">
                     <h3>Image Mask Options</h3>
-                    <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Remove Mask</button>
+                    <div class="prop-row" style="margin-bottom: 0;">
+                        <button class="doc-btn" id="btn-edit-mask" style="color: #60a5fa; border-color: #3b82f6;"><i class="fa-solid fa-crop"></i> Adjust Crop</button>
+                        <button class="doc-btn" id="btn-unmask" style="color: var(--danger);"><i class="fa-solid fa-crop-simple"></i> Unmask</button>
+                    </div>
                 </div>
 
                 <div class="panel-section" id="geometry-properties">
@@ -463,11 +480,16 @@
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
             let pagesActionType = null; let isEditingDoc = false;
 
-            // Global State for Draw Tools
+            // Global State for Draw Tools & Cropping
             let isDrawingShape = false;
             let drawingObject = null;
             let origX = 0, origY = 0;
             let polygonSides = 5;
+            
+            let isCropMode = false;
+            let cropShape = null;
+            let cropImage = null;
+            let clipboard = null;
 
             // --- PALETTE STATE ---
             let globalFill = '#3f3f46';
@@ -750,7 +772,7 @@
 
             // --- SMART GUIDES SNAPPING ---
             canvas.on('object:moving', function(options) {
-                if (!activeId || !showGuides || isPreviewMode) return;
+                if (!activeId || !showGuides || isPreviewMode || isCropMode) return;
                 const obj = options.target; const zoom = canvas.getZoom();
                 const guides = canvas.getObjects().filter(o => o.isGuide);
                 
@@ -826,7 +848,182 @@
                 drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
             });
 
-            // --- SHAPE & TEXT GENERATION / DRAWING ---
+            // --- CLIPBOARD (Copy/Paste) ---
+            function copyObjects() {
+                if (!activeId) return;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject) {
+                    activeObject.clone(function(cloned) {
+                        clipboard = cloned;
+                    }, CUSTOM_PROPS);
+                }
+            }
+
+            function pasteObjects(inPlace = false) {
+                if (!activeId || !clipboard) return;
+                clipboard.clone(function(clonedObj) {
+                    canvas.discardActiveObject();
+                    const offset = inPlace ? 0 : 20;
+                    clonedObj.set({ left: clonedObj.left + offset, top: clonedObj.top + offset, evented: true });
+                    
+                    if (clonedObj.type === 'activeSelection') {
+                        clonedObj.canvas = canvas;
+                        clonedObj.forEachObject(function(obj) { canvas.add(obj); });
+                        clonedObj.setCoords();
+                    } else {
+                        canvas.add(clonedObj);
+                    }
+                    clipboard.top += offset; clipboard.left += offset;
+                    canvas.setActiveObject(clonedObj);
+                    sortLayers(); markDirty(); saveHistory();
+                }, CUSTOM_PROPS);
+            }
+            
+            $('#menu-copy').click(copyObjects);
+            $('#menu-paste').click(() => pasteObjects(false));
+
+            // --- ADVANCED IMAGE MASKING & CROPPING ---
+            
+            function applyMask(img, shape) {
+                const imgCenter = img.getCenterPoint();
+                const shapeCenter = shape.getCenterPoint();
+                
+                shape.clone(function(cloneShape) {
+                    cloneShape.set({
+                        originX: 'center',
+                        originY: 'center',
+                        left: shapeCenter.x - imgCenter.x,
+                        top: shapeCenter.y - imgCenter.y,
+                        scaleX: cloneShape.scaleX / img.scaleX,
+                        scaleY: cloneShape.scaleY / img.scaleY,
+                        angle: cloneShape.angle - img.angle
+                    });
+                    
+                    img.set('clipPath', cloneShape);
+                    canvas.remove(shape);
+                    canvas.setActiveObject(img);
+                    canvas.requestRenderAll();
+                    markDirty(); saveHistory();
+                });
+            }
+
+            // Mask Image with Shape Tool
+            $('#tool-mask-image').click(function() {
+                const activeSelection = canvas.getActiveObject();
+                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
+                    alert("Please select exactly ONE image and ONE shape to mask."); return;
+                }
+                
+                const objs = activeSelection.getObjects();
+                const img = objs.find(o => o.type === 'image');
+                const shape = objs.find(o => ['rect', 'circle', 'polygon'].includes(o.type));
+
+                if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
+
+                canvas.discardActiveObject(); // Converts relative coordinates back to absolute
+                applyMask(img, shape);
+            });
+
+            // Enter Crop Mode
+            $('#btn-edit-mask').click(function() {
+                const img = canvas.getActiveObject();
+                if (!img || !img.clipPath) return;
+                
+                isCropMode = true;
+                cropImage = img;
+                
+                const imgCenter = img.getCenterPoint();
+                img.clipPath.clone(function(restoredShape) {
+                    restoredShape.set({
+                        left: imgCenter.x + img.clipPath.left,
+                        top: imgCenter.y + img.clipPath.top,
+                        scaleX: img.clipPath.scaleX * img.scaleX,
+                        scaleY: img.clipPath.scaleY * img.scaleY,
+                        angle: img.clipPath.angle + img.angle,
+                        originX: 'center', originY: 'center',
+                        fill: 'rgba(0,0,0,0)', 
+                        stroke: '#3b82f6', 
+                        strokeWidth: 2 / canvas.getZoom(),
+                        strokeDashArray: [5, 5],
+                        selectable: false,
+                        evented: false,
+                        isMaskGuide: true
+                    });
+                    
+                    cropShape = restoredShape;
+                    canvas.add(cropShape);
+                    img.set('clipPath', null); 
+                    img.set('opacity', 0.5); 
+                    
+                    canvas.requestRenderAll();
+                    $('#crop-mode-banner').css('display', 'flex');
+                    $('#properties-form').hide();
+                    setTool('select');
+                });
+            });
+
+            // Apply Crop / Exit Mode
+            $('#exit-crop-btn').click(function() {
+                if (!isCropMode) return;
+                
+                isCropMode = false;
+                $('#crop-mode-banner').hide();
+                
+                cropImage.set('opacity', 1);
+                applyMask(cropImage, cropShape);
+                
+                cropShape = null;
+                cropImage = null;
+                $('#properties-form').show();
+            });
+
+            // Remove Mask
+            $('#btn-unmask').click(function() {
+                const img = canvas.getActiveObject();
+                if (img && img.clipPath) { 
+                    const imgCenter = img.getCenterPoint();
+                    img.clipPath.clone(function(restoredShape) {
+                        restoredShape.set({
+                            left: imgCenter.x + img.clipPath.left,
+                            top: imgCenter.y + img.clipPath.top,
+                            scaleX: img.clipPath.scaleX * img.scaleX,
+                            scaleY: img.clipPath.scaleY * img.scaleY,
+                            angle: img.clipPath.angle + img.angle,
+                            originX: 'center', originY: 'center',
+                            fill: '#3f3f46', stroke: null
+                        });
+                        if (projects[activeId].isMasterMode) restoredShape.set('isMasterSource', true);
+                        else restoredShape.set('isRegular', true);
+                        
+                        canvas.add(restoredShape);
+                        img.set('clipPath', null); 
+                        canvas.requestRenderAll(); 
+                        markDirty(); saveHistory(); 
+                        updateUI({selected: [img]}); 
+                    });
+                }
+            });
+            
+            // Paste Into Edit Menu Action
+            $('#menu-paste-into').click(function() {
+                if (!activeId || !clipboard || clipboard.type !== 'image') {
+                    alert("Please copy an image first to use Paste Into."); return;
+                }
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || !['rect', 'circle', 'polygon'].includes(activeObj.type)) {
+                    alert("Please select a shape (Rectangle, Circle, or Polygon) to paste the image into."); return;
+                }
+                
+                clipboard.clone(function(clonedImg) {
+                    const center = activeObj.getCenterPoint();
+                    clonedImg.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
+                    if (projects[activeId].isMasterMode) { clonedImg.set({ isMasterSource: true }); } else { clonedImg.set({ isRegular: true }); }
+                    canvas.add(clonedImg);
+                    applyMask(clonedImg, activeObj);
+                }, CUSTOM_PROPS);
+            });
+
+            // --- DRAWING SHAPES & TEXT CREATION ---
             function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
             
             function processNewObject(obj) { 
@@ -851,42 +1048,34 @@
             });
             
             function handleImageInsert(file) {
-                if (!file || !activeId) return; const reader = new FileReader();
-                reader.onload = function(f) { fabric.Image.fromURL(f.target.result, function(img) { const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; if (img.width > maxW) img.scaleToWidth(maxW); img.set({ left: c.x, top: c.y }); processNewObject(img); }); }; reader.readAsDataURL(file);
+                if (!file || !activeId) return;
+                const activeObj = canvas.getActiveObject();
+                const isShapeSelected = activeObj && ['rect', 'circle', 'polygon'].includes(activeObj.type) && !activeObj.clipPath;
+
+                const reader = new FileReader();
+                reader.onload = function(f) { 
+                    fabric.Image.fromURL(f.target.result, function(img) { 
+                        if (isShapeSelected) {
+                            const center = activeObj.getCenterPoint();
+                            img.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
+                            const scale = Math.max(activeObj.getScaledWidth() / img.width, activeObj.getScaledHeight() / img.height);
+                            img.scale(scale);
+                            
+                            if (projects[activeId].isMasterMode) { img.set({ isMasterSource: true }); } else { img.set({ isRegular: true }); }
+                            canvas.add(img);
+                            applyMask(img, activeObj);
+                        } else {
+                            const c = getScreenCenter(); 
+                            const maxW = projects[activeId].config.widthPx - 50; 
+                            if (img.width > maxW) img.scaleToWidth(maxW); 
+                            img.set({ left: c.x, top: c.y }); 
+                            processNewObject(img); 
+                        }
+                    }); 
+                }; 
+                reader.readAsDataURL(file);
             }
             $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
-
-            // --- ADVANCED IMAGE MASKING ---
-            $('#tool-mask-image').click(function() {
-                const activeSelection = canvas.getActiveObject();
-                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
-                    alert("Please select exactly ONE image and ONE shape to mask."); return;
-                }
-                
-                const objs = activeSelection.getObjects();
-                const img = objs.find(o => o.type === 'image');
-                const shape = objs.find(o => o.type === 'rect' || o.type === 'circle' || o.type === 'polygon');
-
-                if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
-
-                activeSelection.toGroup(); const group = canvas.getActiveObject(); group.toActiveSelection(); 
-                
-                const cloneShape = fabric.util.object.clone(shape);
-                cloneShape.set({
-                    originX: 'center', originY: 'center',
-                    left: shape.left - img.left,
-                    top: shape.top - img.top
-                });
-                
-                img.set('clipPath', cloneShape);
-                canvas.remove(shape); canvas.discardActiveObject(); canvas.setActiveObject(img);
-                canvas.requestRenderAll(); markDirty(); saveHistory();
-            });
-
-            $('#btn-unmask').click(function() {
-                const img = canvas.getActiveObject();
-                if (img && img.clipPath) { img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); }
-            });
 
             // --- DYNAMIC TEXT ---
             $('#btn-insert-page-num').click(function() {
@@ -907,6 +1096,11 @@
 
             // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
             function setTool(tool) {
+                if (isCropMode) {
+                    alert("Please Apply Crop first.");
+                    return;
+                }
+                
                 activeTool = tool; $('.tool-btn').removeClass('active-state');
                 if(tool==='select') $('#tool-select').addClass('active-state'); 
                 if(tool==='pan') $('#tool-pan').addClass('active-state'); 
@@ -980,10 +1174,17 @@
                 if (e.ctrlKey && e.key.toLowerCase() === 'i') { $('#place-image-input').click(); e.preventDefault(); }
                 if (e.ctrlKey && e.key.toLowerCase() === 'e') { $('#menu-export').click(); e.preventDefault(); }
                 if (e.ctrlKey && e.key.toLowerCase() === 's') { $('#menu-save').click(); e.preventDefault(); }
+                if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copyObjects(); return; }
+                if (e.ctrlKey && e.key.toLowerCase() === 'v') { 
+                    e.preventDefault(); 
+                    if (e.altKey) $('#menu-paste-into').click();
+                    else pasteObjects(false); 
+                    return; 
+                }
 
-                if (e.key.toLowerCase() === 'v') setTool('select'); 
-                if (e.key.toLowerCase() === 'h') setTool('pan'); 
-                if (e.key.toLowerCase() === 'z') setTool('zoom');
+                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
+                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
+                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
                 if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
                 if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
                 if (e.key.toLowerCase() === 'p' && !e.ctrlKey) $('#add-polygon').click();
@@ -1012,7 +1213,7 @@
                 // Initialize shape drawing
                 if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
                     isDrawingShape = true;
-                    isDragging = false; // Prevent panning
+                    isDragging = false;
                     const pointer = canvas.getPointer(opt.e);
                     origX = pointer.x;
                     origY = pointer.y;
@@ -1022,7 +1223,7 @@
                     } else if (activeTool === 'circle') {
                         drawingObject = new fabric.Circle({ left: origX, top: origY, radius: 0, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight, originX: 'center', originY: 'center' });
                     } else if (activeTool === 'polygon') {
-                        const points = getPolygonPoints(polygonSides, 50); // Create standard polygon of radius 50
+                        const points = getPolygonPoints(polygonSides, 50); 
                         drawingObject = new fabric.Polygon(points, { left: origX, top: origY, scaleX: 0.01, scaleY: 0.01, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight, originX: 'center', originY: 'center' });
                     }
                     
@@ -1055,7 +1256,7 @@
                         const dx = pointer.x - origX;
                         const dy = pointer.y - origY;
                         const radius = Math.sqrt(dx * dx + dy * dy);
-                        const scale = radius / 50; // Scale relative to initial 50 radius
+                        const scale = radius / 50; 
                         drawingObject.set({ scaleX: scale, scaleY: scale });
                     }
                     canvas.requestRenderAll();
@@ -1072,7 +1273,6 @@
                 if (isDrawingShape) {
                     isDrawingShape = false;
                     
-                    // If shape is too small (e.g., user just clicked without dragging), delete it to prevent tiny invisible artifacts
                     if ((drawingObject.width * drawingObject.scaleX < 2) && (drawingObject.height * drawingObject.scaleY < 2)) {
                         canvas.remove(drawingObject);
                     } else {
