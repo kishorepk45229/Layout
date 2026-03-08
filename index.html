@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.32</title>
+    <title>Thooval Workspace v6.33</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -13,19 +13,9 @@
     
     <style>
         :root {
-            --bg-base: #0e0e11;
-            --bg-panel: #18181b;
-            --bg-surface: #27272a;
-            --bg-surface-hover: #3f3f46;
-            --border: #27272a;
-            --border-light: #3f3f46;
-            --text-main: #f4f4f5;
-            --text-muted: #a1a1aa;
-            
-            --accent: #cbfb45;
-            --accent-hover: #bceb35;
-            --accent-text: #1a2005;
-            --danger: #ef4444;
+            --bg-base: #0e0e11; --bg-panel: #18181b; --bg-surface: #27272a; --bg-surface-hover: #3f3f46;
+            --border: #27272a; --border-light: #3f3f46; --text-main: #f4f4f5; --text-muted: #a1a1aa;
+            --accent: #cbfb45; --accent-hover: #bceb35; --accent-text: #1a2005; --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-size: 11px; }
@@ -45,30 +35,27 @@
         .menu-bar { display: flex; list-style: none; }
         .menu-item { position: relative; padding: 6px 12px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-radius: 4px; }
         .menu-item:hover { background: var(--bg-surface); color: var(--text-main); }
-        
         .menu-item::after { content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 10px; }
         .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
-        .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; color: var(--text-main); }
-        .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
+        .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; color: var(--text-main); cursor: pointer; }
+        .dropdown li:hover { background: var(--accent); color: var(--accent-text); }
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
         .shortcut { color: var(--text-muted); font-size: 11px; }
         .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
         
-        /* Submenu additions */
         .dropdown li.has-submenu { position: relative; }
         .dropdown li.has-submenu > span { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .dropdown li.has-submenu .submenu { display: none; position: absolute; top: 0; left: 100%; background: var(--bg-panel); min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; padding: 4px; margin-left: 2px; }
         .dropdown li.has-submenu:hover .submenu { display: block; }
-        .dropdown li.has-submenu .submenu li { color: var(--text-main); } /* Fixed text visibility */
+        .dropdown li.has-submenu .submenu li { color: var(--text-main); }
         
         #open-file-input, #place-image-input { display: none; }
 
         .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
         .btn-primary:hover { background: var(--accent-hover); }
 
-        /* New Secondary Bar */
         .secondary-bar { background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; height: 32px; z-index: 190; position: relative; padding: 0 16px; flex-shrink: 0; gap: 12px; }
         .sec-divider { width: 1px; height: 16px; background: var(--border-light); margin: 0 4px; }
 
@@ -93,7 +80,6 @@
         .tool-btn.active-state { background: var(--bg-surface-hover); color: var(--text-main); box-shadow: inset 2px 0 0 var(--accent); }
         .tool-divider { width: 100%; height: 1px; background: var(--border); margin: 8px 0; }
         
-        /* Global Palette in Left Toolbar */
         .global-palette-block { position: relative; width: 60px; height: 60px; flex-shrink: 0; margin-bottom: 12px;}
         .fill-block, .stroke-block { position: absolute; width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 4px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
         .fill-block:hover, .stroke-block:hover { border-color: var(--accent); }
@@ -104,7 +90,6 @@
 
         .palette-btn-group { display: flex; gap: 6px; justify-content: center; width: 100%; margin-top: 12px; }
         .palette-btn-group button { padding: 4px; border-radius: 4px; }
-        
         .stroke-weight-control { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; padding: 4px 8px; background: var(--bg-base); border-radius: 4px; }
 
         .panel-right { width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
@@ -130,7 +115,7 @@
         .doc-btn:hover { background: var(--bg-surface-hover); }
         .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
-        /* SWATCHES & LAYERS PANEL UI */
+        /* SWATCHES & ASSETS PANEL UI */
         .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18px, 1fr)); gap: 4px; }
         .swatch-box { width: 100%; aspect-ratio: 1; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); transition: 0.1s; }
         .swatch-box:hover { transform: scale(1.15); box-shadow: 0 0 0 1px var(--accent); z-index: 2; position: relative;}
@@ -153,8 +138,6 @@
         .canvas-container { position: absolute !important; top: 0; left: 0; }
         
         .master-banner { display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); padding: 6px 12px 6px 24px; border-radius: 24px; font-weight: 600; z-index: 200; align-items: center; box-shadow: 0 4px 12px rgba(203, 251, 69, 0.3); }
-        
-        /* CROP MODE BANNER */
         #crop-mode-banner { background: #3b82f6; display: none; }
         #exit-crop-btn { background: #eff6ff; color: #1e3a8a; border: none; padding: 4px 12px; border-radius: 16px; margin-left: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 11px; }
         #exit-crop-btn:hover { background: #ffffff; }
@@ -194,13 +177,32 @@
         .color-input-group { display: flex; align-items: center; gap: 8px; }
         .color-input-group label { width: 12px; color: var(--text-muted); font-weight: 600; }
         .color-input-group input { width: 100%; }
+
+        /* Custom Context Menu */
+        #custom-context-menu { box-shadow: 0 8px 32px rgba(0,0,0,0.9); }
     </style>
 </head>
 <body>
 
+    <div id="custom-context-menu" class="dropdown" style="display:none; position:fixed; z-index:9999; margin:0;">
+        <ul>
+            <li id="cm-cut"><span>Cut</span><span class="shortcut">Ctrl+X</span></li>
+            <li id="cm-copy"><span>Copy</span><span class="shortcut">Ctrl+C</span></li>
+            <li id="cm-paste"><span>Paste</span><span class="shortcut">Ctrl+V</span></li>
+            <li class="divider-li" id="cm-div-1"></li>
+            <li id="cm-front"><span>Bring to Front</span><span class="shortcut">Ctrl+]</span></li>
+            <li id="cm-back"><span>Send to Back</span><span class="shortcut">Ctrl+[</span></li>
+            <li class="divider-li" id="cm-div-2"></li>
+            <li id="cm-lock"><span>Lock/Unlock</span></li>
+            <li id="cm-save-asset"><span>Save to Asset Library</span></li>
+            <li class="divider-li" id="cm-div-3"></li>
+            <li id="cm-export"><span>Export Selection (PNG)</span></li>
+        </ul>
+    </div>
+
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.28</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.32</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -398,6 +400,15 @@
                     <option value="Gradients">Gradients (New)</option>
                 </select>
                 <div class="swatch-grid" id="swatch-grid-container"></div>
+            </div>
+            
+            <div class="panel-section" id="panel-assets" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3>Asset Library</h3>
+                    <button id="btn-add-asset" class="small-icon-btn" title="Save Selected as Asset"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="swatch-grid" id="asset-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                    </div>
             </div>
 
             <div class="panel-section" id="panel-layers">
@@ -665,6 +676,17 @@
     <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
     <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
     
+    <div class="modal-overlay" id="restore-modal">
+        <div class="modal" style="width: 350px;">
+            <h2>Restore Session?</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">We found an unsaved session from your previous visit. Would you like to restore your files?</p>
+            <div class="modal-footer" style="margin-top: 0;">
+                <button class="btn-cancel" id="btn-discard-session" style="color: var(--danger); border-color: transparent;">Discard</button>
+                <button class="btn-primary" id="btn-restore-session">Restore</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="typography-modal">
         <div class="modal" style="width: 400px;">
             <h2>Malayalam Font Converter (Unicode ↔ FML)</h2>
@@ -746,6 +768,62 @@
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
 
+            // --- AUTO-SAVE ENGINE ---
+            function getSafeProjectsData() {
+                let safeProjects = {};
+                for (let id in projects) {
+                    safeProjects[id] = {
+                        name: projects[id].name,
+                        isDirty: projects[id].isDirty,
+                        totalPages: projects[id].totalPages,
+                        isMasterMode: false, // Ensure we don't restore locked in master mode
+                        config: projects[id].config,
+                        canvasData: activeId === id ? canvas.toJSON(CUSTOM_PROPS) : projects[id].canvasData,
+                        vpt: activeId === id ? [...canvas.viewportTransform] : projects[id].vpt
+                    };
+                }
+                return safeProjects;
+            }
+
+            function triggerAutoSave() {
+                if (Object.keys(projects).length === 0) {
+                    localStorage.removeItem('thooval_autosave');
+                    return;
+                }
+                try {
+                    localStorage.setItem('thooval_autosave', JSON.stringify({ activeId: activeId, projects: getSafeProjectsData() }));
+                } catch (e) {
+                    console.warn("Auto-save failed (LocalStorage quota exceeded).");
+                }
+            }
+
+            setInterval(triggerAutoSave, 60000);
+
+            // On Load Restore Check
+            const savedSessionStr = localStorage.getItem('thooval_autosave');
+            if (savedSessionStr) {
+                $('#restore-modal').css('display', 'flex');
+                
+                $('#btn-restore-session').click(() => {
+                    $('#restore-modal').hide();
+                    try {
+                        const savedData = JSON.parse(savedSessionStr);
+                        projects = savedData.projects;
+                        for(let id in projects) {
+                            projects[id].history = [];
+                            projects[id].historyIndex = -1;
+                        }
+                        if (projects[savedData.activeId]) { switchProject(savedData.activeId); } else { renderTabs(); }
+                        $('#panel-swatches, #panel-assets').show();
+                    } catch(e) { console.error("Restore failed", e); }
+                });
+                
+                $('#btn-discard-session').click(() => {
+                    localStorage.removeItem('thooval_autosave');
+                    $('#restore-modal').hide();
+                });
+            }
+
             // --- MENU TOGGLES (SNAP SETTINGS) ---
             $('.snap-toggle').click(function(e) {
                 e.stopPropagation(); 
@@ -759,9 +837,7 @@
                     stateEl.text('OFF').css('color', 'var(--text-muted)');
                 }
                 
-                if(key === 'master') {
-                    alert(`Smart Snapping is now ${snapConfig.master ? 'ON' : 'OFF'}`);
-                }
+                if(key === 'master') { alert(`Smart Snapping is now ${snapConfig.master ? 'ON' : 'OFF'}`); }
             });
 
             // --- COLOR MATH UTILS (RGB <-> CMYK) ---
@@ -779,10 +855,7 @@
 
             // --- IRO.JS ADVANCED COLOR PICKER ---
             const colorPicker = new iro.ColorPicker("#iro-picker-container", {
-                width: 200,
-                color: "#ff0000",
-                layoutDirection: "horizontal",
-                layout: [ { component: iro.ui.Box }, { component: iro.ui.Slider, options: { sliderType: 'hue' } } ]
+                width: 200, color: "#ff0000", layoutDirection: "horizontal", layout: [ { component: iro.ui.Box }, { component: iro.ui.Slider, options: { sliderType: 'hue' } } ]
             });
 
             function syncInputsWithPicker(color) {
@@ -836,12 +909,9 @@
                 'Sunset': ['#ff7b54', '#ffb26b', '#ffd56b', '#939b62', '#e05d5d', '#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#f4a261', '#e76f51', '#d62828', '#264653'],
                 'Vintage': ['#cb997e', '#eddcd2', '#fff1e6', '#f0efeb', '#ddbea9', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189'],
                 'Gradients': [ 
-                    { c1: '#ff9a9e', c2: '#fecfef', type: 'linear' },
-                    { c1: '#a18cd1', c2: '#fbc2eb', type: 'linear' },
-                    { c1: '#84fab0', c2: '#8fd3f4', type: 'linear' },
-                    { c1: '#ffecd2', c2: '#fcb69f', type: 'radial' },
-                    { c1: '#cfd9df', c2: '#e2ebf0', type: 'linear' },
-                    { c1: '#fccb90', c2: '#d57eeb', type: 'linear' }
+                    { c1: '#ff9a9e', c2: '#fecfef', type: 'linear' }, { c1: '#a18cd1', c2: '#fbc2eb', type: 'linear' },
+                    { c1: '#84fab0', c2: '#8fd3f4', type: 'linear' }, { c1: '#ffecd2', c2: '#fcb69f', type: 'radial' },
+                    { c1: '#cfd9df', c2: '#e2ebf0', type: 'linear' }, { c1: '#fccb90', c2: '#d57eeb', type: 'linear' }
                 ]
             };
 
@@ -850,12 +920,8 @@
                 grid.empty();
                 if (palettes[category]) {
                     palettes[category].forEach(c => {
-                        if (typeof c === 'string') {
-                            grid.append(`<div class="swatch-box" style="background:${c};" data-color="${c}" data-type="solid"></div>`);
-                        } else {
-                            const bg = c.type === 'linear' ? `linear-gradient(45deg, ${c.c1}, ${c.c2})` : `radial-gradient(circle, ${c.c1}, ${c.c2})`;
-                            grid.append(`<div class="swatch-box" style="background:${bg};" data-type="gradient" data-c1="${c.c1}" data-c2="${c.c2}" data-gtype="${c.type}"></div>`);
-                        }
+                        if (typeof c === 'string') { grid.append(`<div class="swatch-box" style="background:${c};" data-color="${c}" data-type="solid"></div>`); } 
+                        else { const bg = c.type === 'linear' ? `linear-gradient(45deg, ${c.c1}, ${c.c2})` : `radial-gradient(circle, ${c.c1}, ${c.c2})`; grid.append(`<div class="swatch-box" style="background:${bg};" data-type="gradient" data-c1="${c.c1}" data-c2="${c.c2}" data-gtype="${c.type}"></div>`); }
                     });
                 }
             }
@@ -864,12 +930,10 @@
 
             $(document).on('click', '.swatch-box', function() {
                 const type = $(this).data('type');
-                
                 if (type === 'solid') {
                     const col = $(this).data('color');
-                    if(focusedColorType === 'fill') {
-                        globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
-                    } else {
+                    if(focusedColorType === 'fill') { globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col); } 
+                    else {
                         globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
                         const obj = canvas.getActiveObject();
                         if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); }
@@ -878,14 +942,138 @@
                     const c1 = $(this).data('c1'); const c2 = $(this).data('c2'); const gtype = $(this).data('gtype');
                     const bg = gtype === 'linear' ? `linear-gradient(45deg, ${c1}, ${c2})` : `radial-gradient(circle, ${c1}, ${c2})`;
                     $('#fill-focus').css('background', bg).removeClass('none');
-                    
-                    const gradient = new fabric.Gradient({
-                        type: gtype, gradientUnits: 'percentage',
-                        coords: gtype === 'linear' ? { x1: 0, y1: 0, x2: 1, y2: 1 } : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 },
-                        colorStops: [ { offset: 0, color: c1 }, { offset: 1, color: c2 } ]
-                    });
+                    const gradient = new fabric.Gradient({ type: gtype, gradientUnits: 'percentage', coords: gtype === 'linear' ? { x1: 0, y1: 0, x2: 1, y2: 1 } : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 }, colorStops: [ { offset: 0, color: c1 }, { offset: 1, color: c2 } ] });
                     updateObj('fill', gradient);
                 }
+            });
+
+            // --- ASSET LIBRARY LOGIC ---
+            let customAssets = [];
+            try {
+                const storedAssets = localStorage.getItem('thooval_assets');
+                if (storedAssets) customAssets = JSON.parse(storedAssets);
+            } catch(e) {}
+
+            function renderAssets() {
+                const grid = $('#asset-grid');
+                grid.empty();
+                customAssets.forEach((asset, idx) => {
+                    grid.append(`<div class="asset-item swatch-box" style="background-image:url(${asset.thumb}); background-size:contain; background-position:center; background-repeat:no-repeat; background-color:var(--bg-surface);" data-idx="${idx}" title="${asset.name}"></div>`);
+                });
+            }
+
+            function saveSelectedAsAsset() {
+                const obj = canvas.getActiveObject();
+                if (!obj) { alert("Select an object to save as an asset."); return; }
+                
+                let thumb;
+                try { thumb = obj.toDataURL({ format: 'png', multiplier: 0.5 }); } 
+                catch(e) { thumb = ''; } 
+                
+                const assetData = obj.toJSON(CUSTOM_PROPS);
+                customAssets.push({ name: `Asset ${customAssets.length + 1}`, thumb: thumb, data: assetData });
+                
+                try { localStorage.setItem('thooval_assets', JSON.stringify(customAssets)); } 
+                catch(e) { alert("Failed to save asset. LocalStorage might be full."); customAssets.pop(); return; }
+                
+                renderAssets();
+            }
+
+            $('#btn-add-asset').click(saveSelectedAsAsset);
+
+            $(document).on('click', '.asset-item', function() {
+                if (!activeId) return;
+                const idx = $(this).data('idx');
+                const asset = customAssets[idx];
+                if (asset && asset.data) {
+                    fabric.util.enlivening = true;
+                    fabric.util.enlivenObjects([asset.data], function(objects) {
+                        const origRenderOnAddRemove = canvas.renderOnAddRemove;
+                        canvas.renderOnAddRemove = false;
+                        const center = getScreenCenter();
+                        
+                        objects.forEach(function(o) {
+                            o.set({
+                                left: center.x, top: center.y, originX: 'center', originY: 'center',
+                                isRegular: projects[activeId].isMasterMode ? false : true,
+                                isMasterSource: projects[activeId].isMasterMode ? true : false
+                            });
+                            canvas.add(o);
+                        });
+                        
+                        canvas.renderOnAddRemove = origRenderOnAddRemove;
+                        canvas.requestRenderAll();
+                        sortLayers(); markDirty(); saveHistory();
+                    });
+                }
+            });
+
+            renderAssets(); // Init Assets
+
+            // --- CONTEXT MENU LOGIC ---
+            $('#workspace-wrapper').on('contextmenu', function(e) {
+                e.preventDefault();
+                if (!activeId || isCropMode) return;
+                
+                // Identify target under cursor and force selection if not already selected
+                let target = canvas.findTarget(e);
+                if (target && !target.isPaper && !target.isMargin && !target.isBleed && !target.isGuide) {
+                    canvas.setActiveObject(target);
+                    canvas.requestRenderAll();
+                } else if(!target || target.isPaper) {
+                    canvas.discardActiveObject();
+                    canvas.requestRenderAll();
+                }
+                
+                const activeObj = canvas.getActiveObject();
+                
+                if (activeObj) {
+                    $('#cm-cut, #cm-copy, #cm-front, #cm-back, #cm-lock, #cm-export, #cm-save-asset, #cm-div-2, #cm-div-3').show();
+                    $('#cm-lock span:first-child').text(activeObj.locked ? 'Unlock' : 'Lock');
+                } else {
+                    $('#cm-cut, #cm-copy, #cm-front, #cm-back, #cm-lock, #cm-export, #cm-save-asset, #cm-div-2, #cm-div-3').hide();
+                }
+                
+                if (clipboard) $('#cm-paste').show(); else $('#cm-paste').hide();
+                
+                const menu = $('#custom-context-menu');
+                menu.css({ display: 'block', left: e.clientX, top: e.clientY });
+                
+                // Bounds check
+                if (e.clientX + menu.width() > $(window).width()) menu.css('left', e.clientX - menu.width());
+                if (e.clientY + menu.height() > $(window).height()) menu.css('top', e.clientY - menu.height());
+            });
+
+            $(document).on('click', function(e) { if (!$(e.target).closest('#custom-context-menu').length) $('#custom-context-menu').hide(); });
+
+            $('#cm-cut').click(() => { cutObjects(); $('#custom-context-menu').hide(); });
+            $('#cm-copy').click(() => { copyObjects(); $('#custom-context-menu').hide(); });
+            $('#cm-paste').click(() => { pasteObjects(); $('#custom-context-menu').hide(); });
+            $('#cm-save-asset').click(() => { saveSelectedAsAsset(); $('#custom-context-menu').hide(); });
+            $('#cm-front').click(() => { if(canvas.getActiveObject()) { canvas.bringToFront(canvas.getActiveObject()); sortLayers(); markDirty(); saveHistory(); } $('#custom-context-menu').hide(); });
+            $('#cm-back').click(() => { if(canvas.getActiveObject()) { canvas.sendToBack(canvas.getActiveObject()); sortLayers(); markDirty(); saveHistory(); } $('#custom-context-menu').hide(); });
+            
+            $('#cm-lock').click(() => { 
+                const obj = canvas.getActiveObject(); 
+                if(obj) {
+                    obj.locked = !obj.locked;
+                    obj.set({ selectable: !obj.locked, evented: !obj.locked, lockMovementX: obj.locked, lockMovementY: obj.locked, lockScalingX: obj.locked, lockScalingY: obj.locked, lockRotation: obj.locked });
+                    if(obj.locked) canvas.discardActiveObject();
+                    canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
+                }
+                $('#custom-context-menu').hide(); 
+            });
+
+            $('#cm-export').click(() => {
+                 const obj = canvas.getActiveObject();
+                 if(obj) {
+                     const dataURL = obj.toDataURL({ format: 'png', multiplier: 2 });
+                     const a = document.createElement('a');
+                     a.href = dataURL;
+                     a.download = `Thooval_Asset_Export.png`;
+                     a.click();
+                 }
+                 $('#custom-context-menu').hide();
             });
 
             // --- GOOGLE FONTS INJECTION ---
@@ -922,6 +1110,8 @@
                 p.history.push(canvas.toJSON(CUSTOM_PROPS));
                 p.historyIndex++;
                 if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
+                
+                triggerAutoSave(); // Save to background implicitly
             }
             
             function performUndo() {
@@ -929,7 +1119,7 @@
                 if (p.history && p.historyIndex > 0) {
                     isHistoryProcessing = true; p.historyIndex--;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel();
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel(); triggerAutoSave();
                     });
                 }
             }
@@ -939,7 +1129,7 @@
                 if (p.history && p.historyIndex < p.history.length - 1) {
                     isHistoryProcessing = true; p.historyIndex++;
                     canvas.loadFromJSON(p.history[p.historyIndex], function() { 
-                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel();
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel(); triggerAutoSave();
                     });
                 }
             }
@@ -958,9 +1148,9 @@
                 $('#btn-new-tab').before(tabHtml);
                 
                 if (Object.keys(projects).length === 0) {
-                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches').hide();
+                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches, #panel-assets').hide();
                 } else {
-                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches, #panel-assets').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
                 }
             }
 
@@ -983,9 +1173,10 @@
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
                 renderTabs(); setTool('select');
+                triggerAutoSave();
             }
 
-            function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); } } else { renderTabs(); } }
+            function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); triggerAutoSave(); } } else { renderTabs(); triggerAutoSave(); } }
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
             
@@ -1199,17 +1390,9 @@
                 $(this).css('opacity', '0.4');
                 e.originalEvent.dataTransfer.effectAllowed = 'move';
             });
-            $(document).on('dragover', '.layer-item', function(e) {
-                e.preventDefault();
-                $(this).addClass('drag-over');
-            });
-            $(document).on('dragleave', '.layer-item', function(e) {
-                $(this).removeClass('drag-over');
-            });
-            $(document).on('dragend', '.layer-item', function(e) {
-                $(this).css('opacity', '1');
-                $('.layer-item').removeClass('drag-over');
-            });
+            $(document).on('dragover', '.layer-item', function(e) { e.preventDefault(); $(this).addClass('drag-over'); });
+            $(document).on('dragleave', '.layer-item', function(e) { $(this).removeClass('drag-over'); });
+            $(document).on('dragend', '.layer-item', function(e) { $(this).css('opacity', '1'); $('.layer-item').removeClass('drag-over'); });
             $(document).on('drop', '.layer-item', function(e) {
                 e.preventDefault();
                 $('.layer-item').removeClass('drag-over');
@@ -1228,8 +1411,7 @@
                     canvas.moveTo(draggedObj, realTargetIndex);
                     sortLayers(); 
                     canvas.requestRenderAll();
-                    markDirty();
-                    saveHistory();
+                    markDirty(); saveHistory();
                 }
             });
 
@@ -1251,15 +1433,7 @@
                 const obj = objects[idx];
                 
                 obj.locked = !obj.locked;
-                obj.set({
-                    selectable: !obj.locked,
-                    evented: !obj.locked,
-                    lockMovementX: obj.locked,
-                    lockMovementY: obj.locked,
-                    lockScalingX: obj.locked,
-                    lockScalingY: obj.locked,
-                    lockRotation: obj.locked
-                });
+                obj.set({ selectable: !obj.locked, evented: !obj.locked, lockMovementX: obj.locked, lockMovementY: obj.locked, lockScalingX: obj.locked, lockScalingY: obj.locked, lockRotation: obj.locked });
                 if (obj.locked && canvas.getActiveObject() === obj) canvas.discardActiveObject();
                 canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
             });
@@ -1651,7 +1825,7 @@
                 const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
                 canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
                 
-                drawDocumentEnvironment(); markDirty();
+                drawDocumentEnvironment(); markDirty(); triggerAutoSave();
             });
 
             $('#exit-master-btn').click(function() {
@@ -2203,7 +2377,6 @@
                 maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
             }
             $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
-            $('#workspace-wrapper').on('contextmenu', (e) => { if (activeTool === 'zoom') e.preventDefault(); });
 
             let isDragging = false; let lastPosX, lastPosY;
             
@@ -2267,7 +2440,7 @@
 
             // --- EXPORT & SAVE ---
             $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
-            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); });
+            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); triggerAutoSave(); });
 
             $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
             $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
