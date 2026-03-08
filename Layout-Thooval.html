@@ -128,7 +128,6 @@
         
         .doc-btn { width: 100%; padding: 8px; background: var(--bg-surface); border: 1px solid transparent; color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; justify-content: center; gap: 6px; transition: 0.2s; }
         .doc-btn:hover { background: var(--bg-surface-hover); }
-        .doc-btn.master-active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
         
         .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18px, 1fr)); gap: 4px; }
         .swatch-box { width: 100%; aspect-ratio: 1; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); transition: 0.1s; }
@@ -197,7 +196,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.28</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.29</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -205,7 +204,6 @@
                         <li id="menu-open"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Open Document...</span> <input type="file" id="open-file-input" accept=".thooval,.json"><span class="shortcut">Ctrl+O</span></label></li>
                         <li class="divider-li"></li>
                         <li id="menu-save"><span>Save Document</span> <span class="shortcut">Ctrl+S</span></li>
-                        <li id="menu-doc-setup"><span>Document Setup...</span> <span class="shortcut">Alt+Ctrl+P</span></li>
                         <li class="divider-li"></li>
                         <li id="menu-place-image"><label style="cursor: pointer; width: 100%; display: flex; justify-content: space-between;"><span>Place Image...</span> <input type="file" id="place-image-input" accept="image/*"><span class="shortcut">Ctrl+I</span></label></li>
                         <li class="divider-li"></li>
@@ -380,7 +378,7 @@
 
         <aside class="panel-right" id="sidebar-right">
             
-            <div id="doc-properties-form" style="padding: 16px;">
+            <div id="doc-properties-form" style="padding: 16px; display: none;">
                 <div style="margin-bottom: 24px; text-align: center; color: var(--text-muted);">
                     <i class="fa-solid fa-file-lines" style="font-size: 24px; margin-bottom: 8px; color: var(--border-light);"></i>
                     <div style="font-size: 11px;">Document Properties</div>
@@ -949,9 +947,10 @@
                 $('#btn-new-tab').before(tabHtml);
                 
                 if (Object.keys(projects).length === 0) {
-                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches').hide();
+                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches').hide(); $('#doc-properties-form').hide();
                 } else {
-                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel(); 
+                    if(!canvas.getActiveObject()) $('#doc-properties-form').show();
                 }
             }
 
@@ -1422,137 +1421,125 @@
                 let activeObj = canvas.getActiveObject();
                 if (!activeObj) return;
 
-                let p = projects[activeId];
-                let targetBounds;
+                let targets = activeObj.type === 'activeSelection' ? activeObj.getObjects() : [activeObj];
+                if (reference === 'selection' && targets.length < 2) return;
 
-                if (reference === 'page' || reference === 'margin') {
+                let p = projects[activeId];
+                let targetBounds = {};
+
+                if (reference === 'selection') {
+                    let b = activeObj.getBoundingRect();
+                    targetBounds = { left: b.left, top: b.top, right: b.left + b.width, bottom: b.top + b.height, centerX: b.left + b.width / 2, centerY: b.top + b.height / 2, width: b.width, height: b.height };
+                } else {
                     let centerPoint = activeObj.getCenterPoint();
                     const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
                     const estimatedPage = Math.max(0, Math.min(p.totalPages - 1, Math.floor((centerPoint.y - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap)));
                     const pos = getPagePosition(estimatedPage, p.config);
 
+                    let tLeft, tTop, tWidth, tHeight;
                     if (reference === 'page') {
-                        targetBounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx };
+                        tLeft = pos.x; tTop = pos.y; tWidth = p.config.widthPx; tHeight = p.config.heightPx;
                     } else {
                         const m = p.config.marginsPx;
                         let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        targetBounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b };
+                        tLeft = pos.x + aL; tTop = pos.y + m.t; tWidth = p.config.widthPx - aL - aR; tHeight = p.config.heightPx - m.t - m.b;
                     }
-
-                    let objB = activeObj.getBoundingRect();
-                    let deltaX = 0, deltaY = 0;
-
-                    if (action === 'left') deltaX = targetBounds.left - objB.left;
-                    if (action === 'center-h') deltaX = (targetBounds.left + targetBounds.width/2) - (objB.left + objB.width/2);
-                    if (action === 'right') deltaX = (targetBounds.left + targetBounds.width) - (objB.left + objB.width);
-                    if (action === 'top') deltaY = targetBounds.top - objB.top;
-                    if (action === 'center-v') deltaY = (targetBounds.top + targetBounds.height/2) - (objB.top + objB.height/2);
-                    if (action === 'bottom') deltaY = (targetBounds.top + targetBounds.height) - (objB.top + objB.height);
-
-                    activeObj.set({ left: activeObj.left + deltaX, top: activeObj.top + deltaY });
-                    activeObj.setCoords();
-
-                } else if (reference === 'selection') {
-                    if (activeObj.type !== 'activeSelection') return; 
-                    targetBounds = activeObj.getBoundingRect();
-                    let targets = activeObj.getObjects();
-                    canvas.discardActiveObject();
-
-                    targets.forEach(obj => {
-                        let objB = obj.getBoundingRect();
-                        let deltaX = 0, deltaY = 0;
-
-                        if (action === 'left') deltaX = targetBounds.left - objB.left;
-                        if (action === 'center-h') deltaX = (targetBounds.left + targetBounds.width/2) - (objB.left + objB.width/2);
-                        if (action === 'right') deltaX = (targetBounds.left + targetBounds.width) - (objB.left + objB.width);
-                        if (action === 'top') deltaY = targetBounds.top - objB.top;
-                        if (action === 'center-v') deltaY = (targetBounds.top + targetBounds.height/2) - (objB.top + objB.height/2);
-                        if (action === 'bottom') deltaY = (targetBounds.top + targetBounds.height) - (objB.top + objB.height);
-
-                        obj.set({ left: obj.left + deltaX, top: obj.top + deltaY });
-                        obj.setCoords();
-                    });
-
-                    let sel = new fabric.ActiveSelection(targets, { canvas: canvas });
-                    canvas.setActiveObject(sel);
+                    targetBounds = { left: tLeft, top: tTop, right: tLeft + tWidth, bottom: tTop + tHeight, centerX: tLeft + tWidth/2, centerY: tTop + tHeight/2, width: tWidth, height: tHeight };
                 }
-                
-                canvas.requestRenderAll(); markDirty(); saveHistory(); updateTransformUI({target: canvas.getActiveObject()});
+
+                canvas.discardActiveObject();
+
+                targets.forEach(obj => {
+                    let b = obj.getBoundingRect();
+                    let shiftX = 0, shiftY = 0;
+
+                    if (action === 'left') shiftX = targetBounds.left - b.left;
+                    if (action === 'center-h') shiftX = targetBounds.centerX - (b.left + b.width/2);
+                    if (action === 'right') shiftX = targetBounds.right - (b.left + b.width);
+                    if (action === 'top') shiftY = targetBounds.top - b.top;
+                    if (action === 'center-v') shiftY = targetBounds.centerY - (b.top + b.height/2);
+                    if (action === 'bottom') shiftY = targetBounds.bottom - (b.top + b.height);
+
+                    obj.set({ left: obj.left + shiftX, top: obj.top + shiftY });
+                    obj.setCoords();
+                });
+
+                let sel = targets.length > 1 ? new fabric.ActiveSelection(targets, { canvas: canvas }) : targets[0];
+                canvas.setActiveObject(sel);
+                canvas.requestRenderAll(); markDirty(); saveHistory(); updateTransformUI({target: sel});
             }
 
             function distributeObjects(action, reference) {
                 let activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'activeSelection') {
-                    if (reference === 'selection') return;
-                }
+                if (!activeObj) return;
 
-                let targets = activeObj && activeObj.type === 'activeSelection' ? activeObj.getObjects() : [activeObj];
-                if (!targets[0]) return;
-                if (targets.length < 2 && reference === 'selection') return;
-                
+                let targets = activeObj.type === 'activeSelection' ? activeObj.getObjects() : [activeObj];
+                if (reference === 'selection' && targets.length < 3) return;
+
                 let p = projects[activeId];
-                let targetBounds;
+                let targetBounds = {};
 
-                if (reference === 'page' || reference === 'margin') {
+                if (reference !== 'selection') {
                     let centerPoint = activeObj.getCenterPoint();
                     const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
                     const estimatedPage = Math.max(0, Math.min(p.totalPages - 1, Math.floor((centerPoint.y - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap)));
                     const pos = getPagePosition(estimatedPage, p.config);
 
+                    let tLeft, tTop, tWidth, tHeight;
                     if (reference === 'page') {
-                        targetBounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx };
+                        tLeft = pos.x; tTop = pos.y; tWidth = p.config.widthPx; tHeight = p.config.heightPx;
                     } else {
                         const m = p.config.marginsPx;
                         let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0);
                         let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
-                        targetBounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b };
+                        tLeft = pos.x + aL; tTop = pos.y + m.t; tWidth = p.config.widthPx - aL - aR; tHeight = p.config.heightPx - m.t - m.b;
                     }
+                    targetBounds = { left: tLeft, top: tTop, right: tLeft + tWidth, bottom: tTop + tHeight, centerX: tLeft + tWidth/2, centerY: tTop + tHeight/2, width: tWidth, height: tHeight };
                 }
 
                 canvas.discardActiveObject();
-                const prop = action === 'h' ? 'left' : 'top';
-                const dim = action === 'h' ? 'width' : 'height';
                 
-                targets.sort((a, b) => a.getBoundingRect()[prop] - b.getBoundingRect()[prop]);
+                let targetData = targets.map(obj => {
+                    let b = obj.getBoundingRect();
+                    return { obj: obj, cx: b.left + b.width/2, cy: b.top + b.height/2 };
+                });
 
-                if (reference === 'selection' && targets.length > 2) {
-                    let firstB = targets[0].getBoundingRect();
-                    let lastB = targets[targets.length - 1].getBoundingRect();
-                    let totalDist = lastB[prop] - firstB[prop];
-                    let spacing = totalDist / (targets.length - 1);
+                targetData.sort((a, b) => action === 'h' ? a.cx - b.cx : a.cy - b.cy);
 
-                    targets.forEach((obj, i) => {
-                        if (i > 0 && i < targets.length - 1) {
-                            let curB = obj.getBoundingRect();
-                            let targetPos = firstB[prop] + (spacing * i);
-                            let delta = targetPos - curB[prop];
-                            obj.set(prop, obj[prop] + delta);
-                            obj.setCoords();
-                        }
-                    });
-                } else if (reference === 'page' || reference === 'margin') {
-                    if (targets.length === 1) {
-                        let obj = targets[0];
-                        let curB = obj.getBoundingRect();
-                        let delta = (targetBounds[prop] + targetBounds[dim]/2) - (curB[prop] + curB[dim]/2);
-                        obj.set(prop, obj[prop] + delta);
-                        obj.setCoords();
-                    } else {
-                        let firstEdge = targetBounds[prop];
-                        let lastB = targets[targets.length - 1].getBoundingRect();
-                        let lastEdge = targetBounds[prop] + targetBounds[dim] - lastB[dim];
+                if (reference === 'selection') {
+                    let first = targetData[0];
+                    let last = targetData[targetData.length - 1];
+                    let totalDist = action === 'h' ? (last.cx - first.cx) : (last.cy - first.cy);
+                    let step = totalDist / (targetData.length - 1);
+
+                    for (let i = 1; i < targetData.length - 1; i++) {
+                        let data = targetData[i];
+                        let expectedPos = action === 'h' ? first.cx + (step * i) : first.cy + (step * i);
+                        let shift = action === 'h' ? expectedPos - data.cx : expectedPos - data.cy;
                         
-                        let totalDist = lastEdge - firstEdge;
-                        let spacing = totalDist / (targets.length - 1);
-
-                        targets.forEach((obj, i) => {
-                            let curB = obj.getBoundingRect();
-                            let targetPos = firstEdge + (spacing * i);
-                            let delta = targetPos - curB[prop];
-                            obj.set(prop, obj[prop] + delta);
-                            obj.setCoords();
-                        });
+                        if (action === 'h') data.obj.set('left', data.obj.left + shift);
+                        else data.obj.set('top', data.obj.top + shift);
+                        data.obj.setCoords();
+                    }
+                } else {
+                    if (targetData.length === 1) {
+                        let data = targetData[0];
+                        let shiftX = targetBounds.centerX - data.cx;
+                        let shiftY = targetBounds.centerY - data.cy;
+                        if(action === 'h') data.obj.set('left', data.obj.left + shiftX);
+                        if(action === 'v') data.obj.set('top', data.obj.top + shiftY);
+                        data.obj.setCoords();
+                    } else {
+                        let step = action === 'h' ? targetBounds.width / targetData.length : targetBounds.height / targetData.length;
+                        for (let i = 0; i < targetData.length; i++) {
+                            let data = targetData[i];
+                            let expectedCenter = action === 'h' ? targetBounds.left + (step * i) + (step/2) : targetBounds.top + (step * i) + (step/2);
+                            let shift = action === 'h' ? expectedCenter - data.cx : expectedCenter - data.cy;
+                            if(action === 'h') data.obj.set('left', data.obj.left + shift);
+                            if(action === 'v') data.obj.set('top', data.obj.top + shift);
+                            data.obj.setCoords();
+                        }
                     }
                 }
 
