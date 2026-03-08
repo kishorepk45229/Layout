@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.34</title>
+    <title>Thooval Workspace v6.33</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script> 
-    <script src="https://cdn.jsdelivr.net/npm/polybooljs@1.2.0/dist/polybool.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -203,7 +202,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.33</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.32</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -408,7 +407,8 @@
                     <h3>Asset Library</h3>
                     <button id="btn-add-asset" class="small-icon-btn" title="Save Selected as Asset"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div class="swatch-grid" id="asset-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px;"></div>
+                <div class="swatch-grid" id="asset-grid" style="grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                    </div>
             </div>
 
             <div class="panel-section" id="panel-layers">
@@ -422,17 +422,6 @@
             </div>
             
             <div id="properties-form" style="display: none;">
-
-                <div class="panel-section" id="pathfinder-properties" style="display: none;">
-                    <h3>Pathfinder (Boolean)</h3>
-                    <div class="btn-group" style="margin-bottom: 8px;">
-                        <button class="pathfinder-btn" data-op="unite" title="Unite"><i class="fa-solid fa-object-group"></i></button>
-                        <button class="pathfinder-btn" data-op="subtract" title="Subtract Bottom from Top"><i class="fa-solid fa-circle-minus"></i></button>
-                        <button class="pathfinder-btn" data-op="intersect" title="Intersect"><i class="fa-solid fa-circle-half-stroke"></i></button>
-                        <button class="pathfinder-btn" data-op="exclude" title="Exclude Overlap"><i class="fa-solid fa-ring"></i></button>
-                    </div>
-                    <div style="font-size: 9px; color: var(--text-muted);">Works on basic shapes. Select exactly 2 overlapping shapes.</div>
-                </div>
 
                 <div class="panel-section" id="node-edit-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
                     <h3>Path Editing</h3>
@@ -453,23 +442,6 @@
                     <h3>Appearance</h3>
                     <div class="prop-row">
                         <div class="prop-col">
-                            <label>Blend Mode</label>
-                            <select id="obj-blend-mode">
-                                <option value="source-over">Normal</option>
-                                <option value="multiply">Multiply</option>
-                                <option value="screen">Screen</option>
-                                <option value="overlay">Overlay</option>
-                                <option value="darken">Darken</option>
-                                <option value="lighten">Lighten</option>
-                                <option value="color-dodge">Color Dodge</option>
-                                <option value="color-burn">Color Burn</option>
-                                <option value="difference">Difference</option>
-                                <option value="exclusion">Exclusion</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-col">
                             <label>Fill Type</label>
                             <select id="obj-fill-type">
                                 <option value="solid">Solid</option>
@@ -479,55 +451,6 @@
                         </div>
                     </div>
                     <button class="doc-btn" id="btn-open-gradient-editor" style="display: none; margin-top: 8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Edit Gradient...</button>
-                </div>
-
-                <div class="panel-section" id="stroke-advanced-properties" style="display: none;">
-                    <h3>Advanced Stroke</h3>
-                    <div class="prop-row">
-                        <div class="prop-col">
-                            <label>Style</label>
-                            <select id="obj-stroke-style">
-                                <option value="solid">Solid</option>
-                                <option value="dashed">Dashed</option>
-                                <option value="dotted">Dotted</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-col">
-                            <label>Cap</label>
-                            <select id="obj-stroke-cap">
-                                <option value="butt">Butt</option>
-                                <option value="round">Round</option>
-                                <option value="square">Square</option>
-                            </select>
-                        </div>
-                        <div class="prop-col">
-                            <label>Join</label>
-                            <select id="obj-stroke-join">
-                                <option value="miter">Miter</option>
-                                <option value="round">Round</option>
-                                <option value="bevel">Bevel</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel-section" id="shadow-properties">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <h3>Drop Shadow</h3>
-                        <input type="checkbox" id="shadow-enable">
-                    </div>
-                    <div id="shadow-controls" style="display: none;">
-                        <div class="prop-row">
-                            <div class="prop-col" style="flex: 0.5;"><input type="color" id="shadow-color" value="#000000"></div>
-                            <div class="prop-col"><label>Blur Radius</label><input type="number" id="shadow-blur" min="0" value="10"></div>
-                        </div>
-                        <div class="prop-row">
-                            <div class="prop-col"><label>Offset X</label><input type="number" id="shadow-ox" value="5"></div>
-                            <div class="prop-col"><label>Offset Y</label><input type="number" id="shadow-oy" value="5"></div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="panel-section" id="geometry-properties">
@@ -653,10 +576,13 @@
                     <div class="color-input-grid" style="margin-top: 8px;">
                         <div class="color-input-group"><label>R</label><input type="number" id="picker-r" min="0" max="255"></div>
                         <div class="color-input-group"><label>C</label><input type="number" id="picker-c" min="0" max="100"></div>
+                        
                         <div class="color-input-group"><label>G</label><input type="number" id="picker-g" min="0" max="255"></div>
                         <div class="color-input-group"><label>M</label><input type="number" id="picker-m" min="0" max="100"></div>
+                        
                         <div class="color-input-group"><label>B</label><input type="number" id="picker-b" min="0" max="255"></div>
                         <div class="color-input-group"><label>Y</label><input type="number" id="picker-y" min="0" max="100"></div>
+                        
                         <div class="color-input-group" style="grid-column: 1 / -1;"><label>#</label><input type="text" id="picker-hex" style="text-transform: uppercase;"></div>
                         <div class="color-input-group" style="grid-column: 2; margin-top: -34px;"><label>K</label><input type="number" id="picker-k" min="0" max="100"></div>
                     </div>
@@ -679,6 +605,7 @@
                     <div class="prop-col"><label>Angle (Linear)</label><input type="number" id="grad-angle" value="0" min="-180" max="180"></div>
                 </div>
             </div>
+
             <div class="panel-section" style="padding: 12px; background: var(--bg-surface); border-radius: 6px; margin-bottom: 12px;">
                 <h3 style="margin-bottom: 8px;">Stop 1 (Start)</h3>
                 <div class="prop-row">
@@ -687,6 +614,7 @@
                     <div class="prop-col" style="flex: 0.8;"><label>Loc (%)</label><input type="number" id="grad-loc1" min="0" max="100" value="0"></div>
                 </div>
             </div>
+
             <div class="panel-section" style="padding: 12px; background: var(--bg-surface); border-radius: 6px; margin-bottom: 12px;">
                 <h3 style="margin-bottom: 8px;">Stop 2 (End)</h3>
                 <div class="prop-row">
@@ -695,6 +623,7 @@
                     <div class="prop-col" style="flex: 0.8;"><label>Loc (%)</label><input type="number" id="grad-loc2" min="0" max="100" value="100"></div>
                 </div>
             </div>
+
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="$('#gradient-editor-modal').hide()">Cancel</button>
                 <button class="btn-primary" id="apply-adv-gradient-btn">Apply Gradient</button>
@@ -847,7 +776,7 @@
                         name: projects[id].name,
                         isDirty: projects[id].isDirty,
                         totalPages: projects[id].totalPages,
-                        isMasterMode: false, 
+                        isMasterMode: false, // Ensure we don't restore locked in master mode
                         config: projects[id].config,
                         canvasData: activeId === id ? canvas.toJSON(CUSTOM_PROPS) : projects[id].canvasData,
                         vpt: activeId === id ? [...canvas.viewportTransform] : projects[id].vpt
@@ -861,8 +790,11 @@
                     localStorage.removeItem('thooval_autosave');
                     return;
                 }
-                try { localStorage.setItem('thooval_autosave', JSON.stringify({ activeId: activeId, projects: getSafeProjectsData() })); } 
-                catch (e) { console.warn("Auto-save failed (LocalStorage quota exceeded)."); }
+                try {
+                    localStorage.setItem('thooval_autosave', JSON.stringify({ activeId: activeId, projects: getSafeProjectsData() }));
+                } catch (e) {
+                    console.warn("Auto-save failed (LocalStorage quota exceeded).");
+                }
             }
 
             setInterval(triggerAutoSave, 60000);
@@ -871,17 +803,25 @@
             const savedSessionStr = localStorage.getItem('thooval_autosave');
             if (savedSessionStr) {
                 $('#restore-modal').css('display', 'flex');
+                
                 $('#btn-restore-session').click(() => {
                     $('#restore-modal').hide();
                     try {
                         const savedData = JSON.parse(savedSessionStr);
                         projects = savedData.projects;
-                        for(let id in projects) { projects[id].history = []; projects[id].historyIndex = -1; }
+                        for(let id in projects) {
+                            projects[id].history = [];
+                            projects[id].historyIndex = -1;
+                        }
                         if (projects[savedData.activeId]) { switchProject(savedData.activeId); } else { renderTabs(); }
                         $('#panel-swatches, #panel-assets').show();
                     } catch(e) { console.error("Restore failed", e); }
                 });
-                $('#btn-discard-session').click(() => { localStorage.removeItem('thooval_autosave'); $('#restore-modal').hide(); });
+                
+                $('#btn-discard-session').click(() => {
+                    localStorage.removeItem('thooval_autosave');
+                    $('#restore-modal').hide();
+                });
             }
 
             // --- MENU TOGGLES (SNAP SETTINGS) ---
@@ -891,8 +831,11 @@
                 snapConfig[key] = !snapConfig[key];
                 
                 const stateEl = $(this).find('.state');
-                if (snapConfig[key]) { stateEl.text('ON').css('color', 'var(--accent)'); } 
-                else { stateEl.text('OFF').css('color', 'var(--text-muted)'); }
+                if (snapConfig[key]) {
+                    stateEl.text('ON').css('color', 'var(--accent)');
+                } else {
+                    stateEl.text('OFF').css('color', 'var(--text-muted)');
+                }
                 
                 if(key === 'master') { alert(`Smart Snapping is now ${snapConfig.master ? 'ON' : 'OFF'}`); }
             });
@@ -911,7 +854,10 @@
             }
 
             // --- IRO.JS ADVANCED COLOR PICKER ---
-            const colorPicker = new iro.ColorPicker("#iro-picker-container", { width: 200, color: "#ff0000", layoutDirection: "horizontal", layout: [ { component: iro.ui.Box }, { component: iro.ui.Slider, options: { sliderType: 'hue' } } ] });
+            const colorPicker = new iro.ColorPicker("#iro-picker-container", {
+                width: 200, color: "#ff0000", layoutDirection: "horizontal", layout: [ { component: iro.ui.Box }, { component: iro.ui.Slider, options: { sliderType: 'hue' } } ]
+            });
+
             function syncInputsWithPicker(color) {
                 $('#picker-hex').val(color.hexString.replace('#', ''));
                 $('#picker-r').val(color.rgb.r); $('#picker-g').val(color.rgb.g); $('#picker-b').val(color.rgb.b);
@@ -919,13 +865,17 @@
                 $('#picker-c').val(cmyk.c); $('#picker-m').val(cmyk.m); $('#picker-y').val(cmyk.y); $('#picker-k').val(cmyk.k);
                 $('#picker-new-color').css('background-color', color.hexString);
             }
+
             colorPicker.on('color:change', syncInputsWithPicker);
 
             $('.color-input-grid input').on('change', function() {
                 const id = $(this).attr('id');
                 if (id === 'picker-hex') { colorPicker.color.hexString = '#' + $(this).val(); } 
                 else if (['picker-r', 'picker-g', 'picker-b'].includes(id)) { colorPicker.color.rgb = { r: $('#picker-r').val(), g: $('#picker-g').val(), b: $('#picker-b').val() }; } 
-                else if (['picker-c', 'picker-m', 'picker-y', 'picker-k'].includes(id)) { colorPicker.color.rgb = cmyk2rgb($('#picker-c').val(), $('#picker-m').val(), $('#picker-y').val(), $('#picker-k').val()); }
+                else if (['picker-c', 'picker-m', 'picker-y', 'picker-k'].includes(id)) {
+                    const rgb = cmyk2rgb($('#picker-c').val(), $('#picker-m').val(), $('#picker-y').val(), $('#picker-k').val());
+                    colorPicker.color.rgb = rgb;
+                }
             });
 
             function openAdvancedPicker() {
@@ -934,13 +884,19 @@
                 $('#picker-old-color').css('background', currentColor);
                 $('#advanced-color-modal').css('display', 'flex');
             }
+
             $('#fill-focus, #stroke-focus').dblclick(openAdvancedPicker);
             $('#btn-open-advanced-picker').click(openAdvancedPicker);
 
             $('#btn-apply-color').click(() => {
                 const col = colorPicker.color.hexString;
-                if(focusedColorType === 'fill') { globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col); } 
-                else { globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col); const obj = canvas.getActiveObject(); if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } }
+                if(focusedColorType === 'fill') {
+                    globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col);
+                } else {
+                    globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
+                    const obj = canvas.getActiveObject();
+                    if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); }
+                }
                 $('#advanced-color-modal').hide();
             });
 
@@ -952,7 +908,11 @@
                 'Ocean': ['#03045e', '#023e8a', '#0077b6', '#0096c7', '#00b4d8', '#48cae4', '#90e0ef', '#ade8f4', '#caf0f8', '#007ea7', '#00a8e8', '#118ab2', '#06d6a0', '#073b4c'],
                 'Sunset': ['#ff7b54', '#ffb26b', '#ffd56b', '#939b62', '#e05d5d', '#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#f4a261', '#e76f51', '#d62828', '#264653'],
                 'Vintage': ['#cb997e', '#eddcd2', '#fff1e6', '#f0efeb', '#ddbea9', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189'],
-                'Gradients': [ { c1: '#ff9a9e', c2: '#fecfef', type: 'linear' }, { c1: '#a18cd1', c2: '#fbc2eb', type: 'linear' }, { c1: '#84fab0', c2: '#8fd3f4', type: 'linear' }, { c1: '#ffecd2', c2: '#fcb69f', type: 'radial' }, { c1: '#cfd9df', c2: '#e2ebf0', type: 'linear' }, { c1: '#fccb90', c2: '#d57eeb', type: 'linear' } ]
+                'Gradients': [ 
+                    { c1: '#ff9a9e', c2: '#fecfef', type: 'linear' }, { c1: '#a18cd1', c2: '#fbc2eb', type: 'linear' },
+                    { c1: '#84fab0', c2: '#8fd3f4', type: 'linear' }, { c1: '#ffecd2', c2: '#fcb69f', type: 'radial' },
+                    { c1: '#cfd9df', c2: '#e2ebf0', type: 'linear' }, { c1: '#fccb90', c2: '#d57eeb', type: 'linear' }
+                ]
             };
 
             function loadSwatchCategory(category) {
@@ -969,12 +929,15 @@
             $('#swatch-category').change(function() { loadSwatchCategory($(this).val()); });
 
             $(document).on('click', '.swatch-box', function() {
-                if ($(this).hasClass('asset-item')) return;
                 const type = $(this).data('type');
                 if (type === 'solid') {
                     const col = $(this).data('color');
                     if(focusedColorType === 'fill') { globalFill = col; $('#fill-focus').css('background', col).removeClass('none'); updateObj('fill', col); } 
-                    else { globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col); const obj = canvas.getActiveObject(); if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } }
+                    else {
+                        globalStroke = col; $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); updateObj('stroke', col);
+                        const obj = canvas.getActiveObject();
+                        if(obj && !obj.strokeWidth && obj.type !== 'activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); }
+                    }
                 } else if (type === 'gradient' && focusedColorType === 'fill') {
                     const c1 = $(this).data('c1'); const c2 = $(this).data('c2'); const gtype = $(this).data('gtype');
                     const bg = gtype === 'linear' ? `linear-gradient(45deg, ${c1}, ${c2})` : `radial-gradient(circle, ${c1}, ${c2})`;
@@ -986,32 +949,33 @@
 
             // --- ASSET LIBRARY LOGIC ---
             let customAssets = [];
-            try { const storedAssets = localStorage.getItem('thooval_assets'); if (storedAssets) customAssets = JSON.parse(storedAssets); } catch(e) {}
+            try {
+                const storedAssets = localStorage.getItem('thooval_assets');
+                if (storedAssets) customAssets = JSON.parse(storedAssets);
+            } catch(e) {}
 
             function renderAssets() {
-                const grid = $('#asset-grid'); grid.empty();
-                customAssets.forEach((asset, idx) => { grid.append(`<div class="asset-item swatch-box" style="background-image:url(${asset.thumb}); background-size:contain; background-position:center; background-repeat:no-repeat; background-color:var(--bg-surface);" data-idx="${idx}" title="${asset.name}"></div>`); });
+                const grid = $('#asset-grid');
+                grid.empty();
+                customAssets.forEach((asset, idx) => {
+                    grid.append(`<div class="asset-item swatch-box" style="background-image:url(${asset.thumb}); background-size:contain; background-position:center; background-repeat:no-repeat; background-color:var(--bg-surface);" data-idx="${idx}" title="${asset.name}"></div>`);
+                });
             }
 
             function saveSelectedAsAsset() {
-                let obj = canvas.getActiveObject();
+                const obj = canvas.getActiveObject();
                 if (!obj) { alert("Select an object to save as an asset."); return; }
                 
-                let isGroupedHere = false;
-                if (obj.type === 'activeSelection') {
-                    obj = obj.toGroup();
-                    isGroupedHere = true;
-                }
-                
                 let thumb;
-                try { thumb = obj.toDataURL({ format: 'png', multiplier: 0.5 }); } catch(e) { thumb = ''; } 
+                try { thumb = obj.toDataURL({ format: 'png', multiplier: 0.5 }); } 
+                catch(e) { thumb = ''; } 
                 
                 const assetData = obj.toJSON(CUSTOM_PROPS);
                 customAssets.push({ name: `Asset ${customAssets.length + 1}`, thumb: thumb, data: assetData });
                 
-                if (isGroupedHere) { obj.toActiveSelection(); } // Revert back on canvas
+                try { localStorage.setItem('thooval_assets', JSON.stringify(customAssets)); } 
+                catch(e) { alert("Failed to save asset. LocalStorage might be full."); customAssets.pop(); return; }
                 
-                try { localStorage.setItem('thooval_assets', JSON.stringify(customAssets)); } catch(e) { alert("Failed to save asset. LocalStorage might be full."); customAssets.pop(); return; }
                 renderAssets();
             }
 
@@ -1024,25 +988,45 @@
                 if (asset && asset.data) {
                     fabric.util.enlivening = true;
                     fabric.util.enlivenObjects([asset.data], function(objects) {
-                        const origRenderOnAddRemove = canvas.renderOnAddRemove; canvas.renderOnAddRemove = false;
+                        const origRenderOnAddRemove = canvas.renderOnAddRemove;
+                        canvas.renderOnAddRemove = false;
                         const center = getScreenCenter();
-                        objects.forEach(function(o) { o.set({ left: center.x, top: center.y, originX: 'center', originY: 'center', isRegular: projects[activeId].isMasterMode ? false : true, isMasterSource: projects[activeId].isMasterMode ? true : false }); canvas.add(o); canvas.setActiveObject(o); });
-                        canvas.renderOnAddRemove = origRenderOnAddRemove; canvas.requestRenderAll();
+                        
+                        objects.forEach(function(o) {
+                            o.set({
+                                left: center.x, top: center.y, originX: 'center', originY: 'center',
+                                isRegular: projects[activeId].isMasterMode ? false : true,
+                                isMasterSource: projects[activeId].isMasterMode ? true : false
+                            });
+                            canvas.add(o);
+                        });
+                        
+                        canvas.renderOnAddRemove = origRenderOnAddRemove;
+                        canvas.requestRenderAll();
                         sortLayers(); markDirty(); saveHistory();
                     });
                 }
             });
-            renderAssets();
+
+            renderAssets(); // Init Assets
 
             // --- CONTEXT MENU LOGIC ---
             $('#workspace-wrapper').on('contextmenu', function(e) {
-                e.preventDefault(); if (!activeId || isCropMode) return;
+                e.preventDefault();
+                if (!activeId || isCropMode) return;
                 
+                // Identify target under cursor and force selection if not already selected
                 let target = canvas.findTarget(e);
-                if (target && !target.isPaper && !target.isMargin && !target.isBleed && !target.isGuide) { canvas.setActiveObject(target); canvas.requestRenderAll(); } 
-                else if(!target || target.isPaper) { canvas.discardActiveObject(); canvas.requestRenderAll(); }
+                if (target && !target.isPaper && !target.isMargin && !target.isBleed && !target.isGuide) {
+                    canvas.setActiveObject(target);
+                    canvas.requestRenderAll();
+                } else if(!target || target.isPaper) {
+                    canvas.discardActiveObject();
+                    canvas.requestRenderAll();
+                }
                 
                 const activeObj = canvas.getActiveObject();
+                
                 if (activeObj) {
                     $('#cm-cut, #cm-copy, #cm-front, #cm-back, #cm-lock, #cm-export, #cm-save-asset, #cm-div-2, #cm-div-3').show();
                     $('#cm-lock span:first-child').text(activeObj.locked ? 'Unlock' : 'Lock');
@@ -1054,6 +1038,8 @@
                 
                 const menu = $('#custom-context-menu');
                 menu.css({ display: 'block', left: e.clientX, top: e.clientY });
+                
+                // Bounds check
                 if (e.clientX + menu.width() > $(window).width()) menu.css('left', e.clientX - menu.width());
                 if (e.clientY + menu.height() > $(window).height()) menu.css('top', e.clientY - menu.height());
             });
@@ -1069,20 +1055,50 @@
             
             $('#cm-lock').click(() => { 
                 const obj = canvas.getActiveObject(); 
-                if(obj) { obj.locked = !obj.locked; obj.set({ selectable: !obj.locked, evented: !obj.locked, lockMovementX: obj.locked, lockMovementY: obj.locked, lockScalingX: obj.locked, lockScalingY: obj.locked, lockRotation: obj.locked }); if(obj.locked) canvas.discardActiveObject(); canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory(); }
+                if(obj) {
+                    obj.locked = !obj.locked;
+                    obj.set({ selectable: !obj.locked, evented: !obj.locked, lockMovementX: obj.locked, lockMovementY: obj.locked, lockScalingX: obj.locked, lockScalingY: obj.locked, lockRotation: obj.locked });
+                    if(obj.locked) canvas.discardActiveObject();
+                    canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
+                }
                 $('#custom-context-menu').hide(); 
             });
 
-            $('#cm-export').click(() => { const obj = canvas.getActiveObject(); if(obj) { const dataURL = obj.toDataURL({ format: 'png', multiplier: 2 }); const a = document.createElement('a'); a.href = dataURL; a.download = `Thooval_Asset_Export.png`; a.click(); } $('#custom-context-menu').hide(); });
+            $('#cm-export').click(() => {
+                 const obj = canvas.getActiveObject();
+                 if(obj) {
+                     const dataURL = obj.toDataURL({ format: 'png', multiplier: 2 });
+                     const a = document.createElement('a');
+                     a.href = dataURL;
+                     a.download = `Thooval_Asset_Export.png`;
+                     a.click();
+                 }
+                 $('#custom-context-menu').hide();
+            });
 
             // --- GOOGLE FONTS INJECTION ---
-            const curatedFonts = [ "Inter", "Manjari", "Noto Sans Malayalam", "Roboto", "Open Sans", "Lato", "Montserrat", "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", "Merriweather", "Nunito", "Playfair Display", "Rubik", "Work Sans", "Fira Sans", "Quicksand", "Poppins", "Ubuntu", "Karla", "Lora", "Mukta", "Inconsolata", "Anton", "Josefin Sans", "Cabin", "Dancing Script", "Pacifico", "Bebas Neue", "Abel", "Questrial" ];
+            const curatedFonts = [
+                "Inter", "Manjari", "Noto Sans Malayalam", "Roboto", "Open Sans", "Lato", "Montserrat", 
+                "Oswald", "Source Sans Pro", "Slabo 27px", "Raleway", "PT Sans", "Merriweather", 
+                "Nunito", "Playfair Display", "Rubik", "Work Sans", "Fira Sans", "Quicksand",
+                "Poppins", "Ubuntu", "Karla", "Lora", "Mukta", "Inconsolata", "Anton", "Josefin Sans",
+                "Cabin", "Dancing Script", "Pacifico", "Bebas Neue", "Abel", "Questrial"
+            ];
             const fontFamiliesStr = curatedFonts.map(f => f.replace(/ /g, '+')).join('&family=');
-            $('head').append(`<link href="https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap" rel="stylesheet">`);
-            const fontSelect = $('#obj-font-family'); curatedFonts.forEach(font => { fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`); });
+            const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamiliesStr}&display=swap`;
+            $('head').append(`<link href="${googleFontsUrl}" rel="stylesheet">`);
+
+            const fontSelect = $('#obj-font-family');
+            curatedFonts.forEach(font => {
+                fontSelect.append(`<option value="'${font}', sans-serif" style="font-family: '${font}', sans-serif; font-size: 14px;">${font}</option>`);
+            });
 
             // --- MENU FIX ---
-            $('.dropdown li').not('.has-submenu').on('click', function() { const $dropdown = $(this).closest('.dropdown'); $dropdown.hide(); setTimeout(() => $dropdown.css('display', ''), 150); });
+            $('.dropdown li').not('.has-submenu').on('click', function() {
+                const $dropdown = $(this).closest('.dropdown');
+                $dropdown.hide();
+                setTimeout(() => $dropdown.css('display', ''), 150);
+            });
 
             // --- HISTORY STACK ---
             function saveHistory() {
@@ -1094,22 +1110,48 @@
                 p.history.push(canvas.toJSON(CUSTOM_PROPS));
                 p.historyIndex++;
                 if (p.history.length > 20) { p.history.shift(); p.historyIndex--; }
-                triggerAutoSave(); 
+                
+                triggerAutoSave(); // Save to background implicitly
             }
-            function performUndo() { if (!activeId) return; const p = projects[activeId]; if (p.history && p.historyIndex > 0) { isHistoryProcessing = true; p.historyIndex--; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel(); triggerAutoSave(); }); } }
-            function performRedo() { if (!activeId) return; const p = projects[activeId]; if (p.history && p.historyIndex < p.history.length - 1) { isHistoryProcessing = true; p.historyIndex++; canvas.loadFromJSON(p.history[p.historyIndex], function() { drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel(); triggerAutoSave(); }); } }
+            
+            function performUndo() {
+                if (!activeId) return; const p = projects[activeId];
+                if (p.history && p.historyIndex > 0) {
+                    isHistoryProcessing = true; p.historyIndex--;
+                    canvas.loadFromJSON(p.history[p.historyIndex], function() { 
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel(); triggerAutoSave();
+                    });
+                }
+            }
+            
+            function performRedo() {
+                if (!activeId) return; const p = projects[activeId];
+                if (p.history && p.historyIndex < p.history.length - 1) {
+                    isHistoryProcessing = true; p.historyIndex++;
+                    canvas.loadFromJSON(p.history[p.historyIndex], function() { 
+                        drawDocumentEnvironment(); maintainHairlines(); canvas.renderAll(); isHistoryProcessing = false; updateLayersPanel(); triggerAutoSave();
+                    });
+                }
+            }
 
-            $('#menu-undo').click(performUndo); $('#menu-redo').click(performRedo);
+            $('#menu-undo').click(performUndo);
+            $('#menu-redo').click(performRedo);
 
             // --- TAB MANAGEMENT ---
             function generateId() { return Math.random().toString(36).substr(2, 9); }
             function renderTabs() {
                 $('.tab').remove(); let tabHtml = '';
-                for (const id in projects) { const p = projects[id]; const activeClass = (id === activeId) ? 'active' : ''; const dirtyClass = p.isDirty ? 'is-dirty' : ''; tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}"><div class="dirty-dot"></div><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><i class="fa-solid fa-xmark tab-close"></i></div>`; }
+                for (const id in projects) {
+                    const p = projects[id]; const activeClass = (id === activeId) ? 'active' : ''; const dirtyClass = p.isDirty ? 'is-dirty' : '';
+                    tabHtml += `<div class="tab ${activeClass} ${dirtyClass}" data-id="${id}"><div class="dirty-dot"></div><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span><i class="fa-solid fa-xmark tab-close"></i></div>`;
+                }
                 $('#btn-new-tab').before(tabHtml);
                 
-                if (Object.keys(projects).length === 0) { $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches, #panel-assets').hide(); } 
-                else { $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches, #panel-assets').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel(); }
+                if (Object.keys(projects).length === 0) {
+                    $('#inner-welcome').show(); $('.canvas-container').hide(); $('#sidebar-left, #sidebar-right').addClass('disabled-ui'); $('#page-count-display, #page-indicator').text('0'); $('#ruler-h, #ruler-v').hide(); $('#panel-swatches, #panel-assets').hide();
+                } else {
+                    $('#inner-welcome').hide(); $('.canvas-container').show(); $('#sidebar-left, #sidebar-right').removeClass('disabled-ui'); $('#panel-swatches, #panel-assets').show(); if(showRulers && !isPreviewMode) drawRulers(); updateLayersPanel();
+                }
             }
 
             function switchProject(id) {
@@ -1118,19 +1160,34 @@
                 activeId = id; const p = projects[id]; canvas.clear();
                 
                 if (!p.history) { p.history = []; p.historyIndex = -1; }
-                if (p.config.colorMode) { $('#doc-mode-badge').text(p.config.colorMode); if (p.config.colorMode === 'CMYK') { $('#swatch-category').val('Basic CMYK').change(); } else { $('#swatch-category').val('Basic RGB').change(); } }
-                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); }); } else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
+
+                if (p.config.colorMode) {
+                    $('#doc-mode-badge').text(p.config.colorMode);
+                    if (p.config.colorMode === 'CMYK') { $('#swatch-category').val('Basic CMYK').change(); } 
+                    else { $('#swatch-category').val('Basic RGB').change(); }
+                }
+
+                if (p.canvasData) { canvas.loadFromJSON(p.canvasData, function() { canvas.setViewportTransform(p.vpt || [1,0,0,1,0,0]); drawDocumentEnvironment(); maintainHairlines(); if(showRulers && !isPreviewMode) drawRulers(); }); } 
+                else { canvas.viewportTransform = [1,0,0,1,0,0]; drawDocumentEnvironment(); }
                 
                 $('#page-count-display').text(p.totalPages);
                 if(p.isMasterMode) { $('#master-banner').css('display', 'flex'); } else { $('#master-banner').hide(); }
-                renderTabs(); setTool('select'); triggerAutoSave();
+                renderTabs(); setTool('select');
+                triggerAutoSave();
             }
 
             function forceCloseProject(id) { delete projects[id]; if (activeId === id) { const remainingIds = Object.keys(projects); if (remainingIds.length > 0) switchProject(remainingIds[remainingIds.length - 1]); else { activeId = null; canvas.clear(); renderTabs(); triggerAutoSave(); } } else { renderTabs(); triggerAutoSave(); } }
             $(document).on('click', '.tab', function(e) { if (!$(e.target).hasClass('tab-close')) switchProject($(this).data('id')); });
             $(document).on('click', '.tab-close', function(e) { e.stopPropagation(); const id = $(this).parent().data('id'); if (projects[id].isDirty) { tabIdToClose = id; $('#unsaved-filename').text(projects[id].name); $('#unsaved-modal').css('display', 'flex'); } else forceCloseProject(id); });
             
-            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { isEditingDoc = false; $('#doc-modal-title').text('New Document Setup'); $('#doc-name-group').show(); $('#doc-init-group').show(); $('#create-doc-btn').text('Create Project'); $('#new-doc-modal').css('display', 'flex'); });
+            $('#btn-new-tab, #welcome-new-btn, #menu-new').click(() => { 
+                isEditingDoc = false; 
+                $('#doc-modal-title').text('New Document Setup'); 
+                $('#doc-name-group').show(); 
+                $('#doc-init-group').show(); 
+                $('#create-doc-btn').text('Create Project'); 
+                $('#new-doc-modal').css('display', 'flex'); 
+            });
 
             $('#btn-cancel-close').click(() => { $('#unsaved-modal').hide(); tabIdToClose = null; });
             $('#btn-dont-save').click(() => { $('#unsaved-modal').hide(); forceCloseProject(tabIdToClose); tabIdToClose = null; });
@@ -1149,7 +1206,10 @@
             
             $('#menu-doc-setup').click(function() {
                 if(!activeId) return; isEditingDoc = true; const conf = projects[activeId].config;
-                $('#doc-modal-title').text('Edit Document Setup'); $('#doc-name-group').hide(); $('#doc-init-group').hide(); $('#create-doc-btn').text('Apply Changes');
+                $('#doc-modal-title').text('Edit Document Setup'); 
+                $('#doc-name-group').hide(); 
+                $('#doc-init-group').hide(); 
+                $('#create-doc-btn').text('Apply Changes');
                 $('#doc-unit').val(conf.unit); $('#doc-preset').val('Custom');
                 $('#doc-w').val(+(fromPx(conf.widthPx, conf.unit).toFixed(2))); $('#doc-h').val(+(fromPx(conf.heightPx, conf.unit).toFixed(2)));
                 $('#mar-t').val(+(fromPx(conf.marginsPx.t, conf.unit).toFixed(2))); $('#mar-b').val(+(fromPx(conf.marginsPx.b, conf.unit).toFixed(2)));
@@ -1161,6 +1221,7 @@
             $('#cancel-doc-btn').click(() => $('#new-doc-modal').hide());
             $('#create-doc-btn').click(function() {
                 const u = $('#doc-unit').val(); 
+                
                 const confData = {
                     unit: u, widthPx: toPx(parseFloat($('#doc-w').val()||210), u), heightPx: toPx(parseFloat($('#doc-h').val()||297), u),
                     marginsPx: { t: toPx(parseFloat($('#mar-t').val()||15), u), b: toPx(parseFloat($('#mar-b').val()||15), u), l: toPx(parseFloat($('#mar-l').val()||15), u), r: toPx(parseFloat($('#mar-r').val()||15), u) },
@@ -1174,8 +1235,19 @@
                 } else {
                     const docPages = parseInt($('#doc-pages').val()) || 1;
                     confData.colorMode = $('#doc-color-mode').val();
+                    
                     const newId = generateId(); 
-                    projects[newId] = { name: $('#doc-name').val() || 'Untitled Project', isDirty: false, totalPages: docPages, isMasterMode: false, config: confData, canvasData: null, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 };
+                    projects[newId] = { 
+                        name: $('#doc-name').val() || 'Untitled Project', 
+                        isDirty: false, 
+                        totalPages: docPages, 
+                        isMasterMode: false, 
+                        config: confData, 
+                        canvasData: null, 
+                        vpt: [1,0,0,1,0,0], 
+                        history: [], 
+                        historyIndex: -1 
+                    };
                     switchProject(newId); fitWholePage(); saveHistory();
                 }
                 $('#new-doc-modal').hide();
@@ -1199,8 +1271,15 @@
                 const objects = canvas.getObjects();
                 objects.sort((a, b) => {
                     const getZ = (o) => { 
-                        if (o.isPaper) return -5; if (o.isMasterClone) return -4; if (o.isRegular || o.isMasterSource) return -3; 
-                        if (o.isMask) return -2; if (o.isBleed) return -1; if (o.isMargin) return 0; if (o.isGuide || o.isMaskGuide) return 1; if (o.isSnapGuide) return 2; return -3; 
+                        if (o.isPaper) return -5; 
+                        if (o.isMasterClone) return -4; 
+                        if (o.isRegular || o.isMasterSource) return -3; 
+                        if (o.isMask) return -2; 
+                        if (o.isBleed) return -1; 
+                        if (o.isMargin) return 0; 
+                        if (o.isGuide || o.isMaskGuide) return 1; 
+                        if (o.isSnapGuide) return 2;
+                        return -3; 
                     };
                     return getZ(a) - getZ(b);
                 });
@@ -1210,6 +1289,7 @@
 
             function drawDocumentEnvironment() {
                 if (!activeId) return; const p = projects[activeId]; const conf = p.config;
+                
                 const envItems = canvas.getObjects().filter(obj => obj.isPaper || obj.isMargin || obj.isBleed || obj.isMask);
                 envItems.forEach(obj => canvas.remove(obj));
                 
@@ -1237,58 +1317,151 @@
 
             // --- ADVANCED LAYERS PANEL ---
             function updateLayersPanel() {
-                if (!activeId) return; const list = $('#layer-list'); list.empty();
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
+                if (!activeId) return;
+                const list = $('#layer-list');
+                list.empty();
+                
+                const objects = canvas.getObjects().filter(o => 
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource
+                );
+
                 const activeObjs = canvas.getActiveObjects();
 
                 let layerCounter = 1;
-                objects.forEach(obj => { if (obj.type !== 'textbox' && !obj.layerName) { obj.layerName = "Layer " + layerCounter; } if (obj.type !== 'textbox') layerCounter++; });
+                objects.forEach(obj => {
+                    if (obj.type !== 'textbox' && !obj.layerName) {
+                        obj.layerName = "Layer " + layerCounter;
+                    }
+                    if (obj.type !== 'textbox') layerCounter++;
+                });
 
                 for (let i = objects.length - 1; i >= 0; i--) {
                     const obj = objects[i];
+                    
                     let typeName = '';
-                    if (obj.type === 'textbox') { typeName = obj.text.substring(0, 15) + (obj.text.length > 15 ? '...' : ''); } else { typeName = obj.layerName; }
+                    if (obj.type === 'textbox') {
+                        typeName = obj.text.substring(0, 15) + (obj.text.length > 15 ? '...' : '');
+                    } else {
+                        typeName = obj.layerName;
+                    }
                     if (obj.clipPath) typeName = `[Masked] ${typeName}`;
                     
                     let imgSrc = '';
-                    try { if (obj.width > 0 && obj.height > 0) { const cloneFactor = 24 / Math.max(obj.getScaledWidth(), obj.getScaledHeight(), 1); imgSrc = obj.toDataURL({ format: 'png', multiplier: cloneFactor }); } } catch(e) { }
+                    try {
+                        if (obj.width > 0 && obj.height > 0) {
+                            const cloneFactor = 24 / Math.max(obj.getScaledWidth(), obj.getScaledHeight(), 1);
+                            imgSrc = obj.toDataURL({ format: 'png', multiplier: cloneFactor });
+                        }
+                    } catch(e) { }
 
-                    const previewHTML = imgSrc ? `<img src="${imgSrc}" style="width:20px; height:20px; object-fit:contain; background:var(--bg-surface); border-radius:3px; border:1px solid var(--border-light);">` : `<div style="width:20px; height:20px; background:var(--bg-surface); border-radius:3px; border:1px solid var(--border-light);"></div>`;
+                    const previewHTML = imgSrc 
+                        ? `<img src="${imgSrc}" style="width:20px; height:20px; object-fit:contain; background:var(--bg-surface); border-radius:3px; border:1px solid var(--border-light);">` 
+                        : `<div style="width:20px; height:20px; background:var(--bg-surface); border-radius:3px; border:1px solid var(--border-light);"></div>`;
+
                     const isActive = activeObjs.includes(obj) ? 'active' : '';
                     const visIcon = obj.visible !== false ? 'fa-eye' : 'fa-eye-slash';
                     const lockIcon = obj.locked ? 'fa-lock' : 'fa-lock-open';
 
-                    const li = $(`<li class="layer-item ${isActive}" data-index="${i}" draggable="true"><div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">${previewHTML}<div class="layer-info" style="margin: 0;">${typeName}</div></div><div class="layer-actions"><i class="fa-solid ${lockIcon} layer-action-btn btn-lock" title="Toggle Lock"></i><i class="fa-solid ${visIcon} layer-action-btn btn-vis" title="Toggle Visibility"></i></div></li>`);
+                    const li = $(`
+                        <li class="layer-item ${isActive}" data-index="${i}" draggable="true">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
+                                ${previewHTML}
+                                <div class="layer-info" style="margin: 0;">${typeName}</div>
+                            </div>
+                            <div class="layer-actions">
+                                <i class="fa-solid ${lockIcon} layer-action-btn btn-lock" title="Toggle Lock"></i>
+                                <i class="fa-solid ${visIcon} layer-action-btn btn-vis" title="Toggle Visibility"></i>
+                            </div>
+                        </li>
+                    `);
+                    
                     list.append(li);
                 }
             }
 
-            canvas.on('selection:created', updateLayersPanel); canvas.on('selection:updated', updateLayersPanel); canvas.on('selection:cleared', updateLayersPanel);
+            canvas.on('selection:created', updateLayersPanel);
+            canvas.on('selection:updated', updateLayersPanel);
+            canvas.on('selection:cleared', updateLayersPanel);
 
             // Drag and Drop Layer Reordering Logic
             let draggedLayerIdx = null;
-            $(document).on('dragstart', '.layer-item', function(e) { draggedLayerIdx = $(this).data('index'); $(this).css('opacity', '0.4'); e.originalEvent.dataTransfer.effectAllowed = 'move'; });
+            $(document).on('dragstart', '.layer-item', function(e) {
+                draggedLayerIdx = $(this).data('index');
+                $(this).css('opacity', '0.4');
+                e.originalEvent.dataTransfer.effectAllowed = 'move';
+            });
             $(document).on('dragover', '.layer-item', function(e) { e.preventDefault(); $(this).addClass('drag-over'); });
             $(document).on('dragleave', '.layer-item', function(e) { $(this).removeClass('drag-over'); });
             $(document).on('dragend', '.layer-item', function(e) { $(this).css('opacity', '1'); $('.layer-item').removeClass('drag-over'); });
             $(document).on('drop', '.layer-item', function(e) {
-                e.preventDefault(); $('.layer-item').removeClass('drag-over'); const targetIdx = $(this).data('index');
+                e.preventDefault();
+                $('.layer-item').removeClass('drag-over');
+                const targetIdx = $(this).data('index');
                 if (draggedLayerIdx === null || draggedLayerIdx === targetIdx) return;
-                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
-                const draggedObj = objects[draggedLayerIdx]; const targetObj = objects[targetIdx];
-                if (draggedObj && targetObj) { const realTargetIndex = canvas.getObjects().indexOf(targetObj); canvas.moveTo(draggedObj, realTargetIndex); sortLayers(); canvas.requestRenderAll(); markDirty(); saveHistory(); }
+
+                const objects = canvas.getObjects().filter(o => 
+                    !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource
+                );
+                
+                const draggedObj = objects[draggedLayerIdx];
+                const targetObj = objects[targetIdx];
+                
+                if (draggedObj && targetObj) {
+                    const realTargetIndex = canvas.getObjects().indexOf(targetObj);
+                    canvas.moveTo(draggedObj, realTargetIndex);
+                    sortLayers(); 
+                    canvas.requestRenderAll();
+                    markDirty(); saveHistory();
+                }
             });
 
-            $(document).on('click', '.layer-item', function(e) { if ($(e.target).hasClass('layer-action-btn')) return; const idx = $(this).data('index'); const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource); const obj = objects[idx]; if (obj && !obj.locked && obj.visible !== false) { canvas.setActiveObject(obj); canvas.requestRenderAll(); } });
+            $(document).on('click', '.layer-item', function(e) {
+                if ($(e.target).hasClass('layer-action-btn')) return; 
+                const idx = $(this).data('index');
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
+                const obj = objects[idx];
+                if (obj && !obj.locked && obj.visible !== false) {
+                    canvas.setActiveObject(obj);
+                    canvas.requestRenderAll();
+                }
+            });
 
-            $(document).on('click', '.btn-lock', function(e) { e.stopPropagation(); const idx = $(this).closest('.layer-item').data('index'); const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource); const obj = objects[idx]; obj.locked = !obj.locked; obj.set({ selectable: !obj.locked, evented: !obj.locked, lockMovementX: obj.locked, lockMovementY: obj.locked, lockScalingX: obj.locked, lockScalingY: obj.locked, lockRotation: obj.locked }); if (obj.locked && canvas.getActiveObject() === obj) canvas.discardActiveObject(); canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory(); });
+            $(document).on('click', '.btn-lock', function(e) {
+                e.stopPropagation();
+                const idx = $(this).closest('.layer-item').data('index');
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
+                const obj = objects[idx];
+                
+                obj.locked = !obj.locked;
+                obj.set({ selectable: !obj.locked, evented: !obj.locked, lockMovementX: obj.locked, lockMovementY: obj.locked, lockScalingX: obj.locked, lockScalingY: obj.locked, lockRotation: obj.locked });
+                if (obj.locked && canvas.getActiveObject() === obj) canvas.discardActiveObject();
+                canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
+            });
 
-            $(document).on('click', '.btn-vis', function(e) { e.stopPropagation(); const idx = $(this).closest('.layer-item').data('index'); const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource); const obj = objects[idx]; obj.visible = obj.visible === false ? true : false; if (obj.visible === false && canvas.getActiveObject() === obj) canvas.discardActiveObject(); canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory(); });
+            $(document).on('click', '.btn-vis', function(e) {
+                e.stopPropagation();
+                const idx = $(this).closest('.layer-item').data('index');
+                const objects = canvas.getObjects().filter(o => !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource);
+                const obj = objects[idx];
+                
+                obj.visible = obj.visible === false ? true : false;
+                if (obj.visible === false && canvas.getActiveObject() === obj) canvas.discardActiveObject();
+                canvas.requestRenderAll(); updateLayersPanel(); markDirty(); saveHistory();
+            });
 
             // --- TOGGLES & PREVIEW MODE ---
             function updateVisibilityToggles() {
-                if (isPreviewMode) { $('#ruler-h, #ruler-v').hide(); canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); }); } 
-                else { if(showRulers) $('#ruler-h, #ruler-v').show(); canvas.getObjects().forEach(o => { if(o.isGuide && showGuides) o.set('opacity', 1); if(o.isMargin && showMargins) o.set('opacity', 0.8); if(o.isBleed && showBleed) o.set('opacity', 0.8); }); }
+                if (isPreviewMode) {
+                    $('#ruler-h, #ruler-v').hide();
+                    canvas.getObjects().forEach(o => { if(o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                } else {
+                    if(showRulers) $('#ruler-h, #ruler-v').show();
+                    canvas.getObjects().forEach(o => {
+                       if(o.isGuide && showGuides) o.set('opacity', 1);
+                       if(o.isMargin && showMargins) o.set('opacity', 0.8);
+                       if(o.isBleed && showBleed) o.set('opacity', 0.8);
+                    });
+                }
                 canvas.requestRenderAll();
             }
 
@@ -1330,207 +1503,242 @@
             });
 
             // --- SMART SNAPPING ENGINE ---
-            function clearSnapLines() { snapLines.forEach(line => canvas.remove(line)); snapLines = []; }
+            function clearSnapLines() {
+                snapLines.forEach(line => canvas.remove(line));
+                snapLines = [];
+            }
+            
             function drawSnapLine(axis, pos) {
                 const zoom = canvas.getZoom();
-                let line = axis === 'x' ? new fabric.Line([pos, -50000, pos, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true }) : new fabric.Line([-50000, pos, 50000, pos], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
-                snapLines.push(line); canvas.add(line);
+                let line = axis === 'x' ?
+                    new fabric.Line([pos, -50000, pos, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true }) :
+                    new fabric.Line([-50000, pos, 50000, pos], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
+                snapLines.push(line);
+                canvas.add(line);
             }
 
             function findSnap(point, excludeObj) {
                 if (!snapConfig.master || isPreviewMode || isCropMode) return { x: point.x, y: point.y, snapX: false, snapY: false, lineX: null, lineY: null };
-                const zoom = canvas.getZoom(); const snapThreshold = SNAP_THRESHOLD / zoom;
-                let targetXs = []; let targetYs = [];
+
+                const zoom = canvas.getZoom();
+                const snapThreshold = SNAP_THRESHOLD / zoom;
+
+                let targetXs = [];
+                let targetYs = [];
 
                 canvas.getObjects().forEach(t => {
                     if (t === excludeObj || t.visible === false || t.isSnapGuide || t.isMaskGuide || t.isMask || t.isPaper) return;
-                    if (t.isMargin && !snapConfig.margin) return; if (t.isBleed && !snapConfig.bleed) return; if (!t.isMargin && !t.isBleed && !t.isGuide && !snapConfig.object) return;
+                    if (t.isMargin && !snapConfig.margin) return;
+                    if (t.isBleed && !snapConfig.bleed) return;
+                    if (!t.isMargin && !t.isBleed && !t.isGuide && !snapConfig.object) return;
 
-                    if (t.isGuide) { if (t.lockMovementX) targetYs.push(t.top); if (t.lockMovementY) targetXs.push(t.left); } 
-                    else { let tB = t.getBoundingRect(true, true); targetXs.push(tB.left, tB.left + tB.width / 2, tB.left + tB.width); targetYs.push(tB.top, tB.top + tB.height / 2, tB.top + tB.height); }
+                    if (t.isGuide) {
+                        if (t.lockMovementX) targetYs.push(t.top); 
+                        if (t.lockMovementY) targetXs.push(t.left);
+                    } else {
+                        let tB = t.getBoundingRect(true, true);
+                        targetXs.push(tB.left, tB.left + tB.width / 2, tB.left + tB.width);
+                        targetYs.push(tB.top, tB.top + tB.height / 2, tB.top + tB.height);
+                    }
                 });
 
-                let bestX = point.x, bestY = point.y; let minDx = Infinity, minDy = Infinity; let snapX = false, snapY = false;
+                let bestX = point.x, bestY = point.y;
+                let minDx = Infinity, minDy = Infinity;
+                let snapX = false, snapY = false;
 
-                if (snapConfig.horizontal) { for (let tX of targetXs) { if (Math.abs(tX - point.x) < snapThreshold && Math.abs(tX - point.x) < Math.abs(minDx)) { minDx = tX - point.x; bestX = tX; snapX = true; } } }
-                if (snapConfig.vertical) { for (let tY of targetYs) { if (Math.abs(tY - point.y) < snapThreshold && Math.abs(tY - point.y) < Math.abs(minDy)) { minDy = tY - point.y; bestY = tY; snapY = true; } } }
+                if (snapConfig.horizontal) {
+                    for (let tX of targetXs) {
+                        if (Math.abs(tX - point.x) < snapThreshold && Math.abs(tX - point.x) < Math.abs(minDx)) {
+                            minDx = tX - point.x; bestX = tX; snapX = true;
+                        }
+                    }
+                }
+
+                if (snapConfig.vertical) {
+                    for (let tY of targetYs) {
+                        if (Math.abs(tY - point.y) < snapThreshold && Math.abs(tY - point.y) < Math.abs(minDy)) {
+                            minDy = tY - point.y; bestY = tY; snapY = true;
+                        }
+                    }
+                }
 
                 return { x: bestX, y: bestY, snapX, snapY, lineX: snapX ? bestX : null, lineY: snapY ? bestY : null };
             }
 
             canvas.on('object:moving', function(options) {
-                clearSnapLines(); if (!activeId || !showGuides || isPreviewMode || isCropMode || !snapConfig.master) return;
+                clearSnapLines();
+                if (!activeId || !showGuides || isPreviewMode || isCropMode || !snapConfig.master) return;
                 
-                const obj = options.target; const zoom = canvas.getZoom(); const snapThreshold = SNAP_THRESHOLD / zoom;
+                const obj = options.target; 
+                const zoom = canvas.getZoom();
+                const snapThreshold = SNAP_THRESHOLD / zoom;
 
                 const snapTargets = canvas.getObjects().filter(t => {
                     if (t === obj || t.visible === false || t.isMask || t.isMaskGuide || t.isSnapGuide || t.isPaper) return false;
-                    if (t.isMargin && !snapConfig.margin) return false; if (t.isBleed && !snapConfig.bleed) return false; if (!t.isMargin && !t.isBleed && !t.isGuide && !snapConfig.object) return false;
+                    if (t.isMargin && !snapConfig.margin) return false;
+                    if (t.isBleed && !snapConfig.bleed) return false;
+                    if (!t.isMargin && !t.isBleed && !t.isGuide && !snapConfig.object) return false;
                     return true;
                 });
 
                 const objB = obj.getBoundingRect(true, true); 
-                let snapX = false; let snapY = false; let minDx = Infinity; let minDy = Infinity; let lineX = null; let lineY = null;
+                
+                let snapX = false; let snapY = false;
+                let minDx = Infinity; let minDy = Infinity;
+                let lineX = null; let lineY = null;
+
                 let targetXs = []; let targetYs = [];
 
                 snapTargets.forEach(t => {
-                    if (t.isGuide) { if (t.lockMovementX) targetYs.push(t.top); if (t.lockMovementY) targetXs.push(t.left); } 
-                    else { let tB = t.getBoundingRect(true, true); targetXs.push(tB.left, tB.left + tB.width/2, tB.left + tB.width); targetYs.push(tB.top, tB.top + tB.height/2, tB.top + tB.height); }
+                    if (t.isGuide) {
+                        if (t.lockMovementX) targetYs.push(t.top); 
+                        if (t.lockMovementY) targetXs.push(t.left);
+                    } else {
+                        let tB = t.getBoundingRect(true, true);
+                        targetXs.push(tB.left, tB.left + tB.width/2, tB.left + tB.width);
+                        targetYs.push(tB.top, tB.top + tB.height/2, tB.top + tB.height);
+                    }
                 });
 
-                let objXs = [objB.left, objB.left + objB.width/2, objB.left + objB.width]; let objYs = [objB.top, objB.top + objB.height/2, objB.top + objB.height];
+                let objXs = [objB.left, objB.left + objB.width/2, objB.left + objB.width];
+                let objYs = [objB.top, objB.top + objB.height/2, objB.top + objB.height];
 
-                if(snapConfig.horizontal) { for (let oX of objXs) { for (let tX of targetXs) { if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) { minDx = tX - oX; lineX = tX; snapX = true; } } } }
-                if(snapConfig.vertical) { for (let oY of objYs) { for (let tY of targetYs) { if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) { minDy = tY - oY; lineY = tY; snapY = true; } } } }
+                if(snapConfig.horizontal) {
+                    for (let oX of objXs) {
+                        for (let tX of targetXs) {
+                            if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) {
+                                minDx = tX - oX; lineX = tX; snapX = true;
+                            }
+                        }
+                    }
+                }
+
+                if(snapConfig.vertical) {
+                    for (let oY of objYs) {
+                        for (let tY of targetYs) {
+                            if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) {
+                                minDy = tY - oY; lineY = tY; snapY = true;
+                            }
+                        }
+                    }
+                }
 
                 if (snapX || snapY) {
-                    if (snapX) obj.set('left', obj.left + minDx); if (snapY) obj.set('top', obj.top + minDy);
+                    if (snapX) obj.set('left', obj.left + minDx);
+                    if (snapY) obj.set('top', obj.top + minDy);
                     obj.setCoords();
-                    if (snapX && lineX !== null) drawSnapLine('x', lineX); if (snapY && lineY !== null) drawSnapLine('y', lineY);
+
+                    if (snapX && lineX !== null) drawSnapLine('x', lineX);
+                    if (snapY && lineY !== null) drawSnapLine('y', lineY);
                 }
-            });
-
-            // --- BOOLEAN PATHFINDER (CSG) ENGINE ---
-            function getAbsolutePoints(obj) {
-                let points = [];
-                if (obj.type === 'rect') {
-                    points = [ {x: -obj.width/2, y: -obj.height/2}, {x: obj.width/2, y: -obj.height/2}, {x: obj.width/2, y: obj.height/2}, {x: -obj.width/2, y: obj.height/2} ];
-                } else if (obj.type === 'circle') {
-                    const steps = 64; 
-                    for (let i=0; i<steps; i++) {
-                        const theta = (i/steps)*Math.PI*2;
-                        points.push({x: obj.radius*Math.cos(theta), y: obj.radius*Math.sin(theta)});
-                    }
-                } else if (obj.type === 'polygon' || obj.type === 'polyline') {
-                    points = obj.points.map(p => ({x: p.x - obj.pathOffset.x, y: p.y - obj.pathOffset.y}));
-                } else {
-                    return null;
-                }
-                const matrix = obj.calcTransformMatrix();
-                return points.map(p => {
-                    const tp = fabric.util.transformPoint(p, matrix);
-                    return [tp.x, tp.y];
-                });
-            }
-
-            $('.pathfinder-btn').click(function() {
-                const op = $(this).data('op');
-                const sel = canvas.getActiveObject();
-                if (!sel || sel.type !== 'activeSelection' || sel.size() !== 2) { alert("Please select exactly two shapes."); return; }
-                
-                const objs = sel.getObjects();
-                const bottomObj = objs[0];
-                const topObj = objs[1];
-
-                const pts1 = getAbsolutePoints(bottomObj);
-                const pts2 = getAbsolutePoints(topObj);
-
-                if (!pts1 || !pts2) { alert("Unsupported shape types for Boolean operations. Try Rect, Circle, or Polygon."); return; }
-
-                const poly1 = { regions: [pts1], inverted: false };
-                const poly2 = { regions: [pts2], inverted: false };
-
-                let resultPoly;
-                try {
-                    if (op === 'unite') resultPoly = PolyBool.union(poly1, poly2);
-                    if (op === 'subtract') resultPoly = PolyBool.difference(poly1, poly2);
-                    if (op === 'intersect') resultPoly = PolyBool.intersect(poly1, poly2);
-                    if (op === 'exclude') resultPoly = PolyBool.xor(poly1, poly2);
-                } catch (e) { alert("Operation failed."); return; }
-
-                canvas.discardActiveObject();
-                if (resultPoly.regions.length === 0) { canvas.remove(bottomObj, topObj); return; }
-
-                let pathString = "";
-                resultPoly.regions.forEach(region => {
-                    if (region.length === 0) return;
-                    pathString += `M ${region[0][0]} ${region[0][1]} `;
-                    for(let i=1; i<region.length; i++) { pathString += `L ${region[i][0]} ${region[i][1]} `; }
-                    pathString += "Z ";
-                });
-
-                const newPath = new fabric.Path(pathString, {
-                    fill: bottomObj.fill,
-                    stroke: bottomObj.stroke,
-                    strokeWidth: bottomObj.strokeWidth,
-                    globalCompositeOperation: bottomObj.globalCompositeOperation,
-                    shadow: bottomObj.shadow,
-                    isRegular: bottomObj.isRegular,
-                    isMasterSource: bottomObj.isMasterSource
-                });
-
-                newPath.set({ left: newPath.left, top: newPath.top }); 
-                canvas.remove(bottomObj, topObj); canvas.add(newPath); canvas.setActiveObject(newPath);
-                canvas.requestRenderAll(); markDirty(); saveHistory();
             });
 
             // --- ADVANCED ALIGNMENT & DISTRIBUTION ENGINE ---
             $('.align-btn').click(function() {
                 if (!activeId) return;
-                const action = $(this).data('action'); const ref = $('#align-reference').val();
+                const action = $(this).data('action');
+                const ref = $('#align-reference').val();
                 let activeSelection = canvas.getActiveObject();
                 if (!activeSelection) return;
 
                 let targets = activeSelection.type === 'activeSelection' ? activeSelection.getObjects() : [activeSelection];
                 if (ref === 'selection' && targets.length < 2) return;
 
-                let bounds; if (ref === 'selection') bounds = activeSelection.getBoundingRect();
+                let bounds;
+                if (ref === 'selection') {
+                    bounds = activeSelection.getBoundingRect();
+                }
+
                 canvas.discardActiveObject();
 
                 targets.forEach(obj => {
                     let targetBounds = bounds;
                     if (ref !== 'selection') {
-                        const p = projects[activeId]; const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                        const p = projects[activeId];
+                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
                         const estimatedPage = Math.max(0, Math.min(p.totalPages - 1, Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap)));
                         const pos = getPagePosition(estimatedPage, p.config);
-                        if (ref === 'page') { targetBounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }; } 
-                        else if (ref === 'margin') {
-                            const m = p.config.marginsPx; let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0);
+                        
+                        if (ref === 'page') {
+                            targetBounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx };
+                        } else if (ref === 'margin') {
+                            const m = p.config.marginsPx;
+                            let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0);
                             let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
                             targetBounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b };
                         }
                     }
 
                     let objB = obj.getBoundingRect();
+
                     if (action === 'left') obj.set('left', obj.left - (objB.left - targetBounds.left));
                     if (action === 'center-h') obj.set('left', obj.left + (targetBounds.left + targetBounds.width/2) - (objB.left + objB.width/2));
                     if (action === 'right') obj.set('left', obj.left + (targetBounds.left + targetBounds.width) - (objB.left + objB.width));
                     if (action === 'top') obj.set('top', obj.top - (objB.top - targetBounds.top));
                     if (action === 'center-v') obj.set('top', obj.top + (targetBounds.top + targetBounds.height/2) - (objB.top + objB.height/2));
                     if (action === 'bottom') obj.set('top', obj.top + (targetBounds.top + targetBounds.height) - (objB.top + objB.height));
+                    
                     obj.setCoords();
                 });
 
-                if (targets.length > 1) { let sel = new fabric.ActiveSelection(targets, { canvas: canvas }); canvas.setActiveObject(sel); } else { canvas.setActiveObject(targets[0]); }
+                if (targets.length > 1) {
+                    let sel = new fabric.ActiveSelection(targets, { canvas: canvas });
+                    canvas.setActiveObject(sel);
+                } else {
+                    canvas.setActiveObject(targets[0]);
+                }
                 canvas.requestRenderAll(); markDirty(); saveHistory(); updateTransformUI({target: canvas.getActiveObject()});
             });
 
             $('#dist-h, #dist-v').click(function() {
                 if (!activeId) return;
-                const action = $(this).attr('id') === 'dist-h' ? 'h' : 'v'; const ref = $('#align-reference').val();
-                let activeSelection = canvas.getActiveObject(); if (!activeSelection) return;
-                let targets = activeSelection.type === 'activeSelection' ? activeSelection.getObjects() : [activeSelection];
-                if (targets.length < 2 && ref === 'selection') return; if (targets.length < 1) return;
+                const action = $(this).attr('id') === 'dist-h' ? 'h' : 'v';
+                const ref = $('#align-reference').val();
+                let activeSelection = canvas.getActiveObject();
+                if (!activeSelection) return;
 
-                const p = projects[activeId]; const prop = action === 'h' ? 'left' : 'top';
+                let targets = activeSelection.type === 'activeSelection' ? activeSelection.getObjects() : [activeSelection];
+                if (targets.length < 2 && ref === 'selection') return;
+                if (targets.length < 1) return;
+
+                const p = projects[activeId];
+                const prop = action === 'h' ? 'left' : 'top';
                 targets.sort((a, b) => a.getBoundingRect()[prop] - b.getBoundingRect()[prop]);
 
                 let bounds;
-                if (ref === 'selection') { bounds = activeSelection.getBoundingRect(); } 
-                else {
-                    const obj = targets[0]; const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                if (ref === 'selection') {
+                    bounds = activeSelection.getBoundingRect();
+                } else {
+                    const obj = targets[0];
+                    const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
                     const estimatedPage = Math.max(0, Math.min(p.totalPages - 1, Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap)));
                     const pos = getPagePosition(estimatedPage, p.config);
-                    if (ref === 'page') { bounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx }; } 
-                    else if (ref === 'margin') { const m = p.config.marginsPx; let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0); let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r; bounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b }; }
+                    if (ref === 'page') {
+                        bounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx };
+                    } else if (ref === 'margin') {
+                        const m = p.config.marginsPx;
+                        let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0); 
+                        let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
+                        bounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b };
+                    }
                 }
 
                 canvas.discardActiveObject();
 
                 if (ref === 'selection' && targets.length >= 3) {
-                    const first = targets[0].getBoundingRect(); const last = targets[targets.length - 1].getBoundingRect();
-                    const totalDist = action === 'h' ? (last.left - first.left) : (last.top - first.top); const spacing = totalDist / (targets.length - 1);
-                    targets.forEach((obj, i) => { if (i > 0 && i < targets.length - 1) { let curB = obj.getBoundingRect(); if (action === 'h') obj.set('left', obj.left + (first.left + (spacing * i)) - curB.left); if (action === 'v') obj.set('top', obj.top + (first.top + (spacing * i)) - curB.top); obj.setCoords(); } });
+                    const first = targets[0].getBoundingRect();
+                    const last = targets[targets.length - 1].getBoundingRect();
+                    const totalDist = action === 'h' ? (last.left - first.left) : (last.top - first.top);
+                    const spacing = totalDist / (targets.length - 1);
+
+                    targets.forEach((obj, i) => {
+                        if (i > 0 && i < targets.length - 1) {
+                            let curB = obj.getBoundingRect();
+                            if (action === 'h') obj.set('left', obj.left + (first.left + (spacing * i)) - curB.left);
+                            if (action === 'v') obj.set('top', obj.top + (first.top + (spacing * i)) - curB.top);
+                            obj.setCoords();
+                        }
+                    });
                 } else if (ref !== 'selection') {
                     if (targets.length === 1) {
                          let obj = targets[0]; let curB = obj.getBoundingRect();
@@ -1538,27 +1746,723 @@
                          if (action === 'v') obj.set('top', obj.top + (bounds.top + bounds.height/2) - (curB.top + curB.height/2));
                          obj.setCoords();
                     } else {
-                         const totalDist = action === 'h' ? bounds.width : bounds.height; const spacing = totalDist / (targets.length - 1);
+                         const totalDist = action === 'h' ? bounds.width : bounds.height;
+                         const spacing = totalDist / (targets.length - 1);
                          targets.forEach((obj, i) => {
                              let curB = obj.getBoundingRect();
-                             if (i === 0) { if(action === 'h') obj.set('left', obj.left + bounds.left - curB.left); if(action === 'v') obj.set('top', obj.top + bounds.top - curB.top); } 
-                             else if (i === targets.length - 1) { if(action === 'h') obj.set('left', obj.left + (bounds.left + bounds.width) - (curB.left + curB.width)); if(action === 'v') obj.set('top', obj.top + (bounds.top + bounds.height) - (curB.top + curB.height)); } 
-                             else { let startCenter = action === 'h' ? bounds.left + targets[0].getBoundingRect().width/2 : bounds.top + targets[0].getBoundingRect().height/2; let endCenter = action === 'h' ? bounds.left + bounds.width - targets[targets.length-1].getBoundingRect().width/2 : bounds.top + bounds.height - targets[targets.length-1].getBoundingRect().height/2; let cSpace = (endCenter - startCenter) / (targets.length - 1); if(action==='h') obj.set('left', obj.left + (startCenter + cSpace*i) - (curB.left + curB.width/2)); if(action==='v') obj.set('top', obj.top + (startCenter + cSpace*i) - (curB.top + curB.height/2)); }
+                             if (i === 0) {
+                                 if(action === 'h') obj.set('left', obj.left + bounds.left - curB.left);
+                                 if(action === 'v') obj.set('top', obj.top + bounds.top - curB.top);
+                             } else if (i === targets.length - 1) {
+                                 if(action === 'h') obj.set('left', obj.left + (bounds.left + bounds.width) - (curB.left + curB.width));
+                                 if(action === 'v') obj.set('top', obj.top + (bounds.top + bounds.height) - (curB.top + curB.height));
+                             } else {
+                                 let startCenter = action === 'h' ? bounds.left + targets[0].getBoundingRect().width/2 : bounds.top + targets[0].getBoundingRect().height/2;
+                                 let endCenter = action === 'h' ? bounds.left + bounds.width - targets[targets.length-1].getBoundingRect().width/2 : bounds.top + bounds.height - targets[targets.length-1].getBoundingRect().height/2;
+                                 let cSpace = (endCenter - startCenter) / (targets.length - 1);
+                                 if(action==='h') obj.set('left', obj.left + (startCenter + cSpace*i) - (curB.left + curB.width/2));
+                                 if(action==='v') obj.set('top', obj.top + (startCenter + cSpace*i) - (curB.top + curB.height/2));
+                             }
                              obj.setCoords();
                          });
                     }
                 }
 
-                if (targets.length > 1) { let sel = new fabric.ActiveSelection(targets, { canvas: canvas }); canvas.setActiveObject(sel); } else { canvas.setActiveObject(targets[0]); }
+                if (targets.length > 1) {
+                    let sel = new fabric.ActiveSelection(targets, { canvas: canvas });
+                    canvas.setActiveObject(sel);
+                } else {
+                    canvas.setActiveObject(targets[0]);
+                }
                 canvas.requestRenderAll(); markDirty(); saveHistory(); updateTransformUI({target: canvas.getActiveObject()});
             });
 
             // --- TEXT SCALING FIX ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
-                if (obj.type === 'textbox') { var w = obj.width * obj.scaleX; var h = obj.height * obj.scaleY; obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 }); }
+                if (obj.type === 'textbox') {
+                    var w = obj.width * obj.scaleX;
+                    var h = obj.height * obj.scaleY;
+                    obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
+                }
                 clearSnapLines();
-                if (snapConfig.master && e.pointer) { let snapped = findSnap(e.pointer, obj); if (snapped.snapX) drawSnapLine('x', snapped.lineX); if (snapped.snapY) drawSnapLine('y', snapped.lineY); }
+                if (snapConfig.master && e.pointer) {
+                    let snapped = findSnap(e.pointer, obj);
+                    if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                    if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+                }
+            });
+
+            // --- PAGES MANAGER ---
+            $('.menu-page-action').click(function() {
+                if(!activeId || projects[activeId].isMasterMode) return; pagesActionType = $(this).data('action');
+                if (pagesActionType === 'insert') { $('#pages-modal-title').text('Insert Pages'); $('#pages-input-label').text('Number of Pages to Insert'); $('#pages-input-val').val(1); }
+                if (pagesActionType === 'delete') { $('#pages-modal-title').text('Delete Page'); $('#pages-input-label').text('Page Number to Delete'); $('#pages-input-val').val(projects[activeId].totalPages); }
+                if (pagesActionType === 'goto') { $('#pages-modal-title').text('Go to Page'); $('#pages-input-label').text('Page Number'); $('#pages-input-val').val(1); }
+                $('#pages-modal').css('display', 'flex');
+            });
+            $('#confirm-pages-btn').click(function() {
+                const val = parseInt($('#pages-input-val').val()); const p = projects[activeId];
+                if (pagesActionType === 'insert') {
+                    p.totalPages += val; const sources = canvas.getObjects().filter(o => o.isMasterSource);
+                    for(let i = p.totalPages - val; i < p.totalPages; i++) {
+                        const targetPos = getPagePosition(i, p.config); const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
+                        sources.forEach(s => { const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; s.clone(function(c) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); c.set({ left: c.left + (targetPos.x - masterPos.x), top: c.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(c); }, CUSTOM_PROPS); });
+                    }
+                    drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText();
+                } 
+                else if (pagesActionType === 'delete') { if (p.totalPages <= 1) return; p.totalPages--; const cutoff = getPagePosition(p.totalPages, p.config).y - 100; canvas.getObjects().forEach(o => { if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); }); drawDocumentEnvironment(); markDirty(); saveHistory(); updateDynamicText(); }
+                else if (pagesActionType === 'goto') { let pg = Math.min(p.totalPages, Math.max(1, val)); const pos = getPagePosition(pg - 1, p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); canvas.requestRenderAll(); drawRulers(); }
+                $('#page-count-display').text(p.totalPages); $('#pages-modal').hide();
+            });
+
+            // --- MASTER TEMPLATES ---
+            $('#toggle-master-btn').click(function() {
+                if(!activeId) return; const p = projects[activeId];
+                p.isMasterMode = true; canvas.discardActiveObject(); setTool('select');
+                $('#master-banner').css('display', 'flex');
+                
+                const pos = getMasterPos('left', p.config); canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); canvas.viewportTransform[5] = 40; 
+                canvas.getObjects().forEach(obj => { if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); if (obj.isMasterClone) canvas.remove(obj); if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); });
+                
+                drawDocumentEnvironment(); markDirty(); triggerAutoSave();
+            });
+
+            $('#exit-master-btn').click(function() {
+                if(!activeId) return; const p = projects[activeId];
+                p.isMasterMode = false; canvas.discardActiveObject(); setTool('select');
+                $('#master-banner').hide(); 
+                
+                canvas.getObjects().forEach(obj => { if (obj.isRegular) obj.set({ opacity: 1, selectable: !obj.locked, evented: !obj.locked }); if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); });
+                const sources = canvas.getObjects().filter(o => o.isMasterSource); 
+                for (let pg = 0; pg < p.totalPages; pg++) {
+                    const targetPos = getPagePosition(pg, p.config); const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
+                    sources.forEach(sourceObj => { const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; sourceObj.clone(function(clone) { const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); clone.set({ left: clone.left + (targetPos.x - masterPos.x), top: clone.top + (targetPos.y - masterPos.y), selectable: false, evented: false, hoverCursor: 'default', isMasterClone: true, opacity: 1 }); canvas.add(clone); }, CUSTOM_PROPS); });
+                }
+                
+                drawDocumentEnvironment(); fitWholePage(); markDirty(); saveHistory(); updateDynamicText();
+            });
+
+            // --- CLIPBOARD (Cut/Copy/Paste) ---
+            function copyObjects() {
+                if (!activeId) return;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject) {
+                    activeObject.clone(function(cloned) {
+                        clipboard = cloned;
+                    }, CUSTOM_PROPS);
+                }
+            }
+
+            function cutObjects() {
+                if (!activeId) return;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && !activeObject.isEditing) {
+                    activeObject.clone(function(cloned) {
+                        clipboard = cloned;
+                        deleteActive(); 
+                    }, CUSTOM_PROPS);
+                }
+            }
+
+            function pasteObjects(inPlace = false) {
+                if (!activeId || !clipboard) return;
+                clipboard.clone(function(clonedObj) {
+                    canvas.discardActiveObject();
+                    const offset = inPlace ? 0 : 20;
+                    clonedObj.set({ left: clonedObj.left + offset, top: clonedObj.top + offset, evented: true });
+                    
+                    if (clonedObj.type === 'activeSelection') {
+                        clonedObj.canvas = canvas;
+                        clonedObj.forEachObject(function(obj) { canvas.add(obj); });
+                        clonedObj.setCoords();
+                    } else {
+                        canvas.add(clonedObj);
+                    }
+                    clipboard.top += offset; clipboard.left += offset;
+                    canvas.setActiveObject(clonedObj);
+                    sortLayers(); markDirty(); saveHistory();
+                }, CUSTOM_PROPS);
+            }
+            
+            $('#menu-copy').click(copyObjects);
+            $('#menu-cut').click(cutObjects);
+            $('#menu-paste').click(() => pasteObjects(false));
+
+            // --- MULTI-DELETE ---
+            function deleteActive() { 
+                const activeObjects = canvas.getActiveObjects();
+                if (activeObjects.length) {
+                    canvas.discardActiveObject();
+                    activeObjects.forEach(function(obj) {
+                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) {
+                            canvas.remove(obj);
+                        }
+                    });
+                    markDirty(); saveHistory(); 
+                }
+            }
+
+            $('#delete-obj, #menu-delete-action').click(deleteActive); 
+            
+            $(window).keydown(function(e) { 
+                if(!activeId || $('.modal-overlay').is(':visible')) return;
+                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+                
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    if (canvas.getActiveObject()?.isEditing) return;
+                    deleteActive();
+                    e.preventDefault();
+                    return;
+                }
+
+                if(e.code === 'Space') { isSpaceDown = true; if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { canvas.defaultCursor = 'grab'; e.preventDefault(); } return;}
+
+                if (canvas.getActiveObject()?.isEditing) return; 
+
+                // --- KEYBOARD NUDGING ---
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    const step = e.shiftKey ? 10 : 1;
+                    let moved = false;
+
+                    if (e.key === 'ArrowLeft') { activeObj.set('left', activeObj.left - step); moved = true; }
+                    if (e.key === 'ArrowRight') { activeObj.set('left', activeObj.left + step); moved = true; }
+                    if (e.key === 'ArrowUp') { activeObj.set('top', activeObj.top - step); moved = true; }
+                    if (e.key === 'ArrowDown') { activeObj.set('top', activeObj.top + step); moved = true; }
+
+                    if (moved) {
+                        e.preventDefault();
+                        activeObj.setCoords();
+                        canvas.requestRenderAll();
+                        updateTransformUI({ target: activeObj });
+                        markDirty();
+                        return; 
+                    }
+                }
+
+                // --- SHORTCUTS ---
+                if (e.ctrlKey) {
+                    const key = e.key.toLowerCase();
+                    if (key === '[') { $('#send-backward').click(); e.preventDefault(); return; }
+                    if (key === ']') { $('#bring-forward').click(); e.preventDefault(); return; }
+                    if (key === '1') { e.preventDefault(); fitWholePage(); return; }
+                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
+                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
+                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
+                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
+                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
+                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
+                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
+                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
+                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
+                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
+                }
+
+                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
+                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
+                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
+                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
+                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
+                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
+                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('.snap-toggle[data-snap="master"]').click(); e.preventDefault(); }
+                
+                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
+                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
+                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
+                if (e.key === ';') { $('#menu-toggle-guides').click(); }
+            });
+
+            // --- GROUPING LOGIC ---
+            function groupObjects() {
+                if (!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'activeSelection') return;
+                
+                const newGroup = activeObj.toGroup();
+                if (projects[activeId].isMasterMode) { newGroup.set({ isMasterSource: true }); } else { newGroup.set({ isRegular: true }); }
+                
+                canvas.requestRenderAll();
+                markDirty(); saveHistory();
+            }
+
+            function ungroupObjects() {
+                if (!activeId) return;
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || activeObj.type !== 'group') return;
+                
+                activeObj.toActiveSelection();
+                
+                canvas.requestRenderAll();
+                markDirty(); saveHistory();
+            }
+
+            $('#menu-group').click(groupObjects);
+            $('#menu-ungroup').click(ungroupObjects);
+
+            // --- IMAGE MASKING & CROPPING ---
+            function applyMask(img, shape) {
+                const imgCenter = img.getCenterPoint();
+                const shapeCenter = shape.getCenterPoint();
+                
+                shape.clone(function(cloneShape) {
+                    cloneShape.set({
+                        originX: 'center', originY: 'center',
+                        left: shapeCenter.x - imgCenter.x,
+                        top: shapeCenter.y - imgCenter.y,
+                        scaleX: cloneShape.scaleX / img.scaleX,
+                        scaleY: cloneShape.scaleY / img.scaleY,
+                        angle: cloneShape.angle - img.angle
+                    });
+                    
+                    img.set('clipPath', cloneShape);
+                    canvas.remove(shape);
+                    canvas.setActiveObject(img);
+                    canvas.requestRenderAll();
+                    markDirty(); saveHistory();
+                });
+            }
+
+            $('#tool-mask-image').click(function() {
+                const activeSelection = canvas.getActiveObject();
+                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
+                    alert("Please select exactly ONE image and ONE shape to mask."); return;
+                }
+                const objs = activeSelection.getObjects();
+                const img = objs.find(o => o.type === 'image');
+                const shape = objs.find(o => ['rect', 'circle', 'polygon', 'path'].includes(o.type));
+                if (!img || !shape) { alert("Selection must contain an image and a shape."); return; }
+
+                canvas.discardActiveObject();
+                applyMask(img, shape);
+            });
+
+            $('#btn-edit-mask').click(function() {
+                const img = canvas.getActiveObject();
+                if (!img || !img.clipPath) return;
+                
+                isCropMode = true; cropImage = img;
+                const imgCenter = img.getCenterPoint();
+                
+                img.clipPath.clone(function(restoredShape) {
+                    restoredShape.set({
+                        left: imgCenter.x + img.clipPath.left, top: imgCenter.y + img.clipPath.top,
+                        scaleX: img.clipPath.scaleX * img.scaleX, scaleY: img.clipPath.scaleY * img.scaleY,
+                        angle: img.clipPath.angle + img.angle,
+                        originX: 'center', originY: 'center',
+                        fill: 'rgba(0,0,0,0)', stroke: '#3b82f6', strokeWidth: 2 / canvas.getZoom(),
+                        strokeDashArray: [5, 5], selectable: false, evented: false, isMaskGuide: true
+                    });
+                    cropShape = restoredShape;
+                    canvas.add(cropShape);
+                    img.set('clipPath', null); img.set('opacity', 0.5); 
+                    canvas.requestRenderAll();
+                    $('#crop-mode-banner').css('display', 'flex'); $('#properties-form').hide();
+                    setTool('select');
+                });
+            });
+
+            $('#exit-crop-btn').click(function() {
+                if (!isCropMode) return;
+                isCropMode = false; $('#crop-mode-banner').hide();
+                cropImage.set('opacity', 1);
+                applyMask(cropImage, cropShape);
+                cropShape = null; cropImage = null; $('#properties-form').show();
+            });
+
+            $('#btn-unmask').click(function() {
+                const img = canvas.getActiveObject();
+                if (img && img.clipPath) { 
+                    const imgCenter = img.getCenterPoint();
+                    img.clipPath.clone(function(restoredShape) {
+                        restoredShape.set({
+                            left: imgCenter.x + img.clipPath.left, top: imgCenter.y + img.clipPath.top,
+                            scaleX: img.clipPath.scaleX * img.scaleX, scaleY: img.clipPath.scaleY * img.scaleY,
+                            angle: img.clipPath.angle + img.angle, originX: 'center', originY: 'center',
+                            fill: '#3f3f46', stroke: null
+                        });
+                        if (projects[activeId].isMasterMode) restoredShape.set('isMasterSource', true);
+                        else restoredShape.set('isRegular', true);
+                        
+                        canvas.add(restoredShape);
+                        img.set('clipPath', null); canvas.requestRenderAll(); markDirty(); saveHistory(); updateUI({selected: [img]}); 
+                    });
+                }
+            });
+            
+            $('#menu-paste-into').click(function() {
+                if (!activeId || !clipboard || clipboard.type !== 'image') { alert("Please copy an image first to use Paste Into."); return; }
+                const activeObj = canvas.getActiveObject();
+                if (!activeObj || !['rect', 'circle', 'polygon', 'path'].includes(activeObj.type)) { alert("Please select a shape to paste the image into."); return; }
+                
+                clipboard.clone(function(clonedImg) {
+                    const center = activeObj.getCenterPoint();
+                    clonedImg.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
+                    if (projects[activeId].isMasterMode) { clonedImg.set({ isMasterSource: true }); } else { clonedImg.set({ isRegular: true }); }
+                    canvas.add(clonedImg);
+                    applyMask(clonedImg, activeObj);
+                }, CUSTOM_PROPS);
+            });
+
+            // --- NODE EDITING ENGINE (WITH SNAPPING) ---
+            function getObjectSizeWithStroke(object) {
+                let stroke = new fabric.Point( object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1 ).multiply(object.strokeWidth || 0);
+                return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
+            }
+
+            function polygonPositionHandler(dim, finalMatrix, fabricObject) {
+                let x = (fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x),
+                    y = (fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y);
+                return fabric.util.transformPoint({ x: x, y: y }, fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()));
+            }
+
+            function actionHandler(eventData, transform, x, y) {
+                let polygon = transform.target,
+                    currentControl = polygon.controls[polygon.__corner],
+                    pointer = { x: x, y: y };
+                
+                let snapped = findSnap(pointer, polygon);
+                clearSnapLines();
+                if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+
+                let mouseLocalPosition = polygon.toLocalPoint(new fabric.Point(snapped.x, snapped.y), 'center', 'center'),
+                    polygonBaseSize = getObjectSizeWithStroke(polygon),
+                    size = polygon._getTransformedDimensions(0, 0),
+                    finalPointPosition = { x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x, y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y };
+                polygon.points[currentControl.pointIndex] = finalPointPosition;
+                return true;
+            }
+
+            function anchorWrapper(anchorIndex, fn) {
+                return function(eventData, transform, x, y) {
+                    let fabricObject = transform.target,
+                        absolutePoint = fabric.util.transformPoint({ x: (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x), y: (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y) }, fabricObject.calcTransformMatrix()),
+                        actionPerformed = fn(eventData, transform, x, y),
+                        newDim = fabricObject._calcDimensions(),
+                        currentX = (newDim.left - fabricObject.pathOffset.x),
+                        currentY = (newDim.top - fabricObject.pathOffset.y);
+                    fabricObject.set({ width: newDim.width, height: newDim.height, pathOffset: {x: currentX, y: currentY}, left: absolutePoint.x, top: absolutePoint.y });
+                    return actionPerformed;
+                }
+            }
+
+            $('#btn-edit-nodes').click(function() {
+                let poly = canvas.getActiveObject();
+                if(!poly || (!['polygon', 'polyline', 'path'].includes(poly.type))) return;
+                
+                poly.edit = !poly.edit;
+                
+                if (poly.edit) {
+                    poly.hasControls = false;
+                    poly.hasBorders = false;
+                    poly.lockMovementX = true;
+                    poly.lockMovementY = true;
+                    
+                    if (poly.type === 'polygon' || poly.type === 'polyline') {
+                        let lastControl = poly.points.length - 1;
+                        poly.controls = poly.points.reduce(function(acc, point, index) {
+                            acc['p' + index] = new fabric.Control({
+                                positionHandler: polygonPositionHandler,
+                                actionHandler: anchorWrapper(index > 0 ? index - 1 : lastControl, actionHandler),
+                                actionName: 'modifyPolygon',
+                                pointIndex: index,
+                                cursorStyle: 'pointer',
+                                render: function(ctx, left, top, styleOverride, fabricObject) {
+                                    ctx.beginPath(); ctx.arc(left, top, 4, 0, Math.PI * 2, false);
+                                    ctx.fillStyle = '#00ffcc'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+                                }
+                            });
+                            return acc;
+                        }, {});
+                    } else if (poly.type === 'path') {
+                        poly.controls = poly.path.reduce(function(acc, seg, index) {
+                            let isCurve = seg[0] === 'Q' || seg[0] === 'C';
+                            let xIdx = isCurve ? seg.length - 2 : (seg[0] === 'H' ? null : 1);
+                            let yIdx = isCurve ? seg.length - 1 : (seg[0] === 'V' ? null : 2);
+
+                            if (xIdx !== null && yIdx !== null && seg[xIdx] !== undefined) {
+                                acc['p' + index] = new fabric.Control({
+                                    positionHandler: function(dim, finalMatrix, fabricObject) {
+                                        let x = fabricObject.path[index][xIdx] - fabricObject.pathOffset.x;
+                                        let y = fabricObject.path[index][yIdx] - fabricObject.pathOffset.y;
+                                        return fabric.util.transformPoint( { x: x, y: y }, fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()) );
+                                    },
+                                    actionHandler: function(eventData, transform, x, y) {
+                                        let target = transform.target;
+                                        let snapped = findSnap({x: x, y: y}, target);
+                                        clearSnapLines();
+                                        if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                                        if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+
+                                        let localPoint = target.toLocalPoint(new fabric.Point(snapped.x, snapped.y), 'center', 'center');
+                                        let size = target._getTransformedDimensions(0, 0);
+                                        let baseSize = getObjectSizeWithStroke(target);
+
+                                        target.path[index][xIdx] = localPoint.x * baseSize.x / size.x + target.pathOffset.x;
+                                        target.path[index][yIdx] = localPoint.y * baseSize.y / size.y + target.pathOffset.y;
+                                        return true;
+                                    },
+                                    cursorStyle: 'pointer',
+                                    render: function(ctx, left, top, styleOverride, fabricObject) {
+                                        ctx.beginPath(); ctx.arc(left, top, 4, 0, Math.PI * 2, false);
+                                        ctx.fillStyle = '#00ffcc'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#000'; ctx.stroke();
+                                    }
+                                });
+                            }
+                            return acc;
+                        }, {});
+                    }
+                } else {
+                    poly.hasControls = true;
+                    poly.hasBorders = true;
+                    poly.lockMovementX = false;
+                    poly.lockMovementY = false;
+                    poly.controls = fabric.Object.prototype.controls;
+                    markDirty(); saveHistory();
+                }
+                canvas.requestRenderAll();
+            });
+
+            canvas.on('selection:cleared', function() {
+                canvas.getObjects().forEach(o => {
+                    if (o.edit) {
+                        o.edit = false; o.hasControls = true; o.hasBorders = true; o.lockMovementX = false; o.lockMovementY = false;
+                        o.controls = fabric.Object.prototype.controls;
+                    }
+                });
+            });
+
+            // --- DRAWING SHAPES & TEXT CREATION ---
+            function getScreenCenter() { const vpt = canvas.viewportTransform; return { x: (canvas.width / 2 - vpt[4]) / vpt[0], y: (canvas.height / 2 - vpt[5]) / vpt[3] }; }
+            
+            function processNewObject(obj) { 
+                if(!activeId) return; 
+                if (projects[activeId].isMasterMode) { obj.set({ isMasterSource: true }); } else { obj.set({ isRegular: true }); } 
+                canvas.add(obj); canvas.setActiveObject(obj); sortLayers(); markDirty(); saveHistory(); 
+            }
+
+            function getPolygonPoints(sides, radius) {
+                const points = [];
+                const angle = (Math.PI * 2) / sides;
+                for (let i = 0; i < sides; i++) {
+                    points.push({ x: radius * Math.sin(i * angle), y: -radius * Math.cos(i * angle) });
+                }
+                return points;
+            }
+
+            $('#add-text').click(() => {
+                const txt = new fabric.Textbox('Double-click to edit.', { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Inter', sans-serif", fontSize: 24, lineHeight: 1.16, splitByGrapheme: true, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight });
+                processNewObject(txt); setTool('select');
+            });
+            
+            function handleImageInsert(file) {
+                if (!file || !activeId) return;
+                const activeObj = canvas.getActiveObject();
+                const isShapeSelected = activeObj && ['rect', 'circle', 'polygon', 'path'].includes(activeObj.type) && !activeObj.clipPath;
+
+                const reader = new FileReader();
+                reader.onload = function(f) { 
+                    fabric.Image.fromURL(f.target.result, function(img) { 
+                        if (isShapeSelected) {
+                            const center = activeObj.getCenterPoint();
+                            img.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
+                            const scale = Math.max(activeObj.getScaledWidth() / img.width, activeObj.getScaledHeight() / img.height);
+                            img.scale(scale);
+                            if (projects[activeId].isMasterMode) { img.set({ isMasterSource: true }); } else { img.set({ isRegular: true }); }
+                            canvas.add(img); applyMask(img, activeObj);
+                        } else {
+                            const c = getScreenCenter(); const maxW = projects[activeId].config.widthPx - 50; 
+                            if (img.width > maxW) img.scaleToWidth(maxW); 
+                            img.set({ left: c.x, top: c.y }); processNewObject(img); 
+                        }
+                    }); 
+                }; 
+                reader.readAsDataURL(file);
+            }
+            $('#place-image-input').on('change', function(e) { handleImageInsert(e.target.files[0]); $(this).val(''); });
+
+            // --- DYNAMIC TEXT ---
+            $('#btn-insert-page-num').click(function() {
+                const activeObj = canvas.getActiveObject();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set({ text: '<<#>>', isDynamicText: true }); updateDynamicText(); canvas.requestRenderAll(); } 
+                else { alert("Please select a text box first to turn it into a dynamic page number."); }
+            });
+            function updateDynamicText() {
+                if (!activeId) return; const p = projects[activeId];
+                canvas.getObjects().forEach(obj => {
+                    if (obj.type === 'textbox' && obj.isDynamicText) {
+                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
+                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
+                    }
+                });
+            }
+
+            // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
+            function setTool(tool) {
+                if (isCropMode) { alert("Please Apply Crop first."); return; }
+                activeTool = tool; $('.tool-btn').removeClass('active-state');
+                if(tool==='select') $('#tool-select').addClass('active-state'); 
+                if(tool==='pan') $('#tool-pan').addClass('active-state'); 
+                if(tool==='zoom') $('#tool-zoom').addClass('active-state');
+                if(['rect', 'circle', 'polygon', 'pen'].includes(tool)) $(`#add-${tool}`).addClass('active-state');
+
+                if (tool === 'pen') {
+                    canvas.isDrawingMode = true;
+                    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                    canvas.freeDrawingBrush.color = globalStroke !== 'transparent' ? globalStroke : (globalFill !== 'transparent' ? globalFill : '#000000');
+                    canvas.freeDrawingBrush.width = globalStrokeWeight > 0 ? globalStrokeWeight : 2;
+                    canvas.discardActiveObject();
+                    canvas.requestRenderAll();
+                    return;
+                } else {
+                    canvas.isDrawingMode = false;
+                }
+
+                if (tool !== 'select') { 
+                    canvas.selection = false; 
+                    canvas.getObjects().forEach(o => { 
+                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) o.set({selectable: false, evented: false}); 
+                    }); 
+                    if (tool === 'pan') canvas.defaultCursor = 'grab';
+                    else if (tool === 'zoom') canvas.defaultCursor = 'zoom-in';
+                    else canvas.defaultCursor = 'crosshair';
+                } else { 
+                    canvas.selection = true; 
+                    canvas.getObjects().forEach(o => { 
+                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
+                            if (o.isMasterClone || o.locked) {
+                                o.set({selectable: false, evented: false});
+                            } else {
+                                o.set({selectable: true, evented: true});
+                            }
+                        } 
+                    }); 
+                    canvas.defaultCursor = 'default'; 
+                }
+                canvas.discardActiveObject(); canvas.requestRenderAll();
+            }
+
+            $('#tool-select').click(() => setTool('select')); $('#tool-pan').click(() => setTool('pan')); $('#tool-zoom').click(() => setTool('zoom'));
+            $('#add-rect').click(() => setTool('rect')); $('#add-circle').click(() => setTool('circle'));
+            $('#add-pen').click(() => setTool('pen'));
+            
+            $('#add-polygon').click(() => {
+                let sides = prompt("Enter number of sides for the polygon (3-30):", polygonSides);
+                if (sides !== null && !isNaN(parseInt(sides))) {
+                    let parsedSides = parseInt(sides);
+                    if (parsedSides >= 3 && parsedSides <= 30) { polygonSides = parsedSides; setTool('polygon'); } 
+                    else { alert("Please enter a valid number between 3 and 30."); }
+                }
+            });
+
+            canvas.on('path:created', function(opt) {
+                const path = opt.path;
+                path.set({
+                    fill: globalFill,
+                    stroke: globalStroke !== 'transparent' ? globalStroke : null,
+                    strokeWidth: globalStrokeWeight || 0
+                });
+                if (projects[activeId].isMasterMode) { path.set({ isMasterSource: true }); } else { path.set({ isRegular: true }); }
+                sortLayers(); markDirty(); saveHistory();
+            });
+
+            function performZoom(point, direction) { let z = canvas.getZoom(); let nz = direction === 'in' ? z*1.25 : z/1.25; if(nz>20) nz=20; if(nz<0.05) nz=0.05; canvas.zoomToPoint(point, nz); maintainHairlines(); if(!isPreviewMode) drawRulers(); }
+            function fitWholePage() {
+                if(!activeId) return; const p = projects[activeId]; const c = p.config; const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
+                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); canvas.setZoom(scale); const pos = getPagePosition(0, c);
+                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
+                maintainHairlines(); canvas.requestRenderAll(); if(!isPreviewMode) drawRulers();
+            }
+            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); $('#menu-fit-page').click(fitWholePage);
+
+            let isDragging = false; let lastPosX, lastPosY;
+            
+            $(window).keyup(function(e) { if (e.code === 'Space') { isSpaceDown = false; isDragging = false; if (activeTool === 'select') canvas.defaultCursor = 'default'; } });
+
+            canvas.on('mouse:down', function(opt) {
+                if(activeTool === 'zoom') { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); return; }
+                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { isDragging = true; canvas.selection = false; canvas.defaultCursor = 'grabbing'; lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; return; }
+
+                if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
+                    isDrawingShape = true; isDragging = false;
+                    const pointer = canvas.getPointer(opt.e); origX = pointer.x; origY = pointer.y;
+
+                    let shapeOpts = { left: origX, top: origY, fill: globalFill, stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, strokeWidth: globalStrokeWeight };
+                    
+                    if (activeTool === 'rect') { drawingObject = new fabric.Rect(Object.assign({ width: 0, height: 0, originX: 'left', originY: 'top' }, shapeOpts)); } 
+                    else if (activeTool === 'circle') { drawingObject = new fabric.Circle(Object.assign({ radius: 0, originX: 'center', originY: 'center' }, shapeOpts)); } 
+                    else if (activeTool === 'polygon') { const points = getPolygonPoints(polygonSides, 50); drawingObject = new fabric.Polygon(points, Object.assign({ scaleX: 0.01, scaleY: 0.01, originX: 'center', originY: 'center' }, shapeOpts)); }
+                    
+                    if (projects[activeId].isMasterMode) { drawingObject.set({ isMasterSource: true }); } else { drawingObject.set({ isRegular: true }); }
+                    canvas.add(drawingObject);
+                }
+            });
+            
+            canvas.on('mouse:move', function(opt) { 
+                if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
+                if (isDrawingShape && drawingObject) {
+                    const pointer = canvas.getPointer(opt.e);
+                    
+                    let snapped = findSnap({x: pointer.x, y: pointer.y}, drawingObject);
+                    let px = snapped.x;
+                    let py = snapped.y;
+
+                    clearSnapLines();
+                    if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                    if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+
+                    if (activeTool === 'rect') { drawingObject.set({ width: Math.abs(px - origX), height: Math.abs(py - origY), left: Math.min(origX, px), top: Math.min(origY, py) }); } 
+                    else if (activeTool === 'circle') { const radius = Math.max(Math.abs(px - origX), Math.abs(py - origY)) / 2; drawingObject.set({ radius: radius, left: origX + (px - origX)/2, top: origY + (py - origY)/2 }); } 
+                    else if (activeTool === 'polygon') { const dx = px - origX; const dy = py - origY; const radius = Math.sqrt(dx * dx + dy * dy); const scale = radius / 50; drawingObject.set({ scaleX: scale, scaleY: scale }); }
+                    canvas.requestRenderAll();
+                }
+            });
+
+            canvas.on('mouse:up', function(opt) { 
+                canvas.setViewportTransform(canvas.viewportTransform); isDragging = false; 
+                if (activeTool === 'select' && !isSpaceDown) { canvas.selection = true; canvas.defaultCursor = 'default'; } else if (activeTool === 'pan' || isSpaceDown) { canvas.defaultCursor = 'grab'; } 
+                
+                if (isDrawingShape) {
+                    isDrawingShape = false;
+                    if ((drawingObject.width * drawingObject.scaleX < 2) && (drawingObject.height * drawingObject.scaleY < 2) && drawingObject.type !== 'polygon') { canvas.remove(drawingObject); } 
+                    else { drawingObject.setCoords(); canvas.setActiveObject(drawingObject); sortLayers(); markDirty(); saveHistory(); }
+                    setTool('select'); drawingObject = null;
+                }
+                
+                clearSnapLines();
+                if(opt.target && opt.target.isGuide && !isPreviewMode) { const vpt = canvas.viewportTransform; const viewX = opt.target.left * vpt[0] + vpt[4]; const viewY = opt.target.top * vpt[3] + vpt[5]; if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { canvas.remove(opt.target); markDirty(); saveHistory(); } }
+            });
+
+            canvas.on('mouse:wheel', function(opt) { if(opt.e.ctrlKey) { performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); } else { canvas.viewportTransform[5] -= opt.e.deltaY; canvas.viewportTransform[4] -= opt.e.deltaX; canvas.requestRenderAll(); } opt.e.preventDefault(); opt.e.stopPropagation(); if(!isPreviewMode) drawRulers(); });
+
+            // --- EXPORT & SAVE ---
+            $('#welcome-open-input, #open-file-input').on('change', function(e) { if(e.target.files[0]) { const reader = new FileReader(); reader.onload = function(f) { try { const data = JSON.parse(f.target.result); if (data.canvasData && data.config) { const newId = generateId(); projects[newId] = { name: data.name || "Layout", isDirty: false, totalPages: data.totalPages, isMasterMode: false, config: data.config, canvasData: data.canvasData, vpt: [1,0,0,1,0,0], history: [], historyIndex: -1 }; switchProject(newId); fitWholePage(); } } catch (err) {} }; reader.readAsText(e.target.files[0]); } $(this).val(''); });
+            $('#menu-save').click(function() { if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template before saving."); return; } p.canvasData = canvas.toJSON(CUSTOM_PROPS); p.isDirty = false; renderTabs(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); a.download = `${p.name}.thooval`; document.body.appendChild(a); a.click(); document.body.removeChild(a); triggerAutoSave(); });
+
+            $('#menu-export').click(() => { if(!activeId) return; $('#export-modal').css('display', 'flex'); });
+            $('#export-format').change(function() { if($(this).val() === 'pdf') $('#export-scale-row').hide(); else $('#export-scale-row').show(); });
+            
+            $('#confirm-export-btn').click(async function() {
+                if(!activeId) return; const p = projects[activeId]; if (p.isMasterMode) { alert("Close Master Template first."); return; }
+                $('#export-modal').hide(); const format = $('#export-format').val(); const range = $('#export-range').val(); const scaleMult = parseInt($('#export-scale').val());
+                canvas.discardActiveObject(); const originalVpt = [...canvas.viewportTransform];
+                const oldGuides = showGuides; const oldBleed = showBleed; showGuides = false; showBleed = false; 
+                canvas.getObjects().forEach(o => { if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); });
+                
+                let pagesToExport = [];
+                if (range === 'all') { for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); } else { const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); }
+
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; if (i > 0) pdf.addPage(); const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); }
+                    pdf.save(`${p.name}_Export.pdf`);
+                } else {
+                    for (let i = 0; i < pagesToExport.length; i++) { const pg = pagesToExport[i]; const pos = getPagePosition(pg, p.config); canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; canvas.requestRenderAll(); await new Promise(r => setTimeout(r, 150)); const a = document.createElement('a'); a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); a.download = `${p.name}_Page_${pg+1}.${format}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); await new Promise(r => setTimeout(r, 300)); }
+                }
+                showGuides = oldGuides; showBleed = oldBleed; drawDocumentEnvironment(); canvas.setViewportTransform(originalVpt); maintainHairlines();
             });
 
             // --- UI PROPERTIES PANEL ---
@@ -1574,32 +2478,29 @@
                 updateTransformUI({ target: obj }); updateColorsUI(obj);
 
                 $('#appearance-properties').show();
-                $('#obj-blend-mode').val(obj.globalCompositeOperation || 'source-over');
-                
-                if (obj.fill && typeof obj.fill === 'object' && obj.fill.type) { $('#obj-fill-type').val(obj.fill.type); $('#btn-open-gradient-editor').show(); } 
-                else { $('#obj-fill-type').val('solid'); $('#btn-open-gradient-editor').hide(); }
+                if (obj.fill && typeof obj.fill === 'object' && obj.fill.type) {
+                    $('#obj-fill-type').val(obj.fill.type);
+                    $('#btn-open-gradient-editor').show();
+                } else {
+                    $('#obj-fill-type').val('solid');
+                    $('#btn-open-gradient-editor').hide();
+                }
 
                 if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
 
-                if (obj.type === 'rect' && !obj.clipPath) { $('#shape-properties, #prop-rx-row').show(); $('#prop-sides-row').hide(); $('#obj-rx').val(Math.round(obj.rx || 0)); } 
-                else if (obj.type === 'polygon' && !obj.clipPath) { $('#shape-properties, #prop-sides-row').show(); $('#prop-rx-row').hide(); $('#obj-poly-sides').val(obj.points.length); } 
-                else { $('#shape-properties').hide(); }
+                if (obj.type === 'rect' && !obj.clipPath) { 
+                    $('#shape-properties, #prop-rx-row').show(); $('#prop-sides-row').hide(); $('#obj-rx').val(Math.round(obj.rx || 0));
+                } else if (obj.type === 'polygon' && !obj.clipPath) {
+                    $('#shape-properties, #prop-sides-row').show(); $('#prop-rx-row').hide(); $('#obj-poly-sides').val(obj.points.length);
+                } else {
+                    $('#shape-properties').hide();
+                }
                 
-                if (obj.type === 'polygon' || obj.type === 'polyline' || obj.type === 'path') { $('#node-edit-tools').show(); } else { $('#node-edit-tools').hide(); }
-
-                if (canvas.getActiveObject() && canvas.getActiveObject().type === 'activeSelection' && canvas.getActiveObject().size() === 2) { $('#pathfinder-properties').show(); } 
-                else { $('#pathfinder-properties').hide(); }
-
-                if (obj.stroke && obj.strokeWidth > 0 && obj.type !== 'textbox' && obj.type !== 'image') {
-                    $('#stroke-advanced-properties').show();
-                    if (obj.strokeDashArray) { if (obj.strokeDashArray[0] === 1) $('#obj-stroke-style').val('dotted'); else $('#obj-stroke-style').val('dashed'); } else { $('#obj-stroke-style').val('solid'); }
-                    $('#obj-stroke-cap').val(obj.strokeLineCap || 'butt'); $('#obj-stroke-join').val(obj.strokeLineJoin || 'miter');
-                } else { $('#stroke-advanced-properties').hide(); }
-
-                if (obj.shadow) {
-                    $('#shadow-enable').prop('checked', true); $('#shadow-controls').show();
-                    $('#shadow-color').val(obj.shadow.color || '#000000'); $('#shadow-blur').val(obj.shadow.blur || 0); $('#shadow-ox').val(obj.shadow.offsetX || 0); $('#shadow-oy').val(obj.shadow.offsetY || 0);
-                } else { $('#shadow-enable').prop('checked', false); $('#shadow-controls').hide(); }
+                if (obj.type === 'polygon' || obj.type === 'polyline' || obj.type === 'path') {
+                    $('#node-edit-tools').show();
+                } else {
+                    $('#node-edit-tools').hide();
+                }
 
                 if (obj.type === 'textbox') { 
                     $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
@@ -1611,7 +2512,6 @@
 
             function updateTransformUI(e) {
                 const obj = e.target;
-                if (!obj) return;
                 $('#obj-x').val(Math.round(obj.left)); $('#obj-y').val(Math.round(obj.top));
                 $('#obj-w').val(Math.round(obj.getScaledWidth())); $('#obj-h').val(Math.round(obj.getScaledHeight()));
                 $('#obj-rotation').val(Math.round(obj.angle % 360));
@@ -1619,7 +2519,9 @@
 
             function updateColorsUI(obj) {
                 let fillVal = 'transparent';
-                if (obj.fill) { fillVal = typeof obj.fill === 'string' ? obj.fill : (obj.fill.colorStops ? obj.fill.colorStops[0].color : '#cbfb45'); }
+                if (obj.fill) {
+                    fillVal = typeof obj.fill === 'string' ? obj.fill : (obj.fill.colorStops ? obj.fill.colorStops[0].color : '#cbfb45');
+                }
                 const strokeVal = obj.stroke || 'transparent';
                 
                 globalFill = fillVal; globalStroke = strokeVal; globalStrokeWeight = obj.strokeWidth || 0;
@@ -1636,78 +2538,167 @@
                 $('#global-stroke-weight').val(globalStrokeWeight);
             }
 
-            // --- ADVANCED STROKE BINDINGS ---
-            $('#obj-stroke-style').change(function() {
-                const style = $(this).val(); const obj = canvas.getActiveObject(); if (!obj) return;
-                const sw = obj.strokeWidth || globalStrokeWeight || 2;
-                if (style === 'dashed') { updateObj('strokeDashArray', [sw * 2, sw * 2]); } 
-                else if (style === 'dotted') { updateObj('strokeDashArray', [1, sw * 2]); updateObj('strokeLineCap', 'round'); $('#obj-stroke-cap').val('round'); } 
-                else { updateObj('strokeDashArray', null); }
-            });
-            $('#obj-stroke-cap').change(function() { updateObj('strokeLineCap', $(this).val()); });
-            $('#obj-stroke-join').change(function() { updateObj('strokeLineJoin', $(this).val()); });
-
-            // --- SHADOW BINDINGS ---
-            function applyShadow() {
-                const color = $('#shadow-color').val(); const blur = parseInt($('#shadow-blur').val()) || 0; const offsetX = parseInt($('#shadow-ox').val()) || 0; const offsetY = parseInt($('#shadow-oy').val()) || 0;
-                updateObj('shadow', new fabric.Shadow({ color, blur, offsetX, offsetY }));
-            }
-            $('#shadow-enable').change(function() { if ($(this).is(':checked')) { $('#shadow-controls').show(); applyShadow(); } else { $('#shadow-controls').hide(); updateObj('shadow', null); } });
-            $('#shadow-color, #shadow-blur, #shadow-ox, #shadow-oy').on('input change', function() { if ($('#shadow-enable').is(':checked')) applyShadow(); });
-
-            // --- BLEND MODE BINDING ---
-            $('#obj-blend-mode').change(function() { updateObj('globalCompositeOperation', $(this).val()); });
-
             $('#obj-fill-type').on('change', function() {
-                const type = $(this).val(); const obj = canvas.getActiveObject();
-                if (type === 'linear' || type === 'radial') { $('#btn-open-gradient-editor').show(); } else { $('#btn-open-gradient-editor').hide(); }
+                const type = $(this).val();
+                const obj = canvas.getActiveObject();
+                
+                if (type === 'linear' || type === 'radial') {
+                    $('#btn-open-gradient-editor').show();
+                } else {
+                    $('#btn-open-gradient-editor').hide();
+                }
+
                 if (!obj) return;
-                if (type === 'solid') { updateObj('fill', typeof globalFill === 'string' ? globalFill : '#3f3f46'); } 
-                else {
+
+                if (type === 'solid') {
+                    updateObj('fill', typeof globalFill === 'string' ? globalFill : '#3f3f46');
+                } else {
                     const baseColor = (globalFill === 'transparent' || typeof globalFill === 'object') ? '#cbfb45' : globalFill;
-                    const gradient = new fabric.Gradient({ type: type, gradientUnits: 'percentage', coords: type === 'linear' ? { x1: 0, y1: 0, x2: 1, y2: 0 } : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 }, colorStops: [ { offset: 0, color: baseColor }, { offset: 1, color: '#ffffff' } ] });
+                    const gradient = new fabric.Gradient({
+                        type: type,
+                        gradientUnits: 'percentage',
+                        coords: type === 'linear' 
+                            ? { x1: 0, y1: 0, x2: 1, y2: 0 } 
+                            : { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 },
+                        colorStops: [
+                            { offset: 0, color: baseColor },
+                            { offset: 1, color: '#ffffff' }
+                        ]
+                    });
                     updateObj('fill', gradient);
                 }
             });
 
-            // RGBA Parsers
-            function hexToRgba(hex, a) { if(!hex) return `rgba(0,0,0,${a})`; let r = parseInt(hex.slice(1, 3), 16); let g = parseInt(hex.slice(3, 5), 16); let b = parseInt(hex.slice(5, 7), 16); return `rgba(${r}, ${g}, ${b}, ${a})`; }
-            function parseRgba(colorStr) { if (!colorStr) return { hex: '#000000', a: 1 }; if (colorStr.startsWith('#')) return { hex: colorStr.substring(0, 7), a: 1 }; if (colorStr.startsWith('rgba')) { let parts = colorStr.match(/[\d.]+/g); if (parts && parts.length >= 4) { let hex = '#' + ((1 << 24) + (parseInt(parts[0]) << 16) + (parseInt(parts[1]) << 8) + parseInt(parts[2])).toString(16).slice(1); return { hex: hex, a: parseFloat(parts[3]) }; } } if (colorStr.startsWith('rgb')) { let parts = colorStr.match(/\d+/g); if(parts && parts.length >=3) { let hex = '#' + ((1 << 24) + (parseInt(parts[0]) << 16) + (parseInt(parts[1]) << 8) + parseInt(parts[2])).toString(16).slice(1); return { hex: hex, a: 1 }; } } return { hex: '#000000', a: 1 }; }
+            // RGBA String Parsers
+            function hexToRgba(hex, a) {
+                if(!hex) return `rgba(0,0,0,${a})`;
+                let r = parseInt(hex.slice(1, 3), 16);
+                let g = parseInt(hex.slice(3, 5), 16);
+                let b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${a})`;
+            }
+            function parseRgba(colorStr) {
+                if (!colorStr) return { hex: '#000000', a: 1 };
+                if (colorStr.startsWith('#')) return { hex: colorStr.substring(0, 7), a: 1 };
+                if (colorStr.startsWith('rgba')) {
+                    let parts = colorStr.match(/[\d.]+/g);
+                    if (parts && parts.length >= 4) {
+                        let hex = '#' + ((1 << 24) + (parseInt(parts[0]) << 16) + (parseInt(parts[1]) << 8) + parseInt(parts[2])).toString(16).slice(1);
+                        return { hex: hex, a: parseFloat(parts[3]) };
+                    }
+                }
+                if (colorStr.startsWith('rgb')) {
+                    let parts = colorStr.match(/\d+/g);
+                    if(parts && parts.length >=3) {
+                        let hex = '#' + ((1 << 24) + (parseInt(parts[0]) << 16) + (parseInt(parts[1]) << 8) + parseInt(parts[2])).toString(16).slice(1);
+                        return { hex: hex, a: 1 };
+                    }
+                }
+                return { hex: '#000000', a: 1 };
+            }
 
-            // Gradient Editor Modal
+            // Advanced Gradient Editor Tool logic
             $('#btn-open-gradient-editor').click(function() {
                 const obj = canvas.getActiveObject();
                 if (obj && obj.fill && obj.fill.colorStops) {
-                    let s1 = parseRgba(obj.fill.colorStops[0].color); $('#grad-c1').val(s1.hex); $('#grad-a1').val(s1.a); $('#grad-loc1').val(obj.fill.colorStops[0].offset * 100);
-                    let s2 = parseRgba(obj.fill.colorStops[1].color); $('#grad-c2').val(s2.hex); $('#grad-a2').val(s2.a); $('#grad-loc2').val(obj.fill.colorStops[1].offset * 100);
+                    let s1 = parseRgba(obj.fill.colorStops[0].color);
+                    $('#grad-c1').val(s1.hex); $('#grad-a1').val(s1.a); $('#grad-loc1').val(obj.fill.colorStops[0].offset * 100);
+                    
+                    let s2 = parseRgba(obj.fill.colorStops[1].color);
+                    $('#grad-c2').val(s2.hex); $('#grad-a2').val(s2.a); $('#grad-loc2').val(obj.fill.colorStops[1].offset * 100);
+                    
                     $('#grad-type').val(obj.fill.type);
                 }
                 $('#gradient-editor-modal').css('display', 'flex');
             });
+
             $('#apply-adv-gradient-btn').click(function() {
-                const obj = canvas.getActiveObject(); if (!obj) return;
-                const rgba1 = hexToRgba($('#grad-c1').val(), $('#grad-a1').val()); const rgba2 = hexToRgba($('#grad-c2').val(), $('#grad-a2').val());
-                const loc1 = parseFloat($('#grad-loc1').val()) / 100; const loc2 = parseFloat($('#grad-loc2').val()) / 100;
-                const type = $('#grad-type').val(); const angle = parseInt($('#grad-angle').val()) || 0;
+                const obj = canvas.getActiveObject();
+                if (!obj) return;
+                
+                const rgba1 = hexToRgba($('#grad-c1').val(), $('#grad-a1').val());
+                const rgba2 = hexToRgba($('#grad-c2').val(), $('#grad-a2').val());
+                
+                const loc1 = parseFloat($('#grad-loc1').val()) / 100;
+                const loc2 = parseFloat($('#grad-loc2').val()) / 100;
+
+                const type = $('#grad-type').val();
+                const angle = parseInt($('#grad-angle').val()) || 0;
+                
                 let coords = {};
-                if (type === 'linear') { const rad = angle * (Math.PI / 180); const rx = Math.cos(rad) * 0.5 + 0.5; const ry = Math.sin(rad) * 0.5 + 0.5; const rx2 = Math.cos(rad + Math.PI) * 0.5 + 0.5; const ry2 = Math.sin(rad + Math.PI) * 0.5 + 0.5; coords = { x1: rx2, y1: ry2, x2: rx, y2: ry }; } 
-                else { coords = { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 }; }
-                const gradient = new fabric.Gradient({ type: type, gradientUnits: 'percentage', coords: coords, colorStops: [ { offset: loc1, color: rgba1 }, { offset: loc2, color: rgba2 } ] });
-                updateObj('fill', gradient); const bg = type === 'linear' ? `linear-gradient(${angle}deg, ${rgba1} ${loc1*100}%, ${rgba2} ${loc2*100}%)` : `radial-gradient(circle, ${rgba1} ${loc1*100}%, ${rgba2} ${loc2*100}%)`; $('#fill-focus').css('background', bg).removeClass('none'); $('#gradient-editor-modal').hide();
+                if (type === 'linear') {
+                    const rad = angle * (Math.PI / 180);
+                    const rx = Math.cos(rad) * 0.5 + 0.5;
+                    const ry = Math.sin(rad) * 0.5 + 0.5;
+                    const rx2 = Math.cos(rad + Math.PI) * 0.5 + 0.5;
+                    const ry2 = Math.sin(rad + Math.PI) * 0.5 + 0.5;
+                    coords = { x1: rx2, y1: ry2, x2: rx, y2: ry };
+                } else {
+                    coords = { r1: 0, r2: 0.5, x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 };
+                }
+                
+                const gradient = new fabric.Gradient({
+                    type: type,
+                    gradientUnits: 'percentage',
+                    coords: coords,
+                    colorStops: [ { offset: loc1, color: rgba1 }, { offset: loc2, color: rgba2 } ]
+                });
+                
+                updateObj('fill', gradient);
+                const bg = type === 'linear' ? `linear-gradient(${angle}deg, ${rgba1} ${loc1*100}%, ${rgba2} ${loc2*100}%)` : `radial-gradient(circle, ${rgba1} ${loc1*100}%, ${rgba2} ${loc2*100}%)`;
+                $('#fill-focus').css('background', bg).removeClass('none');
+                $('#gradient-editor-modal').hide();
             });
 
             function updateObj(prop, val) { 
                 const sel = canvas.getActiveObject(); 
-                if (sel) { if (sel.type === 'activeSelection') { sel.forEachObject(o => { o.set(prop, val); }); canvas.requestRenderAll(); } else { sel.set(prop, val); canvas.requestRenderAll(); } markDirty(); saveHistory(); } 
+                if (sel) { 
+                    if (sel.type === 'activeSelection') { 
+                        sel.forEachObject(o => { o.set(prop, val); }); 
+                        canvas.requestRenderAll();
+                    } else { 
+                        sel.set(prop, val); 
+                        canvas.requestRenderAll();
+                    }
+                    markDirty(); saveHistory(); 
+                } 
             }
             
-            $('#fill-focus, #stroke-focus').click(function() { focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke'; $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused'); const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); });
+            // --- SHAPE PROPERTIES BINDINGS ---
+            $('#obj-rx').on('input', function() { updateObj('rx', parseFloat($(this).val()) || 0); updateObj('ry', parseFloat($(this).val()) || 0); });
+            $('#obj-poly-sides').on('change', function() {
+                const sides = parseInt($(this).val());
+                if (sides >= 3 && sides <= 30) {
+                    const obj = canvas.getActiveObject();
+                    if (obj && obj.type === 'polygon') {
+                        const points = getPolygonPoints(sides, 50);
+                        const newPoly = new fabric.Polygon(points, {
+                            left: obj.left, top: obj.top, scaleX: obj.scaleX, scaleY: obj.scaleY, angle: obj.angle,
+                            fill: obj.fill, stroke: obj.stroke, strokeWidth: obj.strokeWidth, originX: obj.originX, originY: obj.originY,
+                            isRegular: obj.isRegular, isMasterSource: obj.isMasterSource
+                        });
+                        canvas.remove(obj); canvas.add(newPoly); canvas.setActiveObject(newPoly);
+                        sortLayers(); markDirty(); saveHistory();
+                    }
+                }
+            });
+
+            $('#fill-focus, #stroke-focus').click(function() {
+                focusedColorType = $(this).attr('id') === 'fill-focus' ? 'fill' : 'stroke';
+                $('.fill-block, .stroke-block').removeClass('focused'); $(this).addClass('focused');
+                const obj = canvas.getActiveObject(); if(obj) updateColorsUI(obj); 
+            });
+
             $('#unified-color-picker').on('input', function() {
                 const obj = canvas.getActiveObject(); const col = $(this).val();
                 if(focusedColorType === 'fill') { globalFill = col; if(obj) updateObj('fill', col); $('#fill-focus').css('background', col).removeClass('none'); } 
                 else { globalStroke = col; if(obj) { updateObj('stroke', col); if(!obj.strokeWidth && obj.type!=='activeSelection') { globalStrokeWeight = 2; updateObj('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } } $('#stroke-focus').css('background', col).css('border-color', col).removeClass('none'); }
             });
-            $('#global-stroke-weight').on('input', function() { globalStrokeWeight = parseFloat($(this).val()) || 0; const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight); });
+            
+            $('#global-stroke-weight').on('input', function() {
+                globalStrokeWeight = parseFloat($(this).val()) || 0;
+                const obj = canvas.getActiveObject(); if(obj) updateObj('strokeWidth', globalStrokeWeight);
+            });
 
             $('.swap-fill-stroke').click(() => {
                 let temp = globalFill; globalFill = globalStroke; globalStroke = temp;
@@ -1715,8 +2706,14 @@
                 $('#stroke-focus').css('background', globalStroke).css('border-color', globalStroke).removeClass('none');
                 const sel = canvas.getActiveObject(); 
                 if (sel) { 
-                    if (sel.type === 'activeSelection') { sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); }); canvas.requestRenderAll(); } 
-                    else { const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } canvas.requestRenderAll(); }
+                    if (sel.type === 'activeSelection') {
+                        sel.forEachObject(o => { const oF = o.fill; const oS = o.stroke; o.set('fill', oS); o.set('stroke', oF); });
+                        canvas.requestRenderAll();
+                    } else {
+                        const oldFill = sel.fill; const oldStroke = sel.stroke; sel.set('fill', oldStroke); sel.set('stroke', oldFill); 
+                        if(!sel.strokeWidth && oldFill !== 'transparent') { globalStrokeWeight = 2; sel.set('strokeWidth', globalStrokeWeight); $('#global-stroke-weight').val(globalStrokeWeight); } 
+                        canvas.requestRenderAll();
+                    }
                     updateColorsUI(sel); markDirty(); saveHistory(); 
                 }
             });
@@ -1730,7 +2727,12 @@
 
             $('#obj-x, #obj-y').on('input', function() { updateObj($(this).attr('id') === 'obj-x' ? 'left' : 'top', parseFloat($(this).val()) || 0); });
             $('#obj-rotation').on('input', function() { updateObj('angle', parseFloat($(this).val()) || 0); });
-            $('#obj-w, #obj-h').on('input', function() { const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; const newDim = parseFloat($(this).val()) || 1; if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim); canvas.renderAll(); markDirty(); saveHistory(); });
+            $('#obj-w, #obj-h').on('input', function() {
+                const obj = canvas.getActiveObject(); if(!obj || obj.type === 'activeSelection') return; 
+                const newDim = parseFloat($(this).val()) || 1;
+                if($(this).attr('id') === 'obj-w') obj.scaleToWidth(newDim); else obj.scaleToHeight(newDim);
+                canvas.renderAll(); markDirty(); saveHistory();
+            });
 
             $('#obj-font-size').on('input', function() { updateObj('fontSize', parseInt($(this).val(), 10)); });
             $('#obj-tracking').on('input', function() { updateObj('charSpacing', parseInt($(this).val(), 10) || 0); });
@@ -1741,18 +2743,26 @@
             $('#bring-forward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.bringForward(obj); canvas.renderAll(); saveHistory(); updateLayersPanel(); } }); 
             $('#send-backward').click(function() { const obj = canvas.getActiveObject(); if (obj) { canvas.sendBackwards(obj); sortLayers(); canvas.renderAll(); saveHistory(); updateLayersPanel(); } });
 
-            // Typography Tool
+            // --- TYPOGRAPHY CONVERTER UI ---
             $('#menu-font-tool').click(() => {
-                if(!activeId) return; const activeObj = canvas.getActiveObject();
+                if(!activeId) return;
+                const activeObj = canvas.getActiveObject();
                 if (activeObj && activeObj.type === 'textbox') { $('#typo-source-text').val(activeObj.text); } else { $('#typo-source-text').val(''); }
-                $('#typo-output-text').val(''); $('#typography-modal').css('display', 'flex');
+                $('#typo-output-text').val('');
+                $('#typography-modal').css('display', 'flex');
             });
-            $('#btn-run-conversion').click(() => { const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val(); let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source); $('#typo-output-text').val(result); });
+            $('#btn-run-conversion').click(() => {
+                const source = $('#typo-source-text').val(); const type = $('#typo-convert-type').val();
+                let result = type === 'uni2fml' ? convertUnicodeToFml(source) : convertFmlToUnicode(source);
+                $('#typo-output-text').val(result);
+            });
             $('#btn-apply-text-canvas').click(() => {
                 const newText = $('#typo-output-text').val(); if (!newText) return;
                 let activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
-                canvas.requestRenderAll(); markDirty(); saveHistory(); $('#typography-modal').hide();
+                if (activeObj && activeObj.type === 'textbox') { activeObj.set('text', newText); } 
+                else { const text = new fabric.Textbox(newText, { left: getScreenCenter().x, top: getScreenCenter().y, width: 300, fontFamily: "'Manjari', sans-serif", fill: '#18181b', fontSize: 24 }); processNewObject(text); }
+                canvas.requestRenderAll(); markDirty(); saveHistory();
+                $('#typography-modal').hide();
             });
             
             renderTabs();
