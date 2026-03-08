@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.34</title>
+    <title>Thooval Workspace v6.35</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -56,6 +56,7 @@
         .shortcut { color: var(--text-muted); font-size: 11px; }
         .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
         
+        /* Fixed Submenu visibility */
         .dropdown li.has-submenu { position: relative; }
         .dropdown li.has-submenu > span { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .dropdown li.has-submenu .submenu { display: none; position: absolute; top: 0; left: 100%; background: var(--bg-panel); min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; padding: 4px; margin-left: 2px; }
@@ -179,7 +180,6 @@
         .btn-cancel { padding: 8px 16px; background: transparent; color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
         .btn-cancel:hover { background: var(--bg-surface); }
 
-        #advanced-color-modal .modal { max-width: 550px; }
         .picker-layout { display: flex; gap: 24px; align-items: stretch; }
         .picker-visuals { display: flex; gap: 12px; }
         .picker-controls { flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -206,7 +206,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.33</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.34</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -421,6 +421,11 @@
                 <ul id="layer-list" class="layer-list"></ul>
             </div>
             
+            <div id="no-selection" class="empty-state" style="padding: 20px;">
+                <i class="fa-solid fa-arrow-pointer" style="font-size: 16px;"></i>
+                <div style="font-size: 11px;">Select an object to modify properties.</div>
+            </div>
+
             <div id="properties-form" style="display: none;">
 
                 <div class="panel-section" id="node-edit-tools" style="display: none; background: rgba(203, 251, 69, 0.1);">
@@ -555,7 +560,7 @@
                     </div>
                 </div>
 
-                <div class="panel-section">
+                <div class="panel-section" id="alignment-properties">
                     <h3>Align & Arrange</h3>
                     <div class="prop-col" style="margin-bottom: 8px;">
                         <select id="align-reference" style="width: 100%;">
@@ -589,7 +594,7 @@
     </div>
 
     <div class="modal-overlay" id="advanced-color-modal">
-        <div class="modal">
+        <div class="modal" style="max-width: 550px;">
             <h2>Color Picker</h2>
             <div class="picker-layout">
                 <div class="picker-visuals">
@@ -701,8 +706,14 @@
             <div class="modal-footer"><button class="btn-cancel" onclick="$('#export-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-export-btn">Export</button></div>
         </div>
     </div>
-    <div class="modal-overlay" id="pages-modal"><div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div></div>
-    <div class="modal-overlay" id="unsaved-modal"><div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div></div>
+    
+    <div class="modal-overlay" id="pages-modal">
+        <div class="modal" style="width: 300px;"><h2 id="pages-modal-title">Manage Pages</h2><div class="prop-col" id="pages-input-group" style="margin-bottom: 16px;"><label id="pages-input-label">Page Number</label><input type="number" id="pages-input-val" min="1" value="1"></div><div class="modal-footer"><button class="btn-cancel" onclick="$('#pages-modal').hide()">Cancel</button><button class="btn-primary" id="confirm-pages-btn">Confirm</button></div></div>
+    </div>
+    
+    <div class="modal-overlay" id="unsaved-modal">
+        <div class="modal" style="width: 350px;"><h2>Unsaved Changes</h2><p style="color: var(--text-muted); margin-bottom: 24px;">Save changes to "<span id="unsaved-filename" style="color:var(--text-main); font-weight:600;"></span>" before closing?</p><div class="modal-footer" style="margin-top: 0;"><button class="btn-cancel" id="btn-dont-save" style="color: var(--danger); border-color: transparent;">Don't Save</button><button class="btn-cancel" id="btn-cancel-close">Cancel</button><button class="btn-primary" id="btn-save-close">Save</button></div></div>
+    </div>
     
     <div class="modal-overlay" id="typography-modal">
         <div class="modal" style="width: 400px;">
@@ -776,7 +787,17 @@
             let colorPickerTarget = 'fill';
 
             const wrapper = $('#workspace-wrapper');
-            const canvas = new fabric.Canvas('layout-canvas', { width: wrapper.width(), height: wrapper.height(), selection: true, preserveObjectStacking: true });
+            
+            // Set selection color globally for better drag & select visibility
+            const canvas = new fabric.Canvas('layout-canvas', { 
+                width: wrapper.width(), 
+                height: wrapper.height(), 
+                selection: true, 
+                preserveObjectStacking: true,
+                selectionColor: 'rgba(203, 251, 69, 0.1)',
+                selectionBorderColor: '#cbfb45',
+                selectionLineWidth: 1
+            });
             
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
@@ -2294,6 +2315,8 @@
 
             function updateShadow() {
                 const hasShadow = $('#obj-has-shadow').is(':checked');
+                const sel = canvas.getActiveObject();
+                
                 if (hasShadow) {
                     $('#shadow-settings').show();
                     const shadow = new fabric.Shadow({
@@ -2302,12 +2325,23 @@
                         offsetX: parseFloat($('#obj-shadow-x').val()) || 0,
                         offsetY: parseFloat($('#obj-shadow-y').val()) || 0
                     });
-                    updateObj('shadow', shadow);
+                    
+                    if (sel && sel.type === 'activeSelection') {
+                        sel.forEachObject(o => o.set('shadow', shadow));
+                    } else if (sel) {
+                        sel.set('shadow', shadow);
+                    }
                 } else {
                     $('#shadow-settings').hide();
-                    updateObj('shadow', null);
+                    if (sel && sel.type === 'activeSelection') {
+                        sel.forEachObject(o => o.set('shadow', null));
+                    } else if (sel) {
+                        sel.set('shadow', null);
+                    }
                 }
+                canvas.requestRenderAll(); markDirty(); saveHistory();
             }
+            
             $('#obj-has-shadow').change(updateShadow);
             $('#obj-shadow-color, #obj-shadow-blur, #obj-shadow-x, #obj-shadow-y').on('input change', function() {
                 if ($('#obj-has-shadow').is(':checked')) updateShadow();
@@ -2342,63 +2376,95 @@
             canvas.on('selection:created', updateUI); canvas.on('selection:updated', updateUI); 
             canvas.on('object:moving', updateTransformUI); canvas.on('object:scaling', updateTransformUI); canvas.on('object:rotating', updateTransformUI);
 
-            function updateUI(event) {
-                const obj = event.selected[0]; if (!obj || obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide || obj.isMasterClone) return;
+            function updateUI() {
+                const sel = canvas.getActiveObject();
+                
+                if (!sel || sel.isPaper || sel.isMargin || sel.isMask || sel.isBleed || sel.isGuide || sel.isMasterClone) {
+                    $('#properties-form').hide();
+                    $('#no-selection').show();
+                    if (activeId) $('#doc-properties-form').show();
+                    return;
+                }
                 
                 $('#doc-properties-form').hide();
+                $('#no-selection').hide();
                 $('#properties-form').show();
-                updateTransformUI({ target: obj }); updateColorsUI(obj);
-
-                $('#appearance-properties').show();
-                if (obj.fill && typeof obj.fill === 'object' && obj.fill.type) {
-                    $('#obj-fill-type').val(obj.fill.type);
-                    $('#btn-open-gradient-editor').show();
-                } else {
-                    $('#obj-fill-type').val('solid');
-                    $('#btn-open-gradient-editor').hide();
-                }
-
-                if (obj.strokeDashArray) {
-                    if (obj.strokeDashArray[0] === 1) $('#obj-stroke-style').val('dotted');
-                    else $('#obj-stroke-style').val('dashed');
-                } else {
-                    $('#obj-stroke-style').val('solid');
-                }
-
-                if (obj.shadow) {
-                    $('#obj-has-shadow').prop('checked', true);
-                    $('#shadow-settings').show();
-                    $('#obj-shadow-color').val(obj.shadow.color || '#000000');
-                    $('#obj-shadow-blur').val(obj.shadow.blur || 0);
-                    $('#obj-shadow-x').val(obj.shadow.offsetX || 0);
-                    $('#obj-shadow-y').val(obj.shadow.offsetY || 0);
-                } else {
-                    $('#obj-has-shadow').prop('checked', false);
-                    $('#shadow-settings').hide();
-                }
-
-                if (obj.type === 'image' && obj.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
-
-                if (obj.type === 'rect' && !obj.clipPath) { 
-                    $('#shape-properties, #prop-rx-row').show(); $('#prop-sides-row').hide(); $('#obj-rx').val(Math.round(obj.rx || 0));
-                } else if (obj.type === 'polygon' && !obj.clipPath) {
-                    $('#shape-properties, #prop-sides-row').show(); $('#prop-rx-row').hide(); $('#obj-poly-sides').val(obj.points.length);
-                } else {
-                    $('#shape-properties').hide();
-                }
                 
-                if (obj.type === 'polygon' || obj.type === 'polyline' || obj.type === 'path') {
-                    $('#node-edit-tools').show();
+                updateTransformUI({ target: sel }); 
+                
+                if (sel.type === 'activeSelection') {
+                    $('#shape-properties, #text-properties, #image-mask-tools, #node-edit-tools').hide();
+                    $('#appearance-properties').show();
+                    
+                    let firstObj = sel.getObjects()[0];
+                    updateColorsUI(firstObj);
+                    
+                    if (firstObj.shadow) {
+                        $('#obj-has-shadow').prop('checked', true);
+                        $('#shadow-settings').show();
+                        $('#obj-shadow-color').val(firstObj.shadow.color || '#000000');
+                        $('#obj-shadow-blur').val(firstObj.shadow.blur || 0);
+                        $('#obj-shadow-x').val(firstObj.shadow.offsetX || 0);
+                        $('#obj-shadow-y').val(firstObj.shadow.offsetY || 0);
+                    } else {
+                        $('#obj-has-shadow').prop('checked', false);
+                        $('#shadow-settings').hide();
+                    }
+                    
                 } else {
-                    $('#node-edit-tools').hide();
-                }
+                    updateColorsUI(sel);
 
-                if (obj.type === 'textbox') { 
-                    $('#text-properties').show(); $('#obj-font-size').val(obj.fontSize); $('#obj-line-height').val(obj.lineHeight); $('#obj-tracking').val(obj.charSpacing || 0);
-                    let font = obj.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
-                    $('.p-align').removeClass('active');
-                    if(obj.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(obj.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(obj.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(obj.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
-                } else { $('#text-properties').hide(); }
+                    $('#appearance-properties').show();
+                    if (sel.fill && typeof sel.fill === 'object' && sel.fill.type) {
+                        $('#obj-fill-type').val(sel.fill.type);
+                        $('#btn-open-gradient-editor').show();
+                    } else {
+                        $('#obj-fill-type').val('solid');
+                        $('#btn-open-gradient-editor').hide();
+                    }
+
+                    if (sel.strokeDashArray) {
+                        if (sel.strokeDashArray[0] === 1) $('#obj-stroke-style').val('dotted');
+                        else $('#obj-stroke-style').val('dashed');
+                    } else {
+                        $('#obj-stroke-style').val('solid');
+                    }
+
+                    if (sel.shadow) {
+                        $('#obj-has-shadow').prop('checked', true);
+                        $('#shadow-settings').show();
+                        $('#obj-shadow-color').val(sel.shadow.color || '#000000');
+                        $('#obj-shadow-blur').val(sel.shadow.blur || 0);
+                        $('#obj-shadow-x').val(sel.shadow.offsetX || 0);
+                        $('#obj-shadow-y').val(sel.shadow.offsetY || 0);
+                    } else {
+                        $('#obj-has-shadow').prop('checked', false);
+                        $('#shadow-settings').hide();
+                    }
+
+                    if (sel.type === 'image' && sel.clipPath) { $('#image-mask-tools').show(); } else { $('#image-mask-tools').hide(); }
+
+                    if (sel.type === 'rect' && !sel.clipPath) { 
+                        $('#shape-properties, #prop-rx-row').show(); $('#prop-sides-row').hide(); $('#obj-rx').val(Math.round(sel.rx || 0));
+                    } else if (sel.type === 'polygon' && !sel.clipPath) {
+                        $('#shape-properties, #prop-sides-row').show(); $('#prop-rx-row').hide(); $('#obj-poly-sides').val(sel.points.length);
+                    } else {
+                        $('#shape-properties').hide();
+                    }
+                    
+                    if (sel.type === 'polygon' || sel.type === 'polyline' || sel.type === 'path') {
+                        $('#node-edit-tools').show();
+                    } else {
+                        $('#node-edit-tools').hide();
+                    }
+
+                    if (sel.type === 'textbox') { 
+                        $('#text-properties').show(); $('#obj-font-size').val(sel.fontSize); $('#obj-line-height').val(sel.lineHeight); $('#obj-tracking').val(sel.charSpacing || 0);
+                        let font = sel.fontFamily; if (font.includes('Manjari')) $('#obj-font-family').val("'Manjari', sans-serif"); else if (font.includes('Noto')) $('#obj-font-family').val("'Noto Sans Malayalam', sans-serif"); else $('#obj-font-family').val(font);
+                        $('.p-align').removeClass('active');
+                        if(sel.textAlign === 'left') $('[data-palign="left"]').addClass('active'); if(sel.textAlign === 'center') $('[data-palign="center"]').addClass('active'); if(sel.textAlign === 'right') $('[data-palign="right"]').addClass('active'); if(sel.textAlign === 'justify') $('[data-palign="justify"]').addClass('active');
+                    } else { $('#text-properties').hide(); }
+                }
             }
 
             function updateTransformUI(e) {
