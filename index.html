@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.37</title>
+    <title>Thooval Workspace v6.39</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -198,6 +198,7 @@
 
         /* Custom Context Menu */
         #custom-context-menu { box-shadow: 0 8px 32px rgba(0,0,0,0.9); }
+        #custom-context-menu ul { margin: 0; padding: 0; }
     </style>
 </head>
 <body>
@@ -220,7 +221,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.33</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.37</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -246,12 +247,19 @@
                         <li id="menu-paste-into"><span>Paste Into Shape</span> <span class="shortcut">Ctrl+Alt+V</span></li>
                         <li id="menu-delete-action"><span>Delete</span> <span class="shortcut">Del</span></li>
                         <li class="divider-li"></li>
-                        <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
-                        <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
-                        <li class="divider-li"></li>
                         <li id="menu-font-tool"><span>Malayalam Font Tools...</span></li>
                     </ul>
                 </li>
+                
+                <li class="menu-item">Object
+                    <ul class="dropdown">
+                        <li id="menu-corner-options"><span>Corner Options...</span></li>
+                        <li class="divider-li"></li>
+                        <li id="menu-group"><span>Group Objects</span> <span class="shortcut">Ctrl+G</span></li>
+                        <li id="menu-ungroup"><span>Ungroup Objects</span> <span class="shortcut">Ctrl+Shift+G</span></li>
+                    </ul>
+                </li>
+
                 <li class="menu-item">Pages
                     <ul class="dropdown">
                         <li class="menu-page-action" data-action="insert"><span>Insert Pages...</span></li>
@@ -467,6 +475,25 @@
                     </div>
                 </div>
 
+                <div class="panel-section" id="image-filters-properties" style="display: none;">
+                    <h3>Image Filters</h3>
+                    <div class="prop-row">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="filter-grayscale"> Grayscale</label>
+                    </div>
+                    <div class="prop-col" style="margin-top: 8px;">
+                        <label>Brightness</label>
+                        <input type="range" id="filter-brightness" min="-1" max="1" step="0.05" value="0">
+                    </div>
+                    <div class="prop-col" style="margin-top: 8px;">
+                        <label>Contrast</label>
+                        <input type="range" id="filter-contrast" min="-1" max="1" step="0.05" value="0">
+                    </div>
+                    <div class="prop-col" style="margin-top: 8px;">
+                        <label>Saturation</label>
+                        <input type="range" id="filter-saturation" min="-1" max="1" step="0.05" value="0">
+                    </div>
+                </div>
+
                 <div class="panel-section" id="appearance-properties" style="display: none;">
                     <h3>Appearance</h3>
                     
@@ -657,6 +684,27 @@
         </aside>
     </div>
 
+    <div class="modal-overlay" id="corner-modal">
+        <div class="modal" style="width: 300px;">
+            <h2>Advanced Corner Options</h2>
+            <div class="prop-col" style="margin-bottom: 16px;">
+                <label>Corner Type</label>
+                <select id="corner-type">
+                    <option value="rounded">Rounded</option>
+                </select>
+                <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px;">More types coming soon.</div>
+            </div>
+            <div class="prop-col" style="margin-bottom: 24px;">
+                <label>Corner Radius (Live Preview)</label>
+                <input type="range" id="corner-radius-slider" min="0" max="200" value="0">
+                <input type="number" id="corner-radius-val" min="0" max="200" value="0" style="margin-top: 8px;">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="btn-close-corner">Done</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="advanced-color-modal">
         <div class="modal">
             <h2>Color Picker</h2>
@@ -837,7 +885,6 @@
             </div>
         </div>
     </div>
-
     <script>
         fabric.Object.prototype.objectCaching = false;
 
@@ -929,7 +976,7 @@
                         name: projects[id].name,
                         isDirty: projects[id].isDirty,
                         totalPages: projects[id].totalPages,
-                        isMasterMode: false, // Ensure we don't restore locked in master mode
+                        isMasterMode: false, 
                         config: projects[id].config,
                         canvasData: activeId === id ? canvas.toJSON(CUSTOM_PROPS) : projects[id].canvasData,
                         vpt: activeId === id ? [...canvas.viewportTransform] : projects[id].vpt
@@ -2428,1146 +2475,72 @@
                 }
             });
 
-            // --- PAGES MANAGER ---
-            $('.menu-page-action').click(function() {
-                if(!activeId || projects[activeId].isMasterMode) return; 
-                pagesActionType = $(this).data('action');
-                
-                if (pagesActionType === 'insert') { 
-                    $('#pages-modal-title').text('Insert Pages'); 
-                    $('#pages-input-label').text('Number of Pages to Insert'); 
-                    $('#pages-input-val').val(1); 
+            // --- CORNER OPTIONS MODAL ---
+            $('#menu-corner-options').click(() => {
+                const obj = canvas.getActiveObject();
+                if (!obj || obj.type !== 'rect') {
+                    alert("Please select a Rectangle shape to adjust its corners.");
+                    return;
                 }
-                if (pagesActionType === 'delete') { 
-                    $('#pages-modal-title').text('Delete Page'); 
-                    $('#pages-input-label').text('Page Number to Delete'); 
-                    $('#pages-input-val').val(projects[activeId].totalPages); 
-                }
-                if (pagesActionType === 'goto') { 
-                    $('#pages-modal-title').text('Go to Page'); 
-                    $('#pages-input-label').text('Page Number'); 
-                    $('#pages-input-val').val(1); 
-                }
-                $('#pages-modal').css('display', 'flex');
-            });
-            
-            $('#confirm-pages-btn').click(function() {
-                const val = parseInt($('#pages-input-val').val()); 
-                const p = projects[activeId];
-                
-                if (pagesActionType === 'insert') {
-                    p.totalPages += val; 
-                    const sources = canvas.getObjects().filter(o => o.isMasterSource);
-                    for(let i = p.totalPages - val; i < p.totalPages; i++) {
-                        const targetPos = getPagePosition(i, p.config); 
-                        const isLeftPage = p.config.facingPages && i > 0 && (i - 1) % 2 === 0;
-                        sources.forEach(s => { 
-                            const sourceIsLeft = s.left < (MARGIN_LEFT + p.config.widthPx); 
-                            if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; 
-                            s.clone(function(c) { 
-                                const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); 
-                                c.set({ 
-                                    left: c.left + (targetPos.x - masterPos.x), 
-                                    top: c.top + (targetPos.y - masterPos.y), 
-                                    selectable: false, 
-                                    evented: false, 
-                                    hoverCursor: 'default', 
-                                    isMasterClone: true, 
-                                    opacity: 1 
-                                }); 
-                                canvas.add(c); 
-                            }, CUSTOM_PROPS); 
-                        });
-                    }
-                    drawDocumentEnvironment(); 
-                    markDirty(); 
-                    saveHistory(); 
-                    updateDynamicText();
-                } 
-                else if (pagesActionType === 'delete') { 
-                    if (p.totalPages <= 1) return; 
-                    p.totalPages--; 
-                    const cutoff = getPagePosition(p.totalPages, p.config).y - 100; 
-                    canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMask && !o.isBleed && !o.isMargin && o.top > cutoff) canvas.remove(o); 
-                    }); 
-                    drawDocumentEnvironment(); 
-                    markDirty(); 
-                    saveHistory(); 
-                    updateDynamicText(); 
-                }
-                else if (pagesActionType === 'goto') { 
-                    let pg = Math.min(p.totalPages, Math.max(1, val)); 
-                    const pos = getPagePosition(pg - 1, p.config); 
-                    canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + p.config.widthPx/2); 
-                    canvas.viewportTransform[5] = (wrapper.height() / 2) - (pos.y + p.config.heightPx/2); 
-                    canvas.requestRenderAll(); 
-                    drawRulers(); 
-                }
-                
-                $('#page-count-display').text(p.totalPages); 
-                $('#pages-modal').hide();
+                $('#corner-radius-slider').val(obj.rx || 0);
+                $('#corner-radius-val').val(obj.rx || 0);
+                $('#corner-type').val('rounded');
+                $('#corner-modal').css('display', 'flex');
             });
 
-            // --- MASTER TEMPLATES ---
-            $('#toggle-master-btn').click(function() {
-                if(!activeId) return; 
-                const p = projects[activeId];
-                p.isMasterMode = true; 
-                canvas.discardActiveObject(); 
-                setTool('select');
-                $('#master-banner').css('display', 'flex');
+            $('#corner-radius-slider, #corner-radius-val').on('input', function() {
+                const val = parseInt($(this).val()) || 0;
+                $('#corner-radius-slider').val(val);
+                $('#corner-radius-val').val(val);
                 
-                const pos = getMasterPos('left', p.config); 
-                canvas.viewportTransform[4] = (wrapper.width() / 2) - (pos.x + (p.config.facingPages?p.config.widthPx:p.config.widthPx/2)); 
-                canvas.viewportTransform[5] = 40; 
-                
-                canvas.getObjects().forEach(obj => { 
-                    if (obj.isPaper || obj.isMargin || obj.isMask || obj.isBleed || obj.isGuide) return; 
-                    if (obj.isRegular) obj.set({ opacity: 0, selectable: false, evented: false }); 
-                    if (obj.isMasterClone) canvas.remove(obj); 
-                    if (obj.isMasterSource) obj.set({ opacity: 1, selectable: true, evented: true, hoverCursor: 'move' }); 
-                });
-                
-                drawDocumentEnvironment(); 
+                const obj = canvas.getActiveObject();
+                if (obj && obj.type === 'rect') {
+                    obj.set({ rx: val, ry: val });
+                    canvas.requestRenderAll();
+                }
+            });
+
+            $('#btn-close-corner').click(() => {
+                $('#corner-modal').hide();
                 markDirty();
-            });
-
-            $('#exit-master-btn').click(function() {
-                if(!activeId) return; 
-                const p = projects[activeId];
-                p.isMasterMode = false; 
-                canvas.discardActiveObject(); 
-                setTool('select');
-                $('#master-banner').hide(); 
-                
-                canvas.getObjects().forEach(obj => { 
-                    if (obj.isRegular) obj.set({ opacity: 1, selectable: !obj.locked, evented: !obj.locked }); 
-                    if (obj.isMasterSource) obj.set({ opacity: 0, selectable: false, evented: false }); 
-                });
-                
-                const sources = canvas.getObjects().filter(o => o.isMasterSource); 
-                for (let pg = 0; pg < p.totalPages; pg++) {
-                    const targetPos = getPagePosition(pg, p.config); 
-                    const isLeftPage = p.config.facingPages && pg > 0 && (pg - 1) % 2 === 0;
-                    sources.forEach(sourceObj => { 
-                        const sourceIsLeft = sourceObj.left < (MARGIN_LEFT + p.config.widthPx); 
-                        if (p.config.facingPages && ((isLeftPage && !sourceIsLeft) || (!isLeftPage && sourceIsLeft))) return; 
-                        sourceObj.clone(function(clone) { 
-                            const masterPos = getMasterPos(sourceIsLeft?'left':'right', p.config); 
-                            clone.set({ 
-                                left: clone.left + (targetPos.x - masterPos.x), 
-                                top: clone.top + (targetPos.y - masterPos.y), 
-                                selectable: false, 
-                                evented: false, 
-                                hoverCursor: 'default', 
-                                isMasterClone: true, 
-                                opacity: 1 
-                            }); 
-                            canvas.add(clone); 
-                        }, CUSTOM_PROPS); 
-                    });
-                }
-                
-                drawDocumentEnvironment(); 
-                fitWholePage(); 
-                markDirty(); 
-                saveHistory(); 
-                updateDynamicText();
-            });
-
-            // --- CLIPBOARD (Cut/Copy/Paste) ---
-            function copyObjects() {
-                if (!activeId) return;
-                const activeObject = canvas.getActiveObject();
-                if (activeObject) {
-                    activeObject.clone(function(cloned) {
-                        clipboard = cloned;
-                    }, CUSTOM_PROPS);
-                }
-            }
-
-            function cutObjects() {
-                if (!activeId) return;
-                const activeObject = canvas.getActiveObject();
-                if (activeObject && !activeObject.isEditing) {
-                    activeObject.clone(function(cloned) {
-                        clipboard = cloned;
-                        deleteActive(); 
-                    }, CUSTOM_PROPS);
-                }
-            }
-
-            function pasteObjects(inPlace = false) {
-                if (!activeId || !clipboard) return;
-                clipboard.clone(function(clonedObj) {
-                    canvas.discardActiveObject();
-                    const offset = inPlace ? 0 : 20;
-                    clonedObj.set({ left: clonedObj.left + offset, top: clonedObj.top + offset, evented: true });
-                    
-                    if (clonedObj.type === 'activeSelection') {
-                        clonedObj.canvas = canvas;
-                        clonedObj.forEachObject(function(obj) { canvas.add(obj); });
-                        clonedObj.setCoords();
-                    } else {
-                        canvas.add(clonedObj);
-                    }
-                    clipboard.top += offset; clipboard.left += offset;
-                    canvas.setActiveObject(clonedObj);
-                    sortLayers(); 
-                    markDirty(); 
-                    saveHistory();
-                }, CUSTOM_PROPS);
-            }
-            
-            $('#menu-copy').click(copyObjects);
-            $('#menu-cut').click(cutObjects);
-            $('#menu-paste').click(() => pasteObjects(false));
-
-            // --- MULTI-DELETE ---
-            function deleteActive() { 
-                const activeObjects = canvas.getActiveObjects();
-                if (activeObjects.length) {
-                    canvas.discardActiveObject();
-                    activeObjects.forEach(function(obj) {
-                        if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) {
-                            canvas.remove(obj);
-                        }
-                    });
-                    markDirty(); 
-                    saveHistory(); 
-                }
-            }
-
-            $('#delete-obj, #menu-delete-action').click(deleteActive); 
-            
-            $(window).keydown(function(e) { 
-                if(!activeId || $('.modal-overlay').is(':visible')) return;
-                if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-                
-                if (e.key === 'Delete' || e.key === 'Backspace') {
-                    if (canvas.getActiveObject()?.isEditing) return;
-                    deleteActive();
-                    e.preventDefault();
-                    return;
-                }
-
-                if(e.code === 'Space') { 
-                    isSpaceDown = true; 
-                    if(!canvas.getActiveObject()?.isEditing && activeTool !== 'zoom') { 
-                        canvas.defaultCursor = 'grab'; 
-                        e.preventDefault(); 
-                    } 
-                    return;
-                }
-
-                if (canvas.getActiveObject()?.isEditing) return; 
-
-                // --- KEYBOARD NUDGING ---
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-                    const step = e.shiftKey ? 10 : 1;
-                    let moved = false;
-
-                    if (e.key === 'ArrowLeft') { activeObj.set('left', activeObj.left - step); moved = true; }
-                    if (e.key === 'ArrowRight') { activeObj.set('left', activeObj.left + step); moved = true; }
-                    if (e.key === 'ArrowUp') { activeObj.set('top', activeObj.top - step); moved = true; }
-                    if (e.key === 'ArrowDown') { activeObj.set('top', activeObj.top + step); moved = true; }
-
-                    if (moved) {
-                        e.preventDefault();
-                        activeObj.setCoords();
-                        canvas.requestRenderAll();
-                        updateTransformUI({ target: activeObj });
-                        markDirty();
-                        return; 
-                    }
-                }
-
-                // --- SHORTCUTS ---
-                if (e.ctrlKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === '[') { $('#send-backward').click(); e.preventDefault(); return; }
-                    if (key === ']') { $('#bring-forward').click(); e.preventDefault(); return; }
-                    if (key === '1') { e.preventDefault(); fitWholePage(); return; }
-                    if (key === 'z') { e.preventDefault(); performUndo(); return; }
-                    if (key === 'y') { e.preventDefault(); performRedo(); return; }
-                    if (key === 'g') { e.preventDefault(); if (e.shiftKey) { $('#menu-ungroup').click(); } else { $('#menu-group').click(); } return; }
-                    if (key === 'r') { $('#menu-toggle-rulers').click(); e.preventDefault(); return; }
-                    if (key === 'i') { $('#place-image-input').click(); e.preventDefault(); return; }
-                    if (key === 'e') { $('#menu-export').click(); e.preventDefault(); return; }
-                    if (key === 's') { $('#menu-save').click(); e.preventDefault(); return; }
-                    if (key === 'x') { e.preventDefault(); cutObjects(); return; }
-                    if (key === 'c') { e.preventDefault(); copyObjects(); return; }
-                    if (key === 'v') { e.preventDefault(); if (e.altKey) $('#menu-paste-into').click(); else pasteObjects(false); return; }
-                }
-
-                if (e.key.toLowerCase() === 'v' && !e.ctrlKey) setTool('select'); 
-                if (e.key.toLowerCase() === 'h' && !e.ctrlKey) setTool('pan'); 
-                if (e.key.toLowerCase() === 'z' && !e.ctrlKey) setTool('zoom');
-                if (e.key.toLowerCase() === 'r' && !e.ctrlKey) setTool('rect');
-                if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
-                if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
-                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('.snap-toggle[data-snap="master"]').click(); e.preventDefault(); }
-                
-                if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
-                if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
-                if (e.key.toLowerCase() === 'b') { $('#menu-toggle-bleed').click(); } 
-                if (e.key === ';') { $('#menu-toggle-guides').click(); }
-            });
-
-            // --- GROUPING LOGIC ---
-            function groupObjects() {
-                if (!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'activeSelection') return;
-                
-                const newGroup = activeObj.toGroup();
-                if (projects[activeId].isMasterMode) { 
-                    newGroup.set({ isMasterSource: true }); 
-                } else { 
-                    newGroup.set({ isRegular: true }); 
-                }
-                
-                canvas.requestRenderAll();
-                markDirty(); 
-                saveHistory();
-            }
-
-            function ungroupObjects() {
-                if (!activeId) return;
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || activeObj.type !== 'group') return;
-                
-                activeObj.toActiveSelection();
-                
-                canvas.requestRenderAll();
-                markDirty(); 
-                saveHistory();
-            }
-
-            $('#menu-group').click(groupObjects);
-            $('#menu-ungroup').click(ungroupObjects);
-
-            // --- IMAGE MASKING & CROPPING ---
-            function applyMask(img, shape) {
-                const imgCenter = img.getCenterPoint();
-                const shapeCenter = shape.getCenterPoint();
-                
-                shape.clone(function(cloneShape) {
-                    cloneShape.set({
-                        originX: 'center', originY: 'center',
-                        left: shapeCenter.x - imgCenter.x,
-                        top: shapeCenter.y - imgCenter.y,
-                        scaleX: cloneShape.scaleX / img.scaleX,
-                        scaleY: cloneShape.scaleY / img.scaleY,
-                        angle: cloneShape.angle - img.angle
-                    });
-                    
-                    img.set('clipPath', cloneShape);
-                    canvas.remove(shape);
-                    canvas.setActiveObject(img);
-                    canvas.requestRenderAll();
-                    markDirty(); 
-                    saveHistory();
-                });
-            }
-
-            $('#tool-mask-image').click(function() {
-                const activeSelection = canvas.getActiveObject();
-                if (!activeSelection || activeSelection.type !== 'activeSelection' || activeSelection.size() !== 2) {
-                    alert("Please select exactly ONE image and ONE shape to mask."); 
-                    return;
-                }
-                const objs = activeSelection.getObjects();
-                const img = objs.find(o => o.type === 'image');
-                const shape = objs.find(o => ['rect', 'circle', 'polygon', 'path'].includes(o.type));
-                if (!img || !shape) { 
-                    alert("Selection must contain an image and a shape."); 
-                    return; 
-                }
-
-                canvas.discardActiveObject();
-                applyMask(img, shape);
-            });
-
-            $('#btn-edit-mask').click(function() {
-                const img = canvas.getActiveObject();
-                if (!img || !img.clipPath) return;
-                
-                isCropMode = true; 
-                cropImage = img;
-                const imgCenter = img.getCenterPoint();
-                
-                img.clipPath.clone(function(restoredShape) {
-                    restoredShape.set({
-                        left: imgCenter.x + img.clipPath.left, 
-                        top: imgCenter.y + img.clipPath.top,
-                        scaleX: img.clipPath.scaleX * img.scaleX, 
-                        scaleY: img.clipPath.scaleY * img.scaleY,
-                        angle: img.clipPath.angle + img.angle,
-                        originX: 'center', 
-                        originY: 'center',
-                        fill: 'rgba(0,0,0,0)', 
-                        stroke: '#3b82f6', 
-                        strokeWidth: 2 / canvas.getZoom(),
-                        strokeDashArray: [5, 5], 
-                        selectable: false, 
-                        evented: false, 
-                        isMaskGuide: true
-                    });
-                    cropShape = restoredShape;
-                    canvas.add(cropShape);
-                    img.set('clipPath', null); 
-                    img.set('opacity', 0.5); 
-                    canvas.requestRenderAll();
-                    $('#crop-mode-banner').css('display', 'flex'); 
-                    $('#properties-form').hide();
-                    setTool('select');
-                });
-            });
-
-            $('#exit-crop-btn').click(function() {
-                if (!isCropMode) return;
-                isCropMode = false; 
-                $('#crop-mode-banner').hide();
-                cropImage.set('opacity', 1);
-                applyMask(cropImage, cropShape);
-                cropShape = null; 
-                cropImage = null; 
-                $('#properties-form').show();
-            });
-
-            $('#btn-unmask').click(function() {
-                const img = canvas.getActiveObject();
-                if (img && img.clipPath) { 
-                    const imgCenter = img.getCenterPoint();
-                    img.clipPath.clone(function(restoredShape) {
-                        restoredShape.set({
-                            left: imgCenter.x + img.clipPath.left, 
-                            top: imgCenter.y + img.clipPath.top,
-                            scaleX: img.clipPath.scaleX * img.scaleX, 
-                            scaleY: img.clipPath.scaleY * img.scaleY,
-                            angle: img.clipPath.angle + img.angle, 
-                            originX: 'center', 
-                            originY: 'center',
-                            fill: '#3f3f46', 
-                            stroke: null
-                        });
-                        
-                        if (projects[activeId].isMasterMode) {
-                            restoredShape.set('isMasterSource', true);
-                        } else {
-                            restoredShape.set('isRegular', true);
-                        }
-                        
-                        canvas.add(restoredShape);
-                        img.set('clipPath', null); 
-                        canvas.requestRenderAll(); 
-                        markDirty(); 
-                        saveHistory(); 
-                        updateUI({selected: [img]}); 
-                    });
-                }
-            });
-            
-            $('#menu-paste-into').click(function() {
-                if (!activeId || !clipboard || clipboard.type !== 'image') { 
-                    alert("Please copy an image first to use Paste Into."); 
-                    return; 
-                }
-                const activeObj = canvas.getActiveObject();
-                if (!activeObj || !['rect', 'circle', 'polygon', 'path'].includes(activeObj.type)) { 
-                    alert("Please select a shape to paste the image into."); 
-                    return; 
-                }
-                
-                clipboard.clone(function(clonedImg) {
-                    const center = activeObj.getCenterPoint();
-                    clonedImg.set({ 
-                        originX: 'center', 
-                        originY: 'center', 
-                        left: center.x, 
-                        top: center.y 
-                    });
-                    
-                    if (projects[activeId].isMasterMode) { 
-                        clonedImg.set({ isMasterSource: true }); 
-                    } else { 
-                        clonedImg.set({ isRegular: true }); 
-                    }
-                    
-                    canvas.add(clonedImg);
-                    applyMask(clonedImg, activeObj);
-                }, CUSTOM_PROPS);
-            });
-
-            // --- NODE EDITING ENGINE (WITH SNAPPING) ---
-            function getObjectSizeWithStroke(object) {
-                let stroke = new fabric.Point( 
-                    object.strokeUniform ? 1 / object.scaleX : 1, 
-                    object.strokeUniform ? 1 / object.scaleY : 1 
-                ).multiply(object.strokeWidth || 0);
-                return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
-            }
-
-            function polygonPositionHandler(dim, finalMatrix, fabricObject) {
-                let x = (fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x),
-                    y = (fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y);
-                return fabric.util.transformPoint(
-                    { x: x, y: y }, 
-                    fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix())
-                );
-            }
-
-            function actionHandler(eventData, transform, x, y) {
-                let polygon = transform.target,
-                    currentControl = polygon.controls[polygon.__corner],
-                    pointer = { x: x, y: y };
-                
-                let snapped = findSnap(pointer, polygon);
-                clearSnapLines();
-                if (snapped.snapX) drawSnapLine('x', snapped.lineX);
-                if (snapped.snapY) drawSnapLine('y', snapped.lineY);
-
-                let mouseLocalPosition = polygon.toLocalPoint(new fabric.Point(snapped.x, snapped.y), 'center', 'center'),
-                    polygonBaseSize = getObjectSizeWithStroke(polygon),
-                    size = polygon._getTransformedDimensions(0, 0),
-                    finalPointPosition = { 
-                        x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x, 
-                        y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y 
-                    };
-                    
-                polygon.points[currentControl.pointIndex] = finalPointPosition;
-                return true;
-            }
-
-            function anchorWrapper(anchorIndex, fn) {
-                return function(eventData, transform, x, y) {
-                    let fabricObject = transform.target,
-                        absolutePoint = fabric.util.transformPoint({ 
-                            x: (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x), 
-                            y: (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y) 
-                        }, fabricObject.calcTransformMatrix()),
-                        actionPerformed = fn(eventData, transform, x, y),
-                        newDim = fabricObject._calcDimensions(),
-                        currentX = (newDim.left - fabricObject.pathOffset.x),
-                        currentY = (newDim.top - fabricObject.pathOffset.y);
-                        
-                    fabricObject.set({ 
-                        width: newDim.width, 
-                        height: newDim.height, 
-                        pathOffset: {x: currentX, y: currentY}, 
-                        left: absolutePoint.x, 
-                        top: absolutePoint.y 
-                    });
-                    
-                    return actionPerformed;
-                }
-            }
-
-            $('#btn-edit-nodes').click(function() {
-                let poly = canvas.getActiveObject();
-                if(!poly || (!['polygon', 'polyline', 'path'].includes(poly.type))) return;
-                
-                poly.edit = !poly.edit;
-                
-                if (poly.edit) {
-                    poly.hasControls = false;
-                    poly.hasBorders = false;
-                    poly.lockMovementX = true;
-                    poly.lockMovementY = true;
-                    
-                    if (poly.type === 'polygon' || poly.type === 'polyline') {
-                        let lastControl = poly.points.length - 1;
-                        poly.controls = poly.points.reduce(function(acc, point, index) {
-                            acc['p' + index] = new fabric.Control({
-                                positionHandler: polygonPositionHandler,
-                                actionHandler: anchorWrapper(index > 0 ? index - 1 : lastControl, actionHandler),
-                                actionName: 'modifyPolygon',
-                                pointIndex: index,
-                                cursorStyle: 'pointer',
-                                render: function(ctx, left, top, styleOverride, fabricObject) {
-                                    ctx.beginPath(); 
-                                    ctx.arc(left, top, 4, 0, Math.PI * 2, false);
-                                    ctx.fillStyle = '#00ffcc'; 
-                                    ctx.fill(); 
-                                    ctx.lineWidth = 1; 
-                                    ctx.strokeStyle = '#000'; 
-                                    ctx.stroke();
-                                }
-                            });
-                            return acc;
-                        }, {});
-                    } else if (poly.type === 'path') {
-                        poly.controls = poly.path.reduce(function(acc, seg, index) {
-                            let isCurve = seg[0] === 'Q' || seg[0] === 'C';
-                            let xIdx = isCurve ? seg.length - 2 : (seg[0] === 'H' ? null : 1);
-                            let yIdx = isCurve ? seg.length - 1 : (seg[0] === 'V' ? null : 2);
-
-                            if (xIdx !== null && yIdx !== null && seg[xIdx] !== undefined) {
-                                acc['p' + index] = new fabric.Control({
-                                    positionHandler: function(dim, finalMatrix, fabricObject) {
-                                        let x = fabricObject.path[index][xIdx] - fabricObject.pathOffset.x;
-                                        let y = fabricObject.path[index][yIdx] - fabricObject.pathOffset.y;
-                                        return fabric.util.transformPoint( 
-                                            { x: x, y: y }, 
-                                            fabric.util.multiplyTransformMatrices(fabricObject.canvas.viewportTransform, fabricObject.calcTransformMatrix()) 
-                                        );
-                                    },
-                                    actionHandler: function(eventData, transform, x, y) {
-                                        let target = transform.target;
-                                        let snapped = findSnap({x: x, y: y}, target);
-                                        clearSnapLines();
-                                        if (snapped.snapX) drawSnapLine('x', snapped.lineX);
-                                        if (snapped.snapY) drawSnapLine('y', snapped.lineY);
-
-                                        let localPoint = target.toLocalPoint(new fabric.Point(snapped.x, snapped.y), 'center', 'center');
-                                        let size = target._getTransformedDimensions(0, 0);
-                                        let baseSize = getObjectSizeWithStroke(target);
-
-                                        target.path[index][xIdx] = localPoint.x * baseSize.x / size.x + target.pathOffset.x;
-                                        target.path[index][yIdx] = localPoint.y * baseSize.y / size.y + target.pathOffset.y;
-                                        return true;
-                                    },
-                                    cursorStyle: 'pointer',
-                                    render: function(ctx, left, top, styleOverride, fabricObject) {
-                                        ctx.beginPath(); 
-                                        ctx.arc(left, top, 4, 0, Math.PI * 2, false);
-                                        ctx.fillStyle = '#00ffcc'; 
-                                        ctx.fill(); 
-                                        ctx.lineWidth = 1; 
-                                        ctx.strokeStyle = '#000'; 
-                                        ctx.stroke();
-                                    }
-                                });
-                            }
-                            return acc;
-                        }, {});
-                    }
-                } else {
-                    poly.hasControls = true;
-                    poly.hasBorders = true;
-                    poly.lockMovementX = false;
-                    poly.lockMovementY = false;
-                    poly.controls = fabric.Object.prototype.controls;
-                    markDirty(); 
-                    saveHistory();
-                }
-                canvas.requestRenderAll();
-            });
-
-            canvas.on('selection:cleared', function() {
-                canvas.getObjects().forEach(o => {
-                    if (o.edit) {
-                        o.edit = false; 
-                        o.hasControls = true; 
-                        o.hasBorders = true; 
-                        o.lockMovementX = false; 
-                        o.lockMovementY = false;
-                        o.controls = fabric.Object.prototype.controls;
-                    }
-                });
-            });
-
-            // --- DRAWING SHAPES & TEXT CREATION ---
-            function getScreenCenter() { 
-                const vpt = canvas.viewportTransform; 
-                return { 
-                    x: (canvas.width / 2 - vpt[4]) / vpt[0], 
-                    y: (canvas.height / 2 - vpt[5]) / vpt[3] 
-                }; 
-            }
-            
-            function processNewObject(obj) { 
-                if(!activeId) return; 
-                if (projects[activeId].isMasterMode) { 
-                    obj.set({ isMasterSource: true }); 
-                } else { 
-                    obj.set({ isRegular: true }); 
-                } 
-                canvas.add(obj); 
-                canvas.setActiveObject(obj); 
-                sortLayers(); 
-                markDirty(); 
-                saveHistory(); 
-            }
-
-            function getPolygonPoints(sides, radius) {
-                const points = [];
-                const angle = (Math.PI * 2) / sides;
-                for (let i = 0; i < sides; i++) {
-                    points.push({ x: radius * Math.sin(i * angle), y: -radius * Math.cos(i * angle) });
-                }
-                return points;
-            }
-
-            $('#add-text').click(() => {
-                const txt = new fabric.Textbox('Double-click to edit.', { 
-                    left: getScreenCenter().x, 
-                    top: getScreenCenter().y, 
-                    width: 300, 
-                    fontFamily: "'Inter', sans-serif", 
-                    fontSize: 24, 
-                    lineHeight: 1.16, 
-                    splitByGrapheme: true, 
-                    fill: globalFill, 
-                    stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, 
-                    strokeWidth: globalStrokeWeight 
-                });
-                processNewObject(txt); 
-                setTool('select');
-            });
-            
-            function handleImageInsert(file) {
-                if (!file || !activeId) return;
-                const activeObj = canvas.getActiveObject();
-                const isShapeSelected = activeObj && ['rect', 'circle', 'polygon', 'path'].includes(activeObj.type) && !activeObj.clipPath;
-
-                const reader = new FileReader();
-                reader.onload = function(f) { 
-                    fabric.Image.fromURL(f.target.result, function(img) { 
-                        if (isShapeSelected) {
-                            const center = activeObj.getCenterPoint();
-                            img.set({ originX: 'center', originY: 'center', left: center.x, top: center.y });
-                            const scale = Math.max(activeObj.getScaledWidth() / img.width, activeObj.getScaledHeight() / img.height);
-                            img.scale(scale);
-                            if (projects[activeId].isMasterMode) { 
-                                img.set({ isMasterSource: true }); 
-                            } else { 
-                                img.set({ isRegular: true }); 
-                            }
-                            canvas.add(img); 
-                            applyMask(img, activeObj);
-                        } else {
-                            const c = getScreenCenter(); 
-                            const maxW = projects[activeId].config.widthPx - 50; 
-                            if (img.width > maxW) img.scaleToWidth(maxW); 
-                            img.set({ left: c.x, top: c.y }); 
-                            processNewObject(img); 
-                        }
-                    }); 
-                }; 
-                reader.readAsDataURL(file);
-            }
-            $('#place-image-input').on('change', function(e) { 
-                handleImageInsert(e.target.files[0]); 
-                $(this).val(''); 
-            });
-
-            // --- DYNAMIC TEXT ---
-            $('#btn-insert-page-num').click(function() {
-                const activeObj = canvas.getActiveObject();
-                if (activeObj && activeObj.type === 'textbox') { 
-                    activeObj.set({ text: '<<#>>', isDynamicText: true }); 
-                    updateDynamicText(); 
-                    canvas.requestRenderAll(); 
-                } else { 
-                    alert("Please select a text box first to turn it into a dynamic page number."); 
-                }
-            });
-            
-            function updateDynamicText() {
-                if (!activeId) return; 
-                const p = projects[activeId];
-                canvas.getObjects().forEach(obj => {
-                    if (obj.type === 'textbox' && obj.isDynamicText) {
-                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
-                        const estimatedPage = Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap) + 1;
-                        obj.set('text', String(Math.max(1, Math.min(estimatedPage, p.totalPages))));
-                    }
-                });
-            }
-
-            // --- TOOLS, PAN, ZOOM, & DRAWING LOGIC ---
-            function setTool(tool) {
-                if (isCropMode) { alert("Please Apply Crop first."); return; }
-                
-                activeTool = tool; 
-                $('.tool-btn').removeClass('active-state');
-                
-                if(tool==='select') $('#tool-select').addClass('active-state'); 
-                if(tool==='pan') $('#tool-pan').addClass('active-state'); 
-                if(tool==='zoom') $('#tool-zoom').addClass('active-state');
-                if(['rect', 'circle', 'polygon', 'pen'].includes(tool)) $(`#add-${tool}`).addClass('active-state');
-
-                if (tool === 'pen') {
-                    canvas.isDrawingMode = true;
-                    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-                    canvas.freeDrawingBrush.color = globalStroke !== 'transparent' ? globalStroke : (globalFill !== 'transparent' ? globalFill : '#000000');
-                    canvas.freeDrawingBrush.width = globalStrokeWeight > 0 ? globalStrokeWeight : 2;
-                    canvas.discardActiveObject();
-                    canvas.requestRenderAll();
-                    return;
-                } else {
-                    canvas.isDrawingMode = false;
-                }
-
-                if (tool !== 'select') { 
-                    canvas.selection = false; 
-                    canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
-                            o.set({selectable: false, evented: false}); 
-                        }
-                    }); 
-                    if (tool === 'pan') canvas.defaultCursor = 'grab';
-                    else if (tool === 'zoom') canvas.defaultCursor = 'zoom-in';
-                    else canvas.defaultCursor = 'crosshair';
-                } else { 
-                    canvas.selection = true; 
-                    canvas.getObjects().forEach(o => { 
-                        if(!o.isPaper && !o.isMargin && !o.isMask && !o.isBleed && !o.isGuide) {
-                            if (o.isMasterClone || o.locked) {
-                                o.set({selectable: false, evented: false});
-                            } else {
-                                o.set({selectable: true, evented: true});
-                            }
-                        } 
-                    }); 
-                    canvas.defaultCursor = 'default'; 
-                }
-                canvas.discardActiveObject(); 
-                canvas.requestRenderAll();
-            }
-
-            $('#tool-select').click(() => setTool('select')); 
-            $('#tool-pan').click(() => setTool('pan')); 
-            $('#tool-zoom').click(() => setTool('zoom'));
-            $('#add-rect').click(() => setTool('rect')); 
-            $('#add-circle').click(() => setTool('circle'));
-            $('#add-pen').click(() => setTool('pen'));
-            
-            $('#add-polygon').click(() => {
-                let sides = prompt("Enter number of sides for the polygon (3-30):", polygonSides);
-                if (sides !== null && !isNaN(parseInt(sides))) {
-                    let parsedSides = parseInt(sides);
-                    if (parsedSides >= 3 && parsedSides <= 30) { 
-                        polygonSides = parsedSides; 
-                        setTool('polygon'); 
-                    } else { 
-                        alert("Please enter a valid number between 3 and 30."); 
-                    }
-                }
-            });
-
-            canvas.on('path:created', function(opt) {
-                const path = opt.path;
-                path.set({
-                    fill: globalFill,
-                    stroke: globalStroke !== 'transparent' ? globalStroke : null,
-                    strokeWidth: globalStrokeWeight || 0
-                });
-                if (projects[activeId].isMasterMode) { 
-                    path.set({ isMasterSource: true }); 
-                } else { 
-                    path.set({ isRegular: true }); 
-                }
-                sortLayers(); 
-                markDirty(); 
                 saveHistory();
             });
 
-            function performZoom(point, direction) { 
-                let z = canvas.getZoom(); 
-                let nz = direction === 'in' ? z*1.25 : z/1.25; 
-                if(nz>20) nz=20; 
-                if(nz<0.05) nz=0.05; 
-                canvas.zoomToPoint(point, nz); 
-                maintainHairlines(); 
-                if(!isPreviewMode) drawRulers(); 
-            }
-            
-            function fitWholePage() {
-                if(!activeId) return; 
-                const p = projects[activeId]; 
-                const c = p.config; 
-                const cw = c.facingPages ? c.widthPx*2 : c.widthPx;
-                const scale = Math.min((wrapper.width()-80)/cw, (wrapper.height()-80)/c.heightPx); 
-                canvas.setZoom(scale); 
-                const pos = getPagePosition(0, c);
-                canvas.viewportTransform[4] = (wrapper.width()/2) - (pos.x + (c.facingPages ? 0 : c.widthPx/2))*scale; 
-                canvas.viewportTransform[5] = (wrapper.height()/2) - (pos.y + c.heightPx/2)*scale;
-                maintainHairlines(); 
-                canvas.requestRenderAll(); 
-                if(!isPreviewMode) drawRulers();
-            }
-            
-            $('#menu-zoom-in').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'in')); 
-            $('#menu-zoom-out').click(() => performZoom({x: wrapper.width()/2, y: wrapper.height()/2}, 'out')); 
-            $('#menu-fit-page').click(fitWholePage);
-
-            let isDragging = false; 
-            let lastPosX, lastPosY;
-            
-            $(window).keyup(function(e) { 
-                if (e.code === 'Space') { 
-                    isSpaceDown = false; 
-                    isDragging = false; 
-                    if (activeTool === 'select') canvas.defaultCursor = 'default'; 
-                } 
-            });
-
-            canvas.on('mouse:down', function(opt) {
-                if(activeTool === 'zoom') { 
-                    performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.button===2?'out':'in'); 
-                    return; 
-                }
+            // --- IMAGE FILTERS BINDING ---
+            let filterDebounce;
+            $('#filter-grayscale, #filter-brightness, #filter-contrast, #filter-saturation').on('input change', function() {
+                const obj = canvas.getActiveObject();
+                if (!obj || obj.type !== 'image') return;
                 
-                if (isSpaceDown || opt.e.button === 1 || activeTool === 'pan') { 
-                    isDragging = true; 
-                    canvas.selection = false; 
-                    canvas.defaultCursor = 'grabbing'; 
-                    lastPosX = opt.e.clientX; 
-                    lastPosY = opt.e.clientY; 
-                    return; 
-                }
-
-                if (['rect', 'circle', 'polygon'].includes(activeTool) && !isSpaceDown) {
-                    isDrawingShape = true; 
-                    isDragging = false;
-                    const pointer = canvas.getPointer(opt.e); 
-                    origX = pointer.x; 
-                    origY = pointer.y;
-
-                    let shapeOpts = { 
-                        left: origX, top: origY, 
-                        fill: globalFill, 
-                        stroke: globalStroke !== 'transparent' && globalStrokeWeight > 0 ? globalStroke : null, 
-                        strokeWidth: globalStrokeWeight 
-                    };
+                clearTimeout(filterDebounce);
+                filterDebounce = setTimeout(() => {
+                    let filters = [];
                     
-                    if (activeTool === 'rect') { 
-                        drawingObject = new fabric.Rect(Object.assign({ width: 0, height: 0, originX: 'left', originY: 'top' }, shapeOpts)); 
-                    } 
-                    else if (activeTool === 'circle') { 
-                        drawingObject = new fabric.Circle(Object.assign({ radius: 0, originX: 'center', originY: 'center' }, shapeOpts)); 
-                    } 
-                    else if (activeTool === 'polygon') { 
-                        const points = getPolygonPoints(polygonSides, 50); 
-                        drawingObject = new fabric.Polygon(points, Object.assign({ scaleX: 0.01, scaleY: 0.01, originX: 'center', originY: 'center' }, shapeOpts)); 
+                    if ($('#filter-grayscale').is(':checked')) {
+                        filters.push(new fabric.Image.filters.Grayscale());
                     }
                     
-                    if (projects[activeId].isMasterMode) { 
-                        drawingObject.set({ isMasterSource: true }); 
-                    } else { 
-                        drawingObject.set({ isRegular: true }); 
+                    let b = parseFloat($('#filter-brightness').val());
+                    if (b !== 0) {
+                        filters.push(new fabric.Image.filters.Brightness({ brightness: b }));
                     }
                     
-                    canvas.add(drawingObject);
-                }
-            });
-            
-            canvas.on('mouse:move', function(opt) { 
-                if (isDragging) { 
-                    canvas.viewportTransform[4] += opt.e.clientX - lastPosX; 
-                    canvas.viewportTransform[5] += opt.e.clientY - lastPosY; 
-                    canvas.requestRenderAll(); 
-                    lastPosX = opt.e.clientX; 
-                    lastPosY = opt.e.clientY; 
-                } 
-                if (isDrawingShape && drawingObject) {
-                    const pointer = canvas.getPointer(opt.e);
-                    
-                    let snapped = findSnap({x: pointer.x, y: pointer.y}, drawingObject);
-                    let px = snapped.x;
-                    let py = snapped.y;
-
-                    clearSnapLines();
-                    if (snapped.snapX) drawSnapLine('x', snapped.lineX);
-                    if (snapped.snapY) drawSnapLine('y', snapped.lineY);
-
-                    if (activeTool === 'rect') { 
-                        drawingObject.set({ width: Math.abs(px - origX), height: Math.abs(py - origY), left: Math.min(origX, px), top: Math.min(origY, py) }); 
-                    } 
-                    else if (activeTool === 'circle') { 
-                        const radius = Math.max(Math.abs(px - origX), Math.abs(py - origY)) / 2; 
-                        drawingObject.set({ radius: radius, left: origX + (px - origX)/2, top: origY + (py - origY)/2 }); 
-                    } 
-                    else if (activeTool === 'polygon') { 
-                        const dx = px - origX; 
-                        const dy = py - origY; 
-                        const radius = Math.sqrt(dx * dx + dy * dy); 
-                        const scale = radius / 50; 
-                        drawingObject.set({ scaleX: scale, scaleY: scale }); 
+                    let c = parseFloat($('#filter-contrast').val());
+                    if (c !== 0) {
+                        filters.push(new fabric.Image.filters.Contrast({ contrast: c }));
                     }
+                    
+                    let s = parseFloat($('#filter-saturation').val());
+                    if (s !== 0) {
+                        filters.push(new fabric.Image.filters.Saturation({ saturation: s }));
+                    }
+                    
+                    obj.filters = filters;
+                    obj.applyFilters();
                     canvas.requestRenderAll();
-                }
-            });
-
-            canvas.on('mouse:up', function(opt) { 
-                canvas.setViewportTransform(canvas.viewportTransform); 
-                isDragging = false; 
-                if (activeTool === 'select' && !isSpaceDown) { 
-                    canvas.selection = true; 
-                    canvas.defaultCursor = 'default'; 
-                } else if (activeTool === 'pan' || isSpaceDown) { 
-                    canvas.defaultCursor = 'grab'; 
-                } 
-                
-                if (isDrawingShape) {
-                    isDrawingShape = false;
-                    if ((drawingObject.width * drawingObject.scaleX < 2) && (drawingObject.height * drawingObject.scaleY < 2) && drawingObject.type !== 'polygon') { 
-                        canvas.remove(drawingObject); 
-                    } else { 
-                        drawingObject.setCoords(); 
-                        canvas.setActiveObject(drawingObject); 
-                        sortLayers(); 
-                        markDirty(); 
-                        saveHistory(); 
-                    }
-                    setTool('select'); 
-                    drawingObject = null;
-                }
-                
-                clearSnapLines();
-                if(opt.target && opt.target.isGuide && !isPreviewMode) { 
-                    const vpt = canvas.viewportTransform; 
-                    const viewX = opt.target.left * vpt[0] + vpt[4]; 
-                    const viewY = opt.target.top * vpt[3] + vpt[5]; 
-                    if (viewX < 0 || viewY < 0 || viewX > wrapper.width() || viewY > wrapper.height()) { 
-                        canvas.remove(opt.target); 
-                        markDirty(); 
-                        saveHistory(); 
-                    } 
-                }
-            });
-
-            canvas.on('mouse:wheel', function(opt) { 
-                if(opt.e.ctrlKey) { 
-                    performZoom({x: opt.e.offsetX, y: opt.e.offsetY}, opt.e.deltaY>0?'out':'in'); 
-                } else { 
-                    canvas.viewportTransform[5] -= opt.e.deltaY; 
-                    canvas.viewportTransform[4] -= opt.e.deltaX; 
-                    canvas.requestRenderAll(); 
-                } 
-                opt.e.preventDefault(); 
-                opt.e.stopPropagation(); 
-                if(!isPreviewMode) drawRulers(); 
-            });
-
-            // --- EXPORT & SAVE ---
-            $('#welcome-open-input, #open-file-input').on('change', function(e) { 
-                if(e.target.files[0]) { 
-                    const reader = new FileReader(); 
-                    reader.onload = function(f) { 
-                        try { 
-                            const data = JSON.parse(f.target.result); 
-                            if (data.canvasData && data.config) { 
-                                const newId = generateId(); 
-                                projects[newId] = { 
-                                    name: data.name || "Layout", 
-                                    isDirty: false, 
-                                    totalPages: data.totalPages, 
-                                    isMasterMode: false, 
-                                    config: data.config, 
-                                    canvasData: data.canvasData, 
-                                    vpt: [1,0,0,1,0,0], 
-                                    history: [], 
-                                    historyIndex: -1 
-                                }; 
-                                switchProject(newId); 
-                                fitWholePage(); 
-                            } 
-                        } catch (err) {} 
-                    }; 
-                    reader.readAsText(e.target.files[0]); 
-                } 
-                $(this).val(''); 
-            });
-            
-            $('#menu-save').click(function() { 
-                if(!activeId) return; 
-                const p = projects[activeId]; 
-                if (p.isMasterMode) { alert("Close Master Template before saving."); return; } 
-                p.canvasData = canvas.toJSON(CUSTOM_PROPS); 
-                p.isDirty = false; 
-                renderTabs(); 
-                const a = document.createElement('a'); 
-                a.href = URL.createObjectURL(new Blob([JSON.stringify({ name: p.name, config: p.config, totalPages: p.totalPages, canvasData: p.canvasData })], { type: "application/json" })); 
-                a.download = `${p.name}.thooval`; 
-                document.body.appendChild(a); 
-                a.click(); 
-                document.body.removeChild(a); 
-                triggerAutoSave(); 
-            });
-
-            $('#menu-export').click(() => { 
-                if(!activeId) return; 
-                $('#export-modal').css('display', 'flex'); 
-            });
-            
-            $('#export-format').change(function() { 
-                if($(this).val() === 'pdf') {
-                    $('#export-scale-row').hide(); 
-                } else {
-                    $('#export-scale-row').show(); 
-                }
-            });
-            
-            $('#confirm-export-btn').click(async function() {
-                if(!activeId) return; 
-                const p = projects[activeId]; 
-                if (p.isMasterMode) { alert("Close Master Template first."); return; }
-                $('#export-modal').hide(); 
-                
-                const format = $('#export-format').val(); 
-                const range = $('#export-range').val(); 
-                const scaleMult = parseInt($('#export-scale').val());
-                
-                canvas.discardActiveObject(); 
-                const originalVpt = [...canvas.viewportTransform];
-                
-                const oldGuides = showGuides; 
-                const oldBleed = showBleed; 
-                showGuides = false; 
-                showBleed = false; 
-                canvas.getObjects().forEach(o => { 
-                    if (o.isMask || o.isGuide || o.isMargin || o.isBleed) o.set('opacity', 0); 
-                });
-                
-                let pagesToExport = [];
-                if (range === 'all') { 
-                    for(let i=0; i<p.totalPages; i++) pagesToExport.push(i); 
-                } else { 
-                    const estimatedRow = Math.max(0, Math.floor((-canvas.viewportTransform[5] + MARGIN_TOP + p.config.heightPx/2) / (p.config.heightPx + PAGE_GAP))); 
-                    pagesToExport.push(p.config.facingPages ? (estimatedRow === 0 ? 0 : estimatedRow * 2 - 1) : estimatedRow); 
-                }
-
-                if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf; 
-                    const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [p.config.widthPx, p.config.heightPx] });
-                    for (let i = 0; i < pagesToExport.length; i++) { 
-                        const pg = pagesToExport[i]; 
-                        if (i > 0) pdf.addPage(); 
-                        const pos = getPagePosition(pg, p.config); 
-                        canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; 
-                        canvas.requestRenderAll(); 
-                        await new Promise(r => setTimeout(r, 150)); 
-                        pdf.addImage(canvas.toDataURL({ format: 'png', multiplier: 2, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }), 'PNG', 0, 0, p.config.widthPx, p.config.heightPx); 
-                    }
-                    pdf.save(`${p.name}_Export.pdf`);
-                } else {
-                    for (let i = 0; i < pagesToExport.length; i++) { 
-                        const pg = pagesToExport[i]; 
-                        const pos = getPagePosition(pg, p.config); 
-                        canvas.viewportTransform = [1, 0, 0, 1, -pos.x, -pos.y]; 
-                        canvas.requestRenderAll(); 
-                        await new Promise(r => setTimeout(r, 150)); 
-                        const a = document.createElement('a'); 
-                        a.href = canvas.toDataURL({ format: format, quality: 1.0, multiplier: scaleMult, left: 0, top: 0, width: p.config.widthPx, height: p.config.heightPx }); 
-                        a.download = `${p.name}_Page_${pg+1}.${format}`; 
-                        document.body.appendChild(a); 
-                        a.click(); 
-                        document.body.removeChild(a); 
-                        await new Promise(r => setTimeout(r, 300)); 
-                    }
-                }
-                showGuides = oldGuides; 
-                showBleed = oldBleed; 
-                drawDocumentEnvironment(); 
-                canvas.setViewportTransform(originalVpt); 
-                maintainHairlines();
+                    markDirty();
+                    saveHistory();
+                }, 100);
             });
 
             // --- UI PROPERTIES PANEL ---
@@ -3602,6 +2575,25 @@
                 } else {
                     $('#obj-fill-type').val('solid');
                     $('#btn-open-gradient-editor').hide();
+                }
+
+                if (obj.type === 'image') {
+                    $('#image-filters-properties').show();
+                    $('#filter-grayscale').prop('checked', false);
+                    $('#filter-brightness').val(0);
+                    $('#filter-contrast').val(0);
+                    $('#filter-saturation').val(0);
+                    
+                    if (obj.filters && obj.filters.length > 0) {
+                        obj.filters.forEach(f => {
+                            if (f.type === 'Grayscale') $('#filter-grayscale').prop('checked', true);
+                            if (f.type === 'Brightness') $('#filter-brightness').val(f.brightness);
+                            if (f.type === 'Contrast') $('#filter-contrast').val(f.contrast);
+                            if (f.type === 'Saturation') $('#filter-saturation').val(f.saturation);
+                        });
+                    }
+                } else {
+                    $('#image-filters-properties').hide();
                 }
 
                 if (obj.type === 'image' && obj.clipPath) { 
