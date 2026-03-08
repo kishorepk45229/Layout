@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.17</title>
+    <title>Thooval Workspace v6.27</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -55,6 +55,13 @@
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
         .shortcut { color: var(--text-muted); font-size: 11px; }
         .dropdown li:hover .shortcut { color: rgba(0,0,0,0.5); }
+        
+        /* Submenu additions */
+        .dropdown li.has-submenu { position: relative; }
+        .dropdown li.has-submenu > span { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .dropdown li.has-submenu .submenu { display: none; position: absolute; top: 0; left: 100%; background: var(--bg-panel); min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; padding: 4px; margin-left: 2px; }
+        .dropdown li.has-submenu:hover .submenu { display: block; }
+        
         #open-file-input, #place-image-input { display: none; }
 
         .btn-primary { background: var(--accent); color: var(--accent-text); border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
@@ -130,7 +137,7 @@
         .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 2px; border-radius: 4px; cursor: grab; transition: border 0.1s, background 0.2s; border: 1px solid transparent; }
         .layer-item:hover { background: var(--bg-surface-hover); }
         .layer-item.active { background: rgba(203, 251, 69, 0.15); border-color: var(--accent); color: var(--accent); }
-        .layer-item.drag-over { border-top: 2px solid var(--accent) !important; } /* Drag and Drop visual cue */
+        .layer-item.drag-over { border-top: 2px solid var(--accent) !important; }
         .layer-info { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 8px; font-size: 11px; }
         .layer-actions { display: flex; gap: 8px; color: var(--text-muted); }
         .layer-action-btn { cursor: pointer; transition: 0.2s; font-size: 10px; }
@@ -191,7 +198,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.0</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.27</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -236,7 +243,20 @@
                         <li id="menu-zoom-out"><span>Zoom Out</span> <span class="shortcut">Ctrl+-</span></li>
                         <li id="menu-fit-page"><span>Fit Page</span> <span class="shortcut">Ctrl+1</span></li>
                         <li class="divider-li"></li>
-                        <li id="menu-toggle-snap"><span>Toggle Smart Snapping</span> <span class="shortcut">Shift+S</span></li>
+                        
+                        <li class="has-submenu">
+                            <span><span>Smart Snapping</span> <i class="fa-solid fa-caret-right" style="font-size:10px; margin-top:2px;"></i></span>
+                            <ul class="submenu">
+                                <li class="snap-toggle" data-snap="master"><span>Master Toggle (Shift+S)</span> <span class="state" style="color:var(--accent);">ON</span></li>
+                                <li class="divider-li"></li>
+                                <li class="snap-toggle" data-snap="margin"><span>Margin</span> <span class="state" style="color:var(--accent);">ON</span></li>
+                                <li class="snap-toggle" data-snap="bleed"><span>Bleed</span> <span class="state" style="color:var(--accent);">ON</span></li>
+                                <li class="snap-toggle" data-snap="object"><span>Object</span> <span class="state" style="color:var(--accent);">ON</span></li>
+                                <li class="snap-toggle" data-snap="vertical"><span>Vertical Axis</span> <span class="state" style="color:var(--accent);">ON</span></li>
+                                <li class="snap-toggle" data-snap="horizontal"><span>Horizontal Axis</span> <span class="state" style="color:var(--accent);">ON</span></li>
+                            </ul>
+                        </li>
+                        
                         <li class="divider-li"></li>
                         <li id="menu-toggle-preview"><span>Toggle Preview Mode</span> <span class="shortcut">W</span></li>
                         <li id="menu-toggle-rulers"><span>Toggle Rulers</span> <span class="shortcut">Ctrl+R</span></li>
@@ -668,8 +688,11 @@
             let isSpaceDown = false;
             
             let showMargins = true; let showBleed = true; let showGuides = true; let showRulers = false; let activeTool = 'select';
-            let enableSmartSnap = true; 
+            
+            // --- SNAP CONFIGURATION ---
+            let snapConfig = { master: true, margin: true, bleed: true, object: true, vertical: true, horizontal: true };
             let snapLines = []; 
+            
             let pagesActionType = null; let isEditingDoc = false;
 
             // Global State for Draw Tools & Cropping
@@ -694,6 +717,24 @@
             
             $(window).resize(function() { canvas.setWidth(wrapper.width()); canvas.setHeight(wrapper.height()); if(showRulers && activeId && !isPreviewMode) drawRulers(); });
             window.addEventListener('beforeunload', function (e) { if (Object.values(projects).some(p => p.isDirty)) { e.preventDefault(); e.returnValue = ''; } });
+
+            // --- MENU TOGGLES (SNAP SETTINGS) ---
+            $('.snap-toggle').click(function(e) {
+                e.stopPropagation(); 
+                const key = $(this).data('snap');
+                snapConfig[key] = !snapConfig[key];
+                
+                const stateEl = $(this).find('.state');
+                if (snapConfig[key]) {
+                    stateEl.text('ON').css('color', 'var(--accent)');
+                } else {
+                    stateEl.text('OFF').css('color', 'var(--text-muted)');
+                }
+                
+                if(key === 'master') {
+                    alert(`Smart Snapping is now ${snapConfig.master ? 'ON' : 'OFF'}`);
+                }
+            });
 
             // --- COLOR MATH UTILS (RGB <-> CMYK) ---
             function rgb2cmyk(r, g, b) {
@@ -758,7 +799,7 @@
                 $('#advanced-color-modal').hide();
             });
 
-            // --- SWATCHES INITIALIZATION (UPDATED WITH GRADIENTS) ---
+            // --- SWATCHES INITIALIZATION ---
             const palettes = {
                 'Basic RGB': ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff', '#000000', '#888888', '#cccccc', '#990000', '#009900', '#000099', '#999900', '#009999', '#990099', '#ff6600', '#ff0066', '#66ff00', '#00ff66', '#0066ff', '#6600ff', '#ff9900', '#0099ff'],
                 'Basic CMYK': ['#00aeef', '#ec008c', '#fff200', '#231f20', '#ed1c24', '#00a651', '#2e3192', '#e6e7e8', '#808285', '#c1272d', '#8cc63f', '#1b1464', '#f7931e', '#8c6239', '#0072bc', '#f15a24', '#c1272d', '#009245', '#0071bc', '#29abe2', '#9e005d', '#d9e021', '#c69c6d', '#ffffff'],
@@ -837,7 +878,7 @@
             });
 
             // --- MENU FIX ---
-            $('.dropdown li').on('click', function() {
+            $('.dropdown li').not('.has-submenu').on('click', function() {
                 const $dropdown = $(this).closest('.dropdown');
                 $dropdown.hide();
                 setTimeout(() => $dropdown.css('display', ''), 150);
@@ -849,7 +890,7 @@
                 { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
                 { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
                 { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
-                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sெ" } 
+                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sെ" } 
             ];
             const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
 
@@ -1083,20 +1124,18 @@
                 sortLayers(); canvas.requestRenderAll();
             }
 
-            // --- ADVANCED LAYERS PANEL (NO MASTERS, PREVIEWS, DRAG&DROP) ---
+            // --- ADVANCED LAYERS PANEL ---
             function updateLayersPanel() {
                 if (!activeId) return;
                 const list = $('#layer-list');
                 list.empty();
                 
-                // Filter out environment AND Master components
                 const objects = canvas.getObjects().filter(o => 
                     !o.isPaper && !o.isMargin && !o.isBleed && !o.isMask && !o.isGuide && !o.isMaskGuide && !o.isSnapGuide && !o.isMasterClone && !o.isMasterSource
                 );
 
                 const activeObjs = canvas.getActiveObjects();
 
-                // Assign persistent incremental names
                 let layerCounter = 1;
                 objects.forEach(obj => {
                     if (obj.type !== 'textbox' && !obj.layerName) {
@@ -1187,7 +1226,7 @@
                 if (draggedObj && targetObj) {
                     const realTargetIndex = canvas.getObjects().indexOf(targetObj);
                     canvas.moveTo(draggedObj, realTargetIndex);
-                    sortLayers(); // Resets bounds while keeping user-arranged stable sort
+                    sortLayers(); 
                     canvas.requestRenderAll();
                     markDirty();
                     saveHistory();
@@ -1257,11 +1296,6 @@
             $('#menu-toggle-margins').click(() => { showMargins = !showMargins; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-bleed').click(() => { showBleed = !showBleed; drawDocumentEnvironment(); updateVisibilityToggles(); });
             $('#menu-toggle-guides').click(() => { showGuides = !showGuides; updateVisibilityToggles(); });
-            
-            $('#menu-toggle-snap').click(() => {
-                enableSmartSnap = !enableSmartSnap;
-                alert(`Smart Snapping is now ${enableSmartSnap ? 'ON' : 'OFF'}`);
-            });
 
             // --- DRAGGABLE RULERS ---
             function drawRulers() {
@@ -1294,35 +1328,98 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE (WITH VISUAL GUIDES) ---
+            // --- SMART SNAPPING ENGINE (WITH SHAPING & DRAWING SUPPORT) ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
             }
+            
+            function drawSnapLine(axis, pos) {
+                const zoom = canvas.getZoom();
+                let line = axis === 'x' ?
+                    new fabric.Line([pos, -50000, pos, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true }) :
+                    new fabric.Line([-50000, pos, 50000, pos], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
+                snapLines.push(line);
+                canvas.add(line);
+            }
 
+            // Universal Snap Point Finder (Used for Drawing & Shaping)
+            function findSnap(point, excludeObj) {
+                if (!snapConfig.master || isPreviewMode || isCropMode) return { x: point.x, y: point.y, snapX: false, snapY: false, lineX: null, lineY: null };
+
+                const zoom = canvas.getZoom();
+                const snapThreshold = SNAP_THRESHOLD / zoom;
+
+                let targetXs = [];
+                let targetYs = [];
+
+                canvas.getObjects().forEach(t => {
+                    if (t === excludeObj || t.visible === false || t.isSnapGuide || t.isMaskGuide || t.isMask || t.isPaper) return;
+                    if (t.isMargin && !snapConfig.margin) return;
+                    if (t.isBleed && !snapConfig.bleed) return;
+                    if (!t.isMargin && !t.isBleed && !t.isGuide && !snapConfig.object) return;
+
+                    if (t.isGuide) {
+                        if (t.lockMovementX) targetYs.push(t.top); 
+                        if (t.lockMovementY) targetXs.push(t.left);
+                    } else {
+                        let tB = t.getBoundingRect(true, true);
+                        targetXs.push(tB.left, tB.left + tB.width / 2, tB.left + tB.width);
+                        targetYs.push(tB.top, tB.top + tB.height / 2, tB.top + tB.height);
+                    }
+                });
+
+                let bestX = point.x, bestY = point.y;
+                let minDx = Infinity, minDy = Infinity;
+                let snapX = false, snapY = false;
+
+                if (snapConfig.horizontal) {
+                    for (let tX of targetXs) {
+                        if (Math.abs(tX - point.x) < snapThreshold && Math.abs(tX - point.x) < Math.abs(minDx)) {
+                            minDx = tX - point.x;
+                            bestX = tX;
+                            snapX = true;
+                        }
+                    }
+                }
+
+                if (snapConfig.vertical) {
+                    for (let tY of targetYs) {
+                        if (Math.abs(tY - point.y) < snapThreshold && Math.abs(tY - point.y) < Math.abs(minDy)) {
+                            minDy = tY - point.y;
+                            bestY = tY;
+                            snapY = true;
+                        }
+                    }
+                }
+
+                return { x: bestX, y: bestY, snapX, snapY, lineX: snapX ? bestX : null, lineY: snapY ? bestY : null };
+            }
+
+            // Object Moving Snap Logic
             canvas.on('object:moving', function(options) {
                 clearSnapLines();
-                if (!activeId || !showGuides || isPreviewMode || isCropMode || !enableSmartSnap) return;
+                if (!activeId || !showGuides || isPreviewMode || isCropMode || !snapConfig.master) return;
                 
                 const obj = options.target; 
                 const zoom = canvas.getZoom();
                 const snapThreshold = SNAP_THRESHOLD / zoom;
 
-                const snapTargets = canvas.getObjects().filter(o => 
-                    o !== obj && !o.isBleed && !o.isMask && !o.isMaskGuide && !o.isSnapGuide && o.visible !== false
-                );
+                const snapTargets = canvas.getObjects().filter(t => {
+                    if (t === obj || t.visible === false || t.isMask || t.isMaskGuide || t.isSnapGuide || t.isPaper) return false;
+                    if (t.isMargin && !snapConfig.margin) return false;
+                    if (t.isBleed && !snapConfig.bleed) return false;
+                    if (!t.isMargin && !t.isBleed && !t.isGuide && !snapConfig.object) return false;
+                    return true;
+                });
 
                 const objB = obj.getBoundingRect(true, true); 
                 
-                let snapX = false;
-                let snapY = false;
-                let dx = 0;
-                let dy = 0;
-                let lineX = null;
-                let lineY = null;
+                let snapX = false; let snapY = false;
+                let dx = 0; let dy = 0;
+                let lineX = null; let lineY = null;
 
-                let targetXs = [];
-                let targetYs = [];
+                let targetXs = []; let targetYs = [];
 
                 snapTargets.forEach(t => {
                     if (t.isGuide) {
@@ -1339,23 +1436,27 @@
                 let objYs = [objB.top, objB.top + objB.height/2, objB.top + objB.height];
 
                 let minDx = Infinity;
-                for (let oX of objXs) {
-                    for (let tX of targetXs) {
-                        if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) {
-                            minDx = tX - oX;
-                            lineX = tX;
-                            snapX = true;
+                if(snapConfig.horizontal) {
+                    for (let oX of objXs) {
+                        for (let tX of targetXs) {
+                            if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) {
+                                minDx = tX - oX;
+                                lineX = tX;
+                                snapX = true;
+                            }
                         }
                     }
                 }
 
                 let minDy = Infinity;
-                for (let oY of objYs) {
-                    for (let tY of targetYs) {
-                        if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) {
-                            minDy = tY - oY;
-                            lineY = tY;
-                            snapY = true;
+                if(snapConfig.vertical) {
+                    for (let oY of objYs) {
+                        for (let tY of targetYs) {
+                            if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) {
+                                minDy = tY - oY;
+                                lineY = tY;
+                                snapY = true;
+                            }
                         }
                     }
                 }
@@ -1365,14 +1466,8 @@
                     if (snapY) obj.set('top', obj.top + minDy);
                     obj.setCoords();
 
-                    if (snapX && lineX !== null) {
-                        let vLine = new fabric.Line([lineX, -50000, lineX, 50000], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
-                        snapLines.push(vLine); canvas.add(vLine);
-                    }
-                    if (snapY && lineY !== null) {
-                        let hLine = new fabric.Line([-50000, lineY, 50000, lineY], { stroke: '#00ffcc', strokeWidth: 1/zoom, selectable: false, evented: false, strokeDashArray: [5/zoom, 5/zoom], isSnapGuide: true, excludeFromExport: true });
-                        snapLines.push(hLine); canvas.add(hLine);
-                    }
+                    if (snapX && lineX !== null) drawSnapLine('x', lineX);
+                    if (snapY && lineY !== null) drawSnapLine('y', lineY);
                 }
             });
 
@@ -1383,6 +1478,14 @@
                     var w = obj.width * obj.scaleX;
                     var h = obj.height * obj.scaleY;
                     obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
+                }
+                
+                // Shape snapping support during scaling
+                clearSnapLines();
+                if (snapConfig.master && e.pointer) {
+                    let snapped = findSnap(e.pointer, obj);
+                    if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                    if (snapped.snapY) drawSnapLine('y', snapped.lineY);
                 }
             });
 
@@ -1486,7 +1589,7 @@
             function deleteActive() { 
                 const activeObjects = canvas.getActiveObjects();
                 if (activeObjects.length) {
-                    canvas.discardActiveObject(); // Important: Discard selection before removing to prevent ghosting
+                    canvas.discardActiveObject();
                     activeObjects.forEach(function(obj) {
                         if (!obj.isPaper && !obj.isMargin && !obj.isMask && !obj.isBleed && !obj.isMasterClone) {
                             canvas.remove(obj);
@@ -1513,7 +1616,7 @@
 
                 if (canvas.getActiveObject()?.isEditing) return; 
 
-                // --- FEATURE: KEYBOARD NUDGING ---
+                // --- KEYBOARD NUDGING ---
                 const activeObj = canvas.getActiveObject();
                 if (activeObj && !activeObj.isEditing && !e.ctrlKey && !e.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
                     const step = e.shiftKey ? 10 : 1;
@@ -1525,7 +1628,7 @@
                     if (e.key === 'ArrowDown') { activeObj.set('top', activeObj.top + step); moved = true; }
 
                     if (moved) {
-                        e.preventDefault(); // Stop browser scrolling
+                        e.preventDefault();
                         activeObj.setCoords();
                         canvas.requestRenderAll();
                         updateTransformUI({ target: activeObj });
@@ -1534,7 +1637,7 @@
                     }
                 }
 
-                // --- LAYER ARRANGEMENT SHORTCUTS ---
+                // --- SHORTCUTS ---
                 if (e.ctrlKey) {
                     const key = e.key.toLowerCase();
                     if (key === '[') { $('#send-backward').click(); e.preventDefault(); return; }
@@ -1559,7 +1662,7 @@
                 if (e.key.toLowerCase() === 'o' && !e.ctrlKey) setTool('circle');
                 if (e.key.toLowerCase() === 'p' && !e.ctrlKey && !e.shiftKey) setTool('pen');
                 if (e.key.toLowerCase() === 'p' && !e.ctrlKey && e.shiftKey) $('#add-polygon').click();
-                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('#menu-toggle-snap').click(); e.preventDefault(); }
+                if (e.key.toLowerCase() === 's' && e.shiftKey) { $('.snap-toggle[data-snap="master"]').click(); e.preventDefault(); }
                 
                 if (e.key.toLowerCase() === 'w') { $('#menu-toggle-preview').click(); } 
                 if (e.key.toLowerCase() === 'm') { $('#menu-toggle-margins').click(); } 
@@ -1567,7 +1670,7 @@
                 if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
 
-            // --- FEATURE: OBJECT DISTRIBUTION LOGIC ---
+            // --- OBJECT DISTRIBUTION LOGIC ---
             $('#dist-h, #dist-v').click(function() {
                 if (!activeId) return;
                 const activeSelection = canvas.getActiveObject();
@@ -1738,7 +1841,7 @@
                 }, CUSTOM_PROPS);
             });
 
-            // --- NODE EDITING ENGINE ---
+            // --- NODE EDITING ENGINE (WITH SNAPPING) ---
             function getObjectSizeWithStroke(object) {
                 let stroke = new fabric.Point( object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1 ).multiply(object.strokeWidth || 0);
                 return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
@@ -1753,7 +1856,15 @@
             function actionHandler(eventData, transform, x, y) {
                 let polygon = transform.target,
                     currentControl = polygon.controls[polygon.__corner],
-                    mouseLocalPosition = polygon.toLocalPoint(new fabric.Point(x, y), 'center', 'center'),
+                    pointer = { x: x, y: y };
+                
+                // Object Shaping Snapping
+                let snapped = findSnap(pointer, polygon);
+                clearSnapLines();
+                if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+
+                let mouseLocalPosition = polygon.toLocalPoint(new fabric.Point(snapped.x, snapped.y), 'center', 'center'),
                     polygonBaseSize = getObjectSizeWithStroke(polygon),
                     size = polygon._getTransformedDimensions(0, 0),
                     finalPointPosition = { x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x, y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y };
@@ -1817,7 +1928,12 @@
                                     },
                                     actionHandler: function(eventData, transform, x, y) {
                                         let target = transform.target;
-                                        let localPoint = target.toLocalPoint(new fabric.Point(x, y), 'center', 'center');
+                                        let snapped = findSnap({x: x, y: y}, target);
+                                        clearSnapLines();
+                                        if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                                        if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+
+                                        let localPoint = target.toLocalPoint(new fabric.Point(snapped.x, snapped.y), 'center', 'center');
                                         let size = target._getTransformedDimensions(0, 0);
                                         let baseSize = getObjectSizeWithStroke(target);
 
@@ -2027,9 +2143,19 @@
                 if (isDragging) { canvas.viewportTransform[4] += opt.e.clientX - lastPosX; canvas.viewportTransform[5] += opt.e.clientY - lastPosY; canvas.requestRenderAll(); lastPosX = opt.e.clientX; lastPosY = opt.e.clientY; } 
                 if (isDrawingShape && drawingObject) {
                     const pointer = canvas.getPointer(opt.e);
-                    if (activeTool === 'rect') { drawingObject.set({ width: Math.abs(pointer.x - origX), height: Math.abs(pointer.y - origY), left: Math.min(origX, pointer.x), top: Math.min(origY, pointer.y) }); } 
-                    else if (activeTool === 'circle') { const radius = Math.max(Math.abs(pointer.x - origX), Math.abs(pointer.y - origY)) / 2; drawingObject.set({ radius: radius, left: origX + (pointer.x - origX)/2, top: origY + (pointer.y - origY)/2 }); } 
-                    else if (activeTool === 'polygon') { const dx = pointer.x - origX; const dy = pointer.y - origY; const radius = Math.sqrt(dx * dx + dy * dy); const scale = radius / 50; drawingObject.set({ scaleX: scale, scaleY: scale }); }
+                    
+                    // Add shape drawing snap support
+                    let snapped = findSnap({x: pointer.x, y: pointer.y}, drawingObject);
+                    let px = snapped.x;
+                    let py = snapped.y;
+
+                    clearSnapLines();
+                    if (snapped.snapX) drawSnapLine('x', snapped.lineX);
+                    if (snapped.snapY) drawSnapLine('y', snapped.lineY);
+
+                    if (activeTool === 'rect') { drawingObject.set({ width: Math.abs(px - origX), height: Math.abs(py - origY), left: Math.min(origX, px), top: Math.min(origY, py) }); } 
+                    else if (activeTool === 'circle') { const radius = Math.max(Math.abs(px - origX), Math.abs(py - origY)) / 2; drawingObject.set({ radius: radius, left: origX + (px - origX)/2, top: origY + (py - origY)/2 }); } 
+                    else if (activeTool === 'polygon') { const dx = px - origX; const dy = py - origY; const radius = Math.sqrt(dx * dx + dy * dy); const scale = radius / 50; drawingObject.set({ scaleX: scale, scaleY: scale }); }
                     canvas.requestRenderAll();
                 }
             });
