@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thooval Workspace v6.27</title>
+    <title>Thooval Workspace v6.29</title>
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -50,7 +50,7 @@
         .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; z-index: 300; padding: 4px; margin-top: 2px; }
         .menu-item:hover .dropdown { display: block; }
         
-        .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .dropdown li { list-style: none; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; color: var(--text-main); }
         .dropdown li:hover { background: var(--accent); color: var(--accent-text); cursor: pointer; }
         .dropdown li.divider-li { height: 1px; background: var(--border); margin: 4px 0; padding: 0; pointer-events: none; }
         .shortcut { color: var(--text-muted); font-size: 11px; }
@@ -61,6 +61,7 @@
         .dropdown li.has-submenu > span { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .dropdown li.has-submenu .submenu { display: none; position: absolute; top: 0; left: 100%; background: var(--bg-panel); min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 6px; padding: 4px; margin-left: 2px; }
         .dropdown li.has-submenu:hover .submenu { display: block; }
+        .dropdown li.has-submenu .submenu li { color: var(--text-main); } /* Fixed text visibility */
         
         #open-file-input, #place-image-input { display: none; }
 
@@ -118,6 +119,7 @@
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; }
+        input[type="range"] { accent-color: var(--accent); cursor: pointer; width: 100%; height: 6px; background: var(--bg-surface); border-radius: 4px; outline: none; }
 
         .btn-group { display: flex; background: var(--bg-base); border-radius: 6px; padding: 2px; }
         .btn-group button { flex: 1; padding: 6px; background: transparent; color: var(--text-muted); border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
@@ -198,7 +200,7 @@
 
     <header class="top-bar">
         <div class="top-left">
-            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.27</span></div>
+            <div class="branding"><i class="fa-solid fa-feather-pointed"></i> Thooval <span class="version-tag">v6.28</span></div>
             <ul class="menu-bar">
                 <li class="menu-item">File
                     <ul class="dropdown">
@@ -285,13 +287,6 @@
             <button class="small-icon-btn" title="Align Center" onclick="$('#align-center').click()"><i class="fa-solid fa-align-center"></i></button>
             <button class="small-icon-btn" title="Align Right" onclick="$('#align-right').click()"><i class="fa-solid fa-align-right"></i></button>
             <button class="small-icon-btn" title="Justify" onclick="$('#align-justify').click()"><i class="fa-solid fa-align-justify"></i></button>
-        </div>
-        
-        <div class="sec-divider"></div>
-        
-        <div class="btn-group" style="background: transparent;">
-            <button class="small-icon-btn" title="Bring Forward" onclick="$('#bring-forward').click()"><i class="fa-solid fa-arrow-up"></i></button>
-            <button class="small-icon-btn" title="Send Backward" onclick="$('#send-backward').click()"><i class="fa-solid fa-arrow-down"></i></button>
         </div>
         
         <div class="sec-divider"></div>
@@ -522,14 +517,32 @@
                 </div>
 
                 <div class="panel-section">
-                    <h3>Arrange Layer</h3>
+                    <h3>Align & Arrange</h3>
+                    <div class="prop-col" style="margin-bottom: 8px;">
+                        <select id="align-reference" style="width: 100%;">
+                            <option value="selection">Align to Selection / Bounds</option>
+                            <option value="margin">Align to Margins</option>
+                            <option value="page">Align to Page Edge</option>
+                        </select>
+                    </div>
                     <div class="btn-group" style="margin-bottom: 8px;">
+                        <button class="align-btn" data-action="left" title="Align Left"><i class="fa-solid fa-arrow-left-long"></i></button>
+                        <button class="align-btn" data-action="center-h" title="Align Center H"><i class="fa-solid fa-arrows-left-right-to-line"></i></button>
+                        <button class="align-btn" data-action="right" title="Align Right"><i class="fa-solid fa-arrow-right-long"></i></button>
+                    </div>
+                    <div class="btn-group" style="margin-bottom: 12px;">
+                        <button class="align-btn" data-action="top" title="Align Top"><i class="fa-solid fa-arrow-up-long"></i></button>
+                        <button class="align-btn" data-action="center-v" title="Align Center V"><i class="fa-solid fa-arrows-up-down-to-line"></i></button>
+                        <button class="align-btn" data-action="bottom" title="Align Bottom"><i class="fa-solid fa-arrow-down-long"></i></button>
+                    </div>
+                    <div class="btn-group" style="margin-bottom: 16px;">
+                        <button id="dist-h" title="Distribute Horizontally"><i class="fa-solid fa-arrows-left-right"></i> Dist H</button>
+                        <button id="dist-v" title="Distribute Vertically"><i class="fa-solid fa-arrows-up-down"></i> Dist V</button>
+                    </div>
+                    <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
+                    <div class="btn-group">
                         <button id="bring-forward"><i class="fa-solid fa-arrow-up"></i> Forward</button>
                         <button id="send-backward"><i class="fa-solid fa-arrow-down"></i> Backward</button>
-                    </div>
-                    <div class="btn-group">
-                        <button id="dist-h" title="Distribute Horizontally"><i class="fa-solid fa-arrows-left-right"></i> Distribute H</button>
-                        <button id="dist-v" title="Distribute Vertically"><i class="fa-solid fa-arrows-up-down"></i> Distribute V</button>
                     </div>
                 </div>
             </div>
@@ -573,18 +586,33 @@
     </div>
 
     <div class="modal-overlay" id="gradient-editor-modal">
-        <div class="modal" style="width: 320px;">
+        <div class="modal" style="width: 380px;">
             <h2>Advanced Gradient Editor</h2>
-            <div class="prop-row">
-                <div class="prop-col"><label>Color 1 (Start)</label><input type="color" id="grad-c1" value="#ff0000"></div>
-                <div class="prop-col"><label>Color 2 (End)</label><input type="color" id="grad-c2" value="#0000ff"></div>
-            </div>
-            <div class="prop-row" style="margin-top: 12px;">
-                <div class="prop-col"><label>Type</label>
-                    <select id="grad-type"><option value="linear">Linear</option><option value="radial">Radial</option></select>
+            <div class="panel-section" style="padding:0; border:none; margin-bottom: 16px;">
+                <div style="display:flex; gap:12px;">
+                    <div class="prop-col"><label>Type</label><select id="grad-type"><option value="linear">Linear</option><option value="radial">Radial</option></select></div>
+                    <div class="prop-col"><label>Angle (Linear)</label><input type="number" id="grad-angle" value="0" min="-180" max="180"></div>
                 </div>
-                <div class="prop-col"><label>Angle (Linear)</label><input type="number" id="grad-angle" value="0" min="-180" max="180"></div>
             </div>
+
+            <div class="panel-section" style="padding: 12px; background: var(--bg-surface); border-radius: 6px; margin-bottom: 12px;">
+                <h3 style="margin-bottom: 8px;">Stop 1 (Start)</h3>
+                <div class="prop-row">
+                    <div class="prop-col" style="flex: 0.5;"><input type="color" id="grad-c1" value="#ff0000"></div>
+                    <div class="prop-col"><label>Opacity</label><input type="range" id="grad-a1" min="0" max="1" step="0.05" value="1"></div>
+                    <div class="prop-col" style="flex: 0.8;"><label>Loc (%)</label><input type="number" id="grad-loc1" min="0" max="100" value="0"></div>
+                </div>
+            </div>
+
+            <div class="panel-section" style="padding: 12px; background: var(--bg-surface); border-radius: 6px; margin-bottom: 12px;">
+                <h3 style="margin-bottom: 8px;">Stop 2 (End)</h3>
+                <div class="prop-row">
+                    <div class="prop-col" style="flex: 0.5;"><input type="color" id="grad-c2" value="#0000ff"></div>
+                    <div class="prop-col"><label>Opacity</label><input type="range" id="grad-a2" min="0" max="1" step="0.05" value="1"></div>
+                    <div class="prop-col" style="flex: 0.8;"><label>Loc (%)</label><input type="number" id="grad-loc2" min="0" max="100" value="100"></div>
+                </div>
+            </div>
+
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="$('#gradient-editor-modal').hide()">Cancel</button>
                 <button class="btn-primary" id="apply-adv-gradient-btn">Apply Gradient</button>
@@ -779,7 +807,7 @@
 
             function openAdvancedPicker() {
                 const currentColor = focusedColorType === 'fill' ? globalFill : globalStroke;
-                if (currentColor !== 'transparent' && !currentColor.includes('gradient')) { colorPicker.color.hexString = currentColor; }
+                if (currentColor !== 'transparent' && !currentColor.includes('gradient') && !currentColor.includes('rgba')) { colorPicker.color.hexString = currentColor; }
                 $('#picker-old-color').css('background', currentColor);
                 $('#advanced-color-modal').css('display', 'flex');
             }
@@ -883,34 +911,6 @@
                 $dropdown.hide();
                 setTimeout(() => $dropdown.css('display', ''), 150);
             });
-
-            // --- MALAYALAM CONVERTER ---
-            const uniToFmlDict = [
-                { uni: "ക്ക", fml: "¡" }, { uni: "ക്ഷ", fml: "£" }, { uni: "ൾ", fml: "Ä" }, { uni: "ൻ", fml: "³" },
-                { uni: "ക", fml: "I" }, { uni: "ഖ", fml: "J" }, { uni: "ഗ", fml: "K" },
-                { uni: "അ", fml: "A" }, { uni: "ആ", fml: "B" },
-                { uni: "ാ", fml: "m" }, { uni: "ി", fml: "n" }, { uni: "ീ", fml: "o" }, { uni: "ു", fml: "p" },
-                { uni: "െ", fml: "s" }, { uni: "േ", fml: "t" }, { uni: "ൈ", fml: "sെ" } 
-            ];
-            const fmlToUniDict = uniToFmlDict.map(item => ({ fml: item.fml, uni: item.uni })).sort((a, b) => b.fml.length - a.fml.length);
-
-            function convertUnicodeToFml(text) {
-                let processedText = text;
-                const preBaseVowels = /([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*([െേൈ])/g;
-                processedText = processedText.replace(preBaseVowels, function(match, p1, p2, p3) { return p3 + p1 + (p2 || ""); });
-                uniToFmlDict.forEach(mapping => { const regex = new RegExp(mapping.uni, "g"); processedText = processedText.replace(regex, mapping.fml); });
-                return processedText;
-            }
-            function convertFmlToUnicode(text) {
-                let processedText = text;
-                fmlToUniDict.forEach(mapping => {
-                    const escapedFml = mapping.fml.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(escapedFml, "g"); processedText = processedText.replace(regex, mapping.uni);
-                });
-                const reversePreBase = /([െേൈ])([ക-ഹ]|ൺ|ൻ|ർ|ൽ|ൾ|ൿ)(्[ക-ഹ])*/g;
-                processedText = processedText.replace(reversePreBase, function(match, p1, p2, p3) { return p2 + (p3 || "") + p1; });
-                return processedText;
-            }
 
             // --- HISTORY STACK ---
             function saveHistory() {
@@ -1328,7 +1328,7 @@
                 draggingGuideType = null;
             });
 
-            // --- SMART SNAPPING ENGINE (WITH SHAPING & DRAWING SUPPORT) ---
+            // --- SMART SNAPPING ENGINE ---
             function clearSnapLines() {
                 snapLines.forEach(line => canvas.remove(line));
                 snapLines = [];
@@ -1343,7 +1343,6 @@
                 canvas.add(line);
             }
 
-            // Universal Snap Point Finder (Used for Drawing & Shaping)
             function findSnap(point, excludeObj) {
                 if (!snapConfig.master || isPreviewMode || isCropMode) return { x: point.x, y: point.y, snapX: false, snapY: false, lineX: null, lineY: null };
 
@@ -1376,9 +1375,7 @@
                 if (snapConfig.horizontal) {
                     for (let tX of targetXs) {
                         if (Math.abs(tX - point.x) < snapThreshold && Math.abs(tX - point.x) < Math.abs(minDx)) {
-                            minDx = tX - point.x;
-                            bestX = tX;
-                            snapX = true;
+                            minDx = tX - point.x; bestX = tX; snapX = true;
                         }
                     }
                 }
@@ -1386,9 +1383,7 @@
                 if (snapConfig.vertical) {
                     for (let tY of targetYs) {
                         if (Math.abs(tY - point.y) < snapThreshold && Math.abs(tY - point.y) < Math.abs(minDy)) {
-                            minDy = tY - point.y;
-                            bestY = tY;
-                            snapY = true;
+                            minDy = tY - point.y; bestY = tY; snapY = true;
                         }
                     }
                 }
@@ -1396,7 +1391,6 @@
                 return { x: bestX, y: bestY, snapX, snapY, lineX: snapX ? bestX : null, lineY: snapY ? bestY : null };
             }
 
-            // Object Moving Snap Logic
             canvas.on('object:moving', function(options) {
                 clearSnapLines();
                 if (!activeId || !showGuides || isPreviewMode || isCropMode || !snapConfig.master) return;
@@ -1416,7 +1410,7 @@
                 const objB = obj.getBoundingRect(true, true); 
                 
                 let snapX = false; let snapY = false;
-                let dx = 0; let dy = 0;
+                let minDx = Infinity; let minDy = Infinity;
                 let lineX = null; let lineY = null;
 
                 let targetXs = []; let targetYs = [];
@@ -1435,27 +1429,21 @@
                 let objXs = [objB.left, objB.left + objB.width/2, objB.left + objB.width];
                 let objYs = [objB.top, objB.top + objB.height/2, objB.top + objB.height];
 
-                let minDx = Infinity;
                 if(snapConfig.horizontal) {
                     for (let oX of objXs) {
                         for (let tX of targetXs) {
                             if (Math.abs(tX - oX) < snapThreshold && Math.abs(tX - oX) < Math.abs(minDx)) {
-                                minDx = tX - oX;
-                                lineX = tX;
-                                snapX = true;
+                                minDx = tX - oX; lineX = tX; snapX = true;
                             }
                         }
                     }
                 }
 
-                let minDy = Infinity;
                 if(snapConfig.vertical) {
                     for (let oY of objYs) {
                         for (let tY of targetYs) {
                             if (Math.abs(tY - oY) < snapThreshold && Math.abs(tY - oY) < Math.abs(minDy)) {
-                                minDy = tY - oY;
-                                lineY = tY;
-                                snapY = true;
+                                minDy = tY - oY; lineY = tY; snapY = true;
                             }
                         }
                     }
@@ -1471,6 +1459,150 @@
                 }
             });
 
+            // --- ADVANCED ALIGNMENT & DISTRIBUTION ENGINE ---
+            $('.align-btn').click(function() {
+                if (!activeId) return;
+                const action = $(this).data('action');
+                const ref = $('#align-reference').val();
+                let activeSelection = canvas.getActiveObject();
+                if (!activeSelection) return;
+
+                let targets = activeSelection.type === 'activeSelection' ? activeSelection.getObjects() : [activeSelection];
+                if (ref === 'selection' && targets.length < 2) return;
+
+                let bounds;
+                if (ref === 'selection') {
+                    bounds = activeSelection.getBoundingRect();
+                }
+
+                canvas.discardActiveObject();
+
+                targets.forEach(obj => {
+                    let targetBounds = bounds;
+                    if (ref !== 'selection') {
+                        const p = projects[activeId];
+                        const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                        const estimatedPage = Math.max(0, Math.min(p.totalPages - 1, Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap)));
+                        const pos = getPagePosition(estimatedPage, p.config);
+                        
+                        if (ref === 'page') {
+                            targetBounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx };
+                        } else if (ref === 'margin') {
+                            const m = p.config.marginsPx;
+                            let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0);
+                            let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
+                            targetBounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b };
+                        }
+                    }
+
+                    let objB = obj.getBoundingRect();
+
+                    if (action === 'left') obj.set('left', obj.left - (objB.left - targetBounds.left));
+                    if (action === 'center-h') obj.set('left', obj.left + (targetBounds.left + targetBounds.width/2) - (objB.left + objB.width/2));
+                    if (action === 'right') obj.set('left', obj.left + (targetBounds.left + targetBounds.width) - (objB.left + objB.width));
+                    if (action === 'top') obj.set('top', obj.top - (objB.top - targetBounds.top));
+                    if (action === 'center-v') obj.set('top', obj.top + (targetBounds.top + targetBounds.height/2) - (objB.top + objB.height/2));
+                    if (action === 'bottom') obj.set('top', obj.top + (targetBounds.top + targetBounds.height) - (objB.top + objB.height));
+                    
+                    obj.setCoords();
+                });
+
+                if (targets.length > 1) {
+                    let sel = new fabric.ActiveSelection(targets, { canvas: canvas });
+                    canvas.setActiveObject(sel);
+                } else {
+                    canvas.setActiveObject(targets[0]);
+                }
+                canvas.requestRenderAll(); markDirty(); saveHistory(); updateTransformUI({target: canvas.getActiveObject()});
+            });
+
+            $('#dist-h, #dist-v').click(function() {
+                if (!activeId) return;
+                const action = $(this).attr('id') === 'dist-h' ? 'h' : 'v';
+                const ref = $('#align-reference').val();
+                let activeSelection = canvas.getActiveObject();
+                if (!activeSelection) return;
+
+                let targets = activeSelection.type === 'activeSelection' ? activeSelection.getObjects() : [activeSelection];
+                if (targets.length < 2 && ref === 'selection') return;
+                if (targets.length < 1) return;
+
+                const p = projects[activeId];
+                const prop = action === 'h' ? 'left' : 'top';
+                targets.sort((a, b) => a.getBoundingRect()[prop] - b.getBoundingRect()[prop]);
+
+                let bounds;
+                if (ref === 'selection') {
+                    bounds = activeSelection.getBoundingRect();
+                } else {
+                    const obj = targets[0];
+                    const pageHeightWithGap = p.config.heightPx + PAGE_GAP;
+                    const estimatedPage = Math.max(0, Math.min(p.totalPages - 1, Math.floor((obj.top - MARGIN_TOP + (pageHeightWithGap/2)) / pageHeightWithGap)));
+                    const pos = getPagePosition(estimatedPage, p.config);
+                    if (ref === 'page') {
+                        bounds = { left: pos.x, top: pos.y, width: p.config.widthPx, height: p.config.heightPx };
+                    } else if (ref === 'margin') {
+                        const m = p.config.marginsPx;
+                        let isLeftPage = p.isMasterMode ? false : (p.config.facingPages && estimatedPage > 0 && (estimatedPage - 1) % 2 === 0); 
+                        let aL = isLeftPage ? m.r : m.l; let aR = isLeftPage ? m.l : m.r;
+                        bounds = { left: pos.x + aL, top: pos.y + m.t, width: p.config.widthPx - aL - aR, height: p.config.heightPx - m.t - m.b };
+                    }
+                }
+
+                canvas.discardActiveObject();
+
+                if (ref === 'selection' && targets.length >= 3) {
+                    const first = targets[0].getBoundingRect();
+                    const last = targets[targets.length - 1].getBoundingRect();
+                    const totalDist = action === 'h' ? (last.left - first.left) : (last.top - first.top);
+                    const spacing = totalDist / (targets.length - 1);
+
+                    targets.forEach((obj, i) => {
+                        if (i > 0 && i < targets.length - 1) {
+                            let curB = obj.getBoundingRect();
+                            if (action === 'h') obj.set('left', obj.left + (first.left + (spacing * i)) - curB.left);
+                            if (action === 'v') obj.set('top', obj.top + (first.top + (spacing * i)) - curB.top);
+                            obj.setCoords();
+                        }
+                    });
+                } else if (ref !== 'selection') {
+                    if (targets.length === 1) {
+                         let obj = targets[0]; let curB = obj.getBoundingRect();
+                         if (action === 'h') obj.set('left', obj.left + (bounds.left + bounds.width/2) - (curB.left + curB.width/2));
+                         if (action === 'v') obj.set('top', obj.top + (bounds.top + bounds.height/2) - (curB.top + curB.height/2));
+                         obj.setCoords();
+                    } else {
+                         const totalDist = action === 'h' ? bounds.width : bounds.height;
+                         const spacing = totalDist / (targets.length - 1);
+                         targets.forEach((obj, i) => {
+                             let curB = obj.getBoundingRect();
+                             if (i === 0) {
+                                 if(action === 'h') obj.set('left', obj.left + bounds.left - curB.left);
+                                 if(action === 'v') obj.set('top', obj.top + bounds.top - curB.top);
+                             } else if (i === targets.length - 1) {
+                                 if(action === 'h') obj.set('left', obj.left + (bounds.left + bounds.width) - (curB.left + curB.width));
+                                 if(action === 'v') obj.set('top', obj.top + (bounds.top + bounds.height) - (curB.top + curB.height));
+                             } else {
+                                 let startCenter = action === 'h' ? bounds.left + targets[0].getBoundingRect().width/2 : bounds.top + targets[0].getBoundingRect().height/2;
+                                 let endCenter = action === 'h' ? bounds.left + bounds.width - targets[targets.length-1].getBoundingRect().width/2 : bounds.top + bounds.height - targets[targets.length-1].getBoundingRect().height/2;
+                                 let cSpace = (endCenter - startCenter) / (targets.length - 1);
+                                 if(action==='h') obj.set('left', obj.left + (startCenter + cSpace*i) - (curB.left + curB.width/2));
+                                 if(action==='v') obj.set('top', obj.top + (startCenter + cSpace*i) - (curB.top + curB.height/2));
+                             }
+                             obj.setCoords();
+                         });
+                    }
+                }
+
+                if (targets.length > 1) {
+                    let sel = new fabric.ActiveSelection(targets, { canvas: canvas });
+                    canvas.setActiveObject(sel);
+                } else {
+                    canvas.setActiveObject(targets[0]);
+                }
+                canvas.requestRenderAll(); markDirty(); saveHistory(); updateTransformUI({target: canvas.getActiveObject()});
+            });
+
             // --- TEXT SCALING FIX ---
             canvas.on('object:scaling', function(e) {
                 var obj = e.target;
@@ -1479,8 +1611,6 @@
                     var h = obj.height * obj.scaleY;
                     obj.set({ width: w, height: h, scaleX: 1, scaleY: 1 });
                 }
-                
-                // Shape snapping support during scaling
                 clearSnapLines();
                 if (snapConfig.master && e.pointer) {
                     let snapped = findSnap(e.pointer, obj);
@@ -1670,46 +1800,6 @@
                 if (e.key === ';') { $('#menu-toggle-guides').click(); }
             });
 
-            // --- OBJECT DISTRIBUTION LOGIC ---
-            $('#dist-h, #dist-v').click(function() {
-                if (!activeId) return;
-                const activeSelection = canvas.getActiveObject();
-                
-                if (!activeSelection || activeSelection.type !== 'activeSelection') {
-                    alert("Please select at least 3 objects to distribute.");
-                    return;
-                }
-                
-                const items = activeSelection.getObjects();
-                if (items.length < 3) {
-                     alert("Please select at least 3 objects to distribute.");
-                     return;
-                }
-
-                const isHoriz = $(this).attr('id') === 'dist-h';
-                const prop = isHoriz ? 'left' : 'top';
-
-                items.sort((a, b) => a[prop] - b[prop]);
-
-                const first = items[0];
-                const last = items[items.length - 1];
-                
-                const totalDistance = last[prop] - first[prop];
-                const spacing = totalDistance / (items.length - 1);
-
-                items.forEach((obj, i) => {
-                    if (i > 0 && i < items.length - 1) {
-                        obj.set(prop, first[prop] + (spacing * i));
-                        obj.setCoords();
-                    }
-                });
-                
-                activeSelection.addWithUpdate(); 
-                canvas.requestRenderAll();
-                markDirty(); 
-                saveHistory();
-            });
-
             // --- GROUPING LOGIC ---
             function groupObjects() {
                 if (!activeId) return;
@@ -1858,7 +1948,6 @@
                     currentControl = polygon.controls[polygon.__corner],
                     pointer = { x: x, y: y };
                 
-                // Object Shaping Snapping
                 let snapped = findSnap(pointer, polygon);
                 clearSnapLines();
                 if (snapped.snapX) drawSnapLine('x', snapped.lineX);
@@ -2144,7 +2233,6 @@
                 if (isDrawingShape && drawingObject) {
                     const pointer = canvas.getPointer(opt.e);
                     
-                    // Add shape drawing snap support
                     let snapped = findSnap({x: pointer.x, y: pointer.y}, drawingObject);
                     let px = snapped.x;
                     let py = snapped.y;
@@ -2308,12 +2396,44 @@
                 }
             });
 
+            // RGBA String Parsers
+            function hexToRgba(hex, a) {
+                if(!hex) return `rgba(0,0,0,${a})`;
+                let r = parseInt(hex.slice(1, 3), 16);
+                let g = parseInt(hex.slice(3, 5), 16);
+                let b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${a})`;
+            }
+            function parseRgba(colorStr) {
+                if (!colorStr) return { hex: '#000000', a: 1 };
+                if (colorStr.startsWith('#')) return { hex: colorStr.substring(0, 7), a: 1 };
+                if (colorStr.startsWith('rgba')) {
+                    let parts = colorStr.match(/[\d.]+/g);
+                    if (parts && parts.length >= 4) {
+                        let hex = '#' + ((1 << 24) + (parseInt(parts[0]) << 16) + (parseInt(parts[1]) << 8) + parseInt(parts[2])).toString(16).slice(1);
+                        return { hex: hex, a: parseFloat(parts[3]) };
+                    }
+                }
+                if (colorStr.startsWith('rgb')) {
+                    let parts = colorStr.match(/\d+/g);
+                    if(parts && parts.length >=3) {
+                        let hex = '#' + ((1 << 24) + (parseInt(parts[0]) << 16) + (parseInt(parts[1]) << 8) + parseInt(parts[2])).toString(16).slice(1);
+                        return { hex: hex, a: 1 };
+                    }
+                }
+                return { hex: '#000000', a: 1 };
+            }
+
             // Advanced Gradient Editor Tool logic
             $('#btn-open-gradient-editor').click(function() {
                 const obj = canvas.getActiveObject();
                 if (obj && obj.fill && obj.fill.colorStops) {
-                    $('#grad-c1').val(obj.fill.colorStops[0].color);
-                    $('#grad-c2').val(obj.fill.colorStops[1].color);
+                    let s1 = parseRgba(obj.fill.colorStops[0].color);
+                    $('#grad-c1').val(s1.hex); $('#grad-a1').val(s1.a); $('#grad-loc1').val(obj.fill.colorStops[0].offset * 100);
+                    
+                    let s2 = parseRgba(obj.fill.colorStops[1].color);
+                    $('#grad-c2').val(s2.hex); $('#grad-a2').val(s2.a); $('#grad-loc2').val(obj.fill.colorStops[1].offset * 100);
+                    
                     $('#grad-type').val(obj.fill.type);
                 }
                 $('#gradient-editor-modal').css('display', 'flex');
@@ -2323,8 +2443,12 @@
                 const obj = canvas.getActiveObject();
                 if (!obj) return;
                 
-                const c1 = $('#grad-c1').val();
-                const c2 = $('#grad-c2').val();
+                const rgba1 = hexToRgba($('#grad-c1').val(), $('#grad-a1').val());
+                const rgba2 = hexToRgba($('#grad-c2').val(), $('#grad-a2').val());
+                
+                const loc1 = parseFloat($('#grad-loc1').val()) / 100;
+                const loc2 = parseFloat($('#grad-loc2').val()) / 100;
+
                 const type = $('#grad-type').val();
                 const angle = parseInt($('#grad-angle').val()) || 0;
                 
@@ -2344,11 +2468,11 @@
                     type: type,
                     gradientUnits: 'percentage',
                     coords: coords,
-                    colorStops: [ { offset: 0, color: c1 }, { offset: 1, color: c2 } ]
+                    colorStops: [ { offset: loc1, color: rgba1 }, { offset: loc2, color: rgba2 } ]
                 });
                 
                 updateObj('fill', gradient);
-                const bg = type === 'linear' ? `linear-gradient(${angle}deg, ${c1}, ${c2})` : `radial-gradient(circle, ${c1}, ${c2})`;
+                const bg = type === 'linear' ? `linear-gradient(${angle}deg, ${rgba1} ${loc1*100}%, ${rgba2} ${loc2*100}%)` : `radial-gradient(circle, ${rgba1} ${loc1*100}%, ${rgba2} ${loc2*100}%)`;
                 $('#fill-focus').css('background', bg).removeClass('none');
                 $('#gradient-editor-modal').hide();
             });
