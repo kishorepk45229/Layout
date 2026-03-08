@@ -15,6 +15,8 @@ const ThoovalPalettes = {
     'Sunset': ['#ff7b54', '#ffb26b', '#ffd56b', '#939b62', '#e05d5d', '#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#f4a261', '#e76f51', '#d62828', '#264653'],
     
     'Vintage': ['#cb997e', '#eddcd2', '#fff1e6', '#f0efeb', '#ddbea9', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189'],
+
+    'Metal': ['#000000', '#ffae00', '#686868', '#dfdfdf', '#2f4c96', '#a5a58d', '#b7b7a4', '#d4a373', '#e3d5ca', '#f5ebe0', '#d6ccc2', '#e5e5e5', '#d4c7b0', '#9d8189'],
     
     // Add your own custom categories easily!
     'Brand Colors': ['#18181b', '#27272a', '#cbfb45', '#ef4444', '#3b82f6'],
